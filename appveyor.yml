@@ -4,8 +4,7 @@
 
 # version format
 #version: 1.0.{build}
-version_number: 2.2.1+build.{build}
-version: {version_number}
+version: 2.2.1+build.1
 
 # you can use {branch} name in version format too
 # version: 1.0.{build}-{branch}
