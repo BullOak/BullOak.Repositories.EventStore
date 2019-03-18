@@ -3,7 +3,6 @@
 #---------------------------------#
 
 # version format
-#version: 1.0.{build}
 version: 2.2.1
 
 # you can use {branch} name in version format too
@@ -124,7 +123,7 @@ deploy:
     api_key:
       secure: +tceHEN4n1HCeAOyBGT3/7PJMmGGv9LPcLN38Q0hNJpJS6C+h3PyCt8wxSwe/LwZ
     skip_symbols: false 
-    artifact: /.*\.nupkg/ 
+    artifact: '**\*.nupkg'
 
 # scripts to run after deployment
 after_deploy:
