@@ -56,10 +56,18 @@ cache:
 pull_requests:
   do_not_increment_build_number: true
 
+# enable patching of AssemblyInfo.* files
+assembly_info:
+  patch: true
+  file: AssemblyInfo.*
+  assembly_version: "1.0.{build}"
+  assembly_file_version: "{version}"
+  assembly_informational_version: "{version}"
+
 dotnet_csproj:
   patch: true
   file: '**\*.csproj'
-  version: "{version_number}"
+  version: "{version}"
   assembly_version: '2.2.1.0'
   file_version: '2.2.1.0'
   
