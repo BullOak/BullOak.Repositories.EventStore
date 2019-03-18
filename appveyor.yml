@@ -12,6 +12,13 @@ environment:
   standard_version: '2.2.$(appveyor_build_number)'
   file_version: '2.2.$(appveyor_build_number).0'
 
+  
+before_build:
+  - ps: |
+        Write-Output "env.appveyor_build_number = $env:appveyor_build_number"
+        Write-Output "env.standard_version = $env:standard_version"
+        Write-Output "env.file_version = $env:file_version"
+
 # branches to build
 branches:
   only:
