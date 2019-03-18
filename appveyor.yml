@@ -4,7 +4,8 @@
 
 # version format
 #version: 1.0.{build}
-version: 2.2.1+build.{build}
+version_number: 2.2.1+build.{build}
+version: {version_number}
 
 # you can use {branch} name in version format too
 # version: 1.0.{build}-{branch}
@@ -59,7 +60,7 @@ pull_requests:
 dotnet_csproj:
   patch: true
   file: '**\*.csproj'
-  version: "{version}"
+  version: "{version_number}"
   assembly_version: '2.2.1.0'
   file_version: '2.2.1.0'
   
