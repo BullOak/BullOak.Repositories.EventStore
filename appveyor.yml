@@ -9,8 +9,8 @@ version: 2.2.{build}
 # version: 1.0.{build}-{branch}
 
 environment:
-  standard_version: 2.2.{APPVEYOR_BUILD_NUMBER}
-  file_version: 2.2.{APPVEYOR_BUILD_NUMBER}.0
+  standard_version: '2.2.$(appveyor_build_number)'
+  file_version: '2.2.$(appveyor_build_number).0'
 
 # branches to build
 branches:
