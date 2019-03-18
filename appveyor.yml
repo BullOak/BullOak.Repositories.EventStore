@@ -4,7 +4,7 @@
 
 # version format
 #version: 1.0.{build}
-version: 2.2.1+build.{build}
+version: 2.2.1
 
 # you can use {branch} name in version format too
 # version: 1.0.{build}-{branch}
@@ -60,8 +60,8 @@ dotnet_csproj:
   patch: true
   file: '**\*.csproj'
   version: "{version}"
-  assembly_version: '{version}'
-  file_version: '{version}'
+  assembly_version: '{version}.{build}'
+  file_version: '{version}.{build}'
   
 
 # Automatically register private account and/or project AppVeyor NuGet feeds.
