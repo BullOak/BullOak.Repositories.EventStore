@@ -70,7 +70,7 @@ pull_requests:
 dotnet_csproj:
   patch: true
   file: '**\*.csproj'
-  version: '{version}'
+  version: '$(standard_version_version)'
   assembly_version: '1.0.0'
   file_version: '1.0.0'
   
