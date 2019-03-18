@@ -61,8 +61,8 @@ dotnet_csproj:
   file: '**\*.csproj'
   version: '{version}'
   package_version: '{version}'
-  assembly_version: '{version}'
-  file_version: '{version}'
+  assembly_version: '{version}.{build}'
+  file_version: '{version}.{build}'
   informational_version: '{version}'
   
 
