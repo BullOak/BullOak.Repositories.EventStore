@@ -59,11 +59,9 @@ pull_requests:
 dotnet_csproj:
   patch: true
   file: '**\*.csproj'
-  version: '{version}'
-  package_version: '{version}'
-  assembly_version: '{version}.{build}'
-  file_version: '{version}.{build}'
-  informational_version: '{version}'
+  version: '2.2.1'
+  assembly_version: '2.2.1.0'
+  file_version: '2.2.1.0'
   
 
 # Automatically register private account and/or project AppVeyor NuGet feeds.
