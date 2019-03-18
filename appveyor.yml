@@ -1,0 +1,150 @@
+#---------------------------------#
+#      general configuration      #
+#---------------------------------#
+
+# version format
+#version: 1.0.{build}
+version: 2.2.1
+
+# you can use {branch} name in version format too
+# version: 1.0.{build}-{branch}
+
+# branches to build
+branches:
+  only:
+    - master
+
+# Maximum number of concurrent jobs for the project
+max_jobs: 1
+
+#---------------------------------#
+#    environment configuration    #
+#---------------------------------#
+
+# Build worker image (VM template)
+image: Visual Studio 2017
+
+# clone directory
+clone_folder: c:\projects\BullOak.Repositories.EventStore
+
+# fetch repository as zip archive
+shallow_clone: true                 # default is "false"
+
+# set clone depth
+clone_depth: 1                      # clone entire repository history if not defined
+
+# setting up etc\hosts file
+hosts:
+  queue-server: 127.0.0.1
+  db.server.com: 127.0.0.2
+
+# this is how to allow failing jobs in the matrix
+matrix:
+  fast_finish: true     # set this flag to immediately finish build once one of the jobs fails.
+  allow_failures:
+    - platform: x86
+      configuration: Release
+    - platform: x64
+      configuration: Release
+
+# build cache to preserve files/folders between builds
+cache:
+  - packages -> **\packages.config  # preserve "packages" directory in the root of build folder but will reset it if packages.config is modified
+  - libs
+  - '%LocalAppData%\NuGet\Cache'
+
+pull_requests:
+  do_not_increment_build_number: true
+
+dotnet_csproj:
+  patch: true
+  file: '**\*.csproj'
+  version: '{version}'
+  package_version: '{version}'
+  assembly_version: '{version}'
+  file_version: '{version}'
+  informational_version: '{version}'
+  
+
+# Automatically register private account and/or project AppVeyor NuGet feeds.
+nuget:
+  account_feed: true
+  project_feed: true
+  disable_publish_on_pr: true
+
+#---------------------------------#
+#       build configuration       #
+#---------------------------------#
+
+# build platform, i.e. x86, x64, Any CPU. This setting is optional.
+platform: Any CPU
+
+# build Configuration, i.e. Debug, Release, etc.
+configuration: Release
+
+build:
+  parallel: true                  # enable MSBuild parallel builds
+  project: src\BullOak.Repositories.EventStore.sln      # path to Visual Studio solution or project
+  publish_nuget: true             # package projects with .nuspec files and push to artifacts
+
+  # MSBuild verbosity level
+  verbosity: normal
+
+
+# scripts to run before build
+before_build:
+  - nuget restore ./src/BullOak.Repositories.EventStore.sln
+
+#---------------------------------#
+#       tests configuration       #
+#---------------------------------#
+
+test:
+  assemblies:
+    - '**\*.Test.Unit.dll'
+    - '**\*.Test.Acceptance.dll'
+    - '**\*.Test.Integration.dll'
+
+#---------------------------------#
+#      artifacts configuration    #
+#---------------------------------#
+
+artifacts:
+  - path: '*.nupkg'
+    name: bullOakEventStoreNugets
+  
+
+#---------------------------------#
+#     deployment configuration    #
+#---------------------------------#
+
+# providers: Local, FTP, WebDeploy, AzureCS, AzureBlob, S3, NuGet, Environment
+# provider names are case-sensitive!
+deploy:
+    # Deploying to NuGet feed
+  - provider: NuGet
+    api_key:
+      secure: +tceHEN4n1HCeAOyBGT3/7PJMmGGv9LPcLN38Q0hNJpJS6C+h3PyCt8wxSwe/LwZ
+    skip_symbols: false 
+    artifact: /.*\.nupkg/ 
+
+# scripts to run after deployment
+after_deploy:
+  - ps: |
+        Write-Output "APPVEYOR_BUILD_VERSION = $APPVEYOR_BUILD_VERSION"
+        Write-Output "env.APPVEYOR_BUILD_VERSION = $env:APPVEYOR_BUILD_VERSION"
+        Write-Output "APPVEYOR_BUILD_NUMBER = $APPVEYOR_BUILD_NUMBER"
+        Write-Output "env.APPVEYOR_BUILD_NUMBER = $env:APPVEYOR_BUILD_NUMBER"
+        Write-Output "APPVEYOR_PULL_REQUEST_NUMBER = $APPVEYOR_PULL_REQUEST_NUMBER"
+        Write-Output "env.APPVEYOR_PULL_REQUEST_NUMBER = $env:APPVEYOR_PULL_REQUEST_NUMBER"
+        
+        $postParams = @{ value1 = "$env:APPVEYOR_BUILD_NUMBER" }
+        Invoke-WebRequest -Uri https://maker.ifttt.com/trigger/bo_release/with/key/kSg0JPLZLcht1NDoihgjW -Method POST -Body $postParams
+
+#---------------------------------#
+#         notifications           #
+#---------------------------------#
+
+notifications:
+  - provider: Slack
+    incoming_webhook: https://hooks.slack.com/services/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
