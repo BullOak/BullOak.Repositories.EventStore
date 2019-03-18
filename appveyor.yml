@@ -70,9 +70,9 @@ pull_requests:
 dotnet_csproj:
   patch: true
   file: '**\*.csproj'
-  version: '$(standard_version_version)'
-  assembly_version: '1.0.0'
-  file_version: '1.0.0'
+  version: '$(standard_version)'
+  assembly_version: '$(file_version)'
+  file_version: '$(file_version)'
   
 
 # Automatically register private account and/or project AppVeyor NuGet feeds.
