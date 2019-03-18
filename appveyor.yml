@@ -8,6 +8,10 @@ version: 2.2.{build}
 # you can use {branch} name in version format too
 # version: 1.0.{build}-{branch}
 
+environment:
+  standard_version: '2.2.{build}'
+  file_version: '2.2.{build}.0'
+
 # branches to build
 branches:
   only:
@@ -53,14 +57,14 @@ cache:
   - '%LocalAppData%\NuGet\Cache'
 
 pull_requests:
-  do_not_increment_build_number: false
+  do_not_increment_build_number: true
 
 dotnet_csproj:
   patch: true
   file: '**\*.csproj'
-  version: "{version}"
-  assembly_version: '{version}.{build}'
-  file_version: '{version}.{build}'
+  version: {standard_version}
+  assembly_version: {file_version}
+  file_version: {file_version}
   
 
 # Automatically register private account and/or project AppVeyor NuGet feeds.
@@ -123,7 +127,7 @@ deploy:
     api_key:
       secure: +tceHEN4n1HCeAOyBGT3/7PJMmGGv9LPcLN38Q0hNJpJS6C+h3PyCt8wxSwe/LwZ
     skip_symbols: false 
-    artifact: '**\*.nupkg'
+    artifact: '**\BullOak.Repositories.EventStore.*.*.*.nupkg'
 
 # scripts to run after deployment
 after_deploy:
