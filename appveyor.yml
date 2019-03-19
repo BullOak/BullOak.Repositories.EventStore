@@ -9,8 +9,8 @@ version: 2.2.{build}
 # version: 1.0.{build}-{branch}
 
 environment:
-  standard_version: '2.2.$(appveyor_build_number)'
-  file_version: '2.2.$(appveyor_build_number).0'
+#  standard_version: '2.2.$(appveyor_build_number)'
+  standard_version: '2.2.1'
 
   
 before_build:
@@ -71,8 +71,8 @@ dotnet_csproj:
   patch: true
   file: '**\*.csproj'
   version: '$(standard_version)'
-  assembly_version: '$(file_version)'
-  file_version: '$(file_version)'
+  assembly_version: '$(standard_version).$(appveyor_build_number)'
+  file_version: '$(standard_version).$(appveyor_build_number)'
   
 
 # Automatically register private account and/or project AppVeyor NuGet feeds.
