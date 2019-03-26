@@ -1,4 +1,4 @@
-﻿namespace BullOak.Repositories.EventStore
+﻿namespace BullOak.Repositories.EventStore.Metadata
 {
     using System.Text;
     using Newtonsoft.Json;

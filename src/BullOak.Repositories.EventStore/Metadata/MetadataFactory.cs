@@ -1,8 +1,6 @@
-﻿using Newtonsoft.Json.Linq;
-
-namespace BullOak.Repositories.EventStore
+﻿namespace BullOak.Repositories.EventStore.Metadata
 {
-    using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
 
     internal class MetadataFactory
     {

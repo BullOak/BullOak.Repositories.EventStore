@@ -15,6 +15,8 @@
         public Dictionary<string, List<Exception>> NamedSessionsExceptions { get; internal set; } =
             new Dictionary<string, List<Exception>>();
 
+        public int LastConcurrencyId { get; set; }
+
         internal MyEvent[] LastGeneratedEvents;
 
         internal void ResetStream()

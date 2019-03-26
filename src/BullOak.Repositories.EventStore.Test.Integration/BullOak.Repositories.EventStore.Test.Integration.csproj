@@ -9,14 +9,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BullOak.Repositories" Version="2.2.1" />
-    <PackageReference Include="FluentAssertions" Version="5.3.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="SpecFlow" Version="2.3.2" />
-    <PackageReference Include="SpecFlow.xUnit" Version="2.3.2" />
-    <PackageReference Include="xunit" Version="2.3.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
+    <PackageReference Include="BullOak.Repositories" Version="2.2.2" />
+    <PackageReference Include="FluentAssertions" Version="5.6.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+    <PackageReference Include="SpecFlow" Version="2.4.1" />
+    <PackageReference Include="SpecFlow.xUnit" Version="2.4.1" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
     <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
     <DotNetCliToolReference Include="SpecFlow.NetCore" Version="1.3.2" />
   </ItemGroup>
@@ -26,6 +29,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Specification\ReadModelSpecs.feature.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ReadModelSpecs.feature</DependentUpon>
+    </Compile>
     <Compile Update="Specification\ReconstituteState.feature.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -46,6 +54,10 @@
   <ItemGroup>
     <None Update="EventStoreServer\EventStore.ClusterNode.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Specification\ReadModelSpecs.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>ReadModelSpecs.feature.cs</LastGenOutput>
     </None>
     <None Update="Specification\ReconstituteState.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>

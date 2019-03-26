@@ -1,6 +1,6 @@
-﻿namespace BullOak.Repositories.EventStore
+﻿namespace BullOak.Repositories.EventStore.Metadata
 {
-    public interface IHoldMetadata
+    internal interface IHoldMetadata
     {
         int MetadataVersion { get; set; }
         string EventTypeFQN { get; set; }

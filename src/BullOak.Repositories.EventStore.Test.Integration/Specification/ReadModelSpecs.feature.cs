@@ -17,17 +17,17 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Specification
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("TechTalk.SpecFlow", "2.4.0.0")]
     [System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public partial class StateRetrievalSpecsFeature : Xunit.IClassFixture<StateRetrievalSpecsFeature.FixtureData>, System.IDisposable
+    public partial class ReadModelSpecsFeature : Xunit.IClassFixture<ReadModelSpecsFeature.FixtureData>, System.IDisposable
     {
         
         private static TechTalk.SpecFlow.ITestRunner testRunner;
         
         private Xunit.Abstractions.ITestOutputHelper _testOutputHelper;
         
-#line 1 "StateRetreivalSpecs.feature"
+#line 1 "ReadModelSpecs.feature"
 #line hidden
         
-        public StateRetrievalSpecsFeature(StateRetrievalSpecsFeature.FixtureData fixtureData, Xunit.Abstractions.ITestOutputHelper testOutputHelper)
+        public ReadModelSpecsFeature(ReadModelSpecsFeature.FixtureData fixtureData, Xunit.Abstractions.ITestOutputHelper testOutputHelper)
         {
             this._testOutputHelper = testOutputHelper;
             this.TestInitialize();
@@ -36,9 +36,8 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Specification
         public static void FeatureSetup()
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
-            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "StateRetrievalSpecs", "\tIn order to implement complex logic without further state storage\r\n\tAs a develop" +
-                    "er using this library\r\n\tI want the current state to be updated immediately when " +
-                    "I add new events even if I don\'t save the session", ProgrammingLanguage.CSharp, ((string[])(null)));
+            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "ReadModelSpecs", "\tIn order to support read models\r\n\tAs a user of this library\r\n\tI want to be able " +
+                    "to load entities from readonly repositories", ProgrammingLanguage.CSharp, ((string[])(null)));
             testRunner.OnFeatureStart(featureInfo);
         }
         
@@ -78,25 +77,29 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Specification
             this.ScenarioTearDown();
         }
         
-        [Xunit.TheoryAttribute(DisplayName="When I add new events in the stream I want the state to be updated immediately")]
-        [Xunit.TraitAttribute("FeatureTitle", "StateRetrievalSpecs")]
-        [Xunit.TraitAttribute("Description", "When I add new events in the stream I want the state to be updated immediately")]
-        [Xunit.InlineDataAttribute("0", "3", "2", new string[0])]
-        [Xunit.InlineDataAttribute("2", "3", "2", new string[0])]
-        [Xunit.InlineDataAttribute("7", "3", "6", new string[0])]
-        [Xunit.InlineDataAttribute("0", "10000", "9999", new string[0])]
-        public virtual void WhenIAddNewEventsInTheStreamIWantTheStateToBeUpdatedImmediately(string eventCount, string addedEvents, string highOrder, string[] exampleTags)
+        [Xunit.FactAttribute(DisplayName="Reconstitute state from one event stored using interface")]
+        [Xunit.TraitAttribute("FeatureTitle", "ReadModelSpecs")]
+        [Xunit.TraitAttribute("Description", "Reconstitute state from one event stored using interface")]
+        public virtual void ReconstituteStateFromOneEventStoredUsingInterface()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("When I add new events in the stream I want the state to be updated immediately", null, exampleTags);
-#line 11
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Reconstitute state from one event stored using interface", null, ((string[])(null)));
+#line 6
 this.ScenarioInitialize(scenarioInfo);
             this.ScenarioStart();
+#line 7
+ testRunner.Given("a new stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 8
+ testRunner.And("3 new events", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 9
+ testRunner.And("I try to save the new events in the stream through their interface", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 10
+ testRunner.When("I load my entity through the read-only repository", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 11
+ testRunner.Then("the load process should succeed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 12
- testRunner.Given(string.Format("an existing stream with {0} events", eventCount), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+ testRunner.And("HighOrder property should be 2", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 13
- testRunner.When(string.Format("I add {0} events in the session without saving it", addedEvents), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 14
- testRunner.Then(string.Format("HighOrder property should be {0}", highOrder), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+ testRunner.And("have a concurrency id of 2", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -108,12 +111,12 @@ this.ScenarioInitialize(scenarioInfo);
             
             public FixtureData()
             {
-                StateRetrievalSpecsFeature.FeatureSetup();
+                ReadModelSpecsFeature.FeatureSetup();
             }
             
             void System.IDisposable.Dispose()
             {
-                StateRetrievalSpecsFeature.FeatureTearDown();
+                ReadModelSpecsFeature.FeatureTearDown();
             }
         }
     }

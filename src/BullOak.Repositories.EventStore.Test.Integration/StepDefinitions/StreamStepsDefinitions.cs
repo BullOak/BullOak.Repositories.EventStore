@@ -108,20 +108,6 @@
             recordedEvents.Length.Should().Be(count);
         }
 
-        [When(@"I load my entity")]
-        public async Task WhenILoadMyEntity()
-        {
-            if (testDataContext.RecordedException != null) return;
-
-            testDataContext.RecordedException = await Record.ExceptionAsync(async () =>
-            {
-                using (var session = await eventStoreContainer.StartSession(testDataContext.CurrentStreamId))
-                {
-                    testDataContext.LatestLoadedState = session.GetCurrentState();
-                }
-            });
-        }
-
         [Then(@"HighOrder property should be (.*)")]
         public void ThenHighOrderPropertyShouldBe(int highestOrderValue)
         {

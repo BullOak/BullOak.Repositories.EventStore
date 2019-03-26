@@ -17,7 +17,8 @@
     internal class InProcEventStoreIntegrationContext
     {
         //private static ClusterVNode node;
-        private EventStoreRepository<string, IHoldHigherOrder> repository;
+        private readonly EventStoreRepository<string, IHoldHigherOrder> repository;
+        public readonly EventStoreReadOnlyRepository<string, IHoldHigherOrder> readOnlyRepository;
         private static IEventStoreConnection connection;
         private static Process eventStoreProcess;
 
@@ -34,17 +35,13 @@
                .WithNoUpconverters()
                .Build();
 
-            SetupRepository(configuration);
+            repository = new EventStoreRepository<string, IHoldHigherOrder>(configuration, GetConnection());
+            readOnlyRepository = new EventStoreReadOnlyRepository<string, IHoldHigherOrder>(configuration, GetConnection());
         }
 
         private static IEventStoreConnection GetConnection()
         {
             return connection;
-        }
-
-        public void SetupRepository(IHoldAllConfiguration configuration)
-        {
-            repository = new EventStoreRepository<string, IHoldHigherOrder>(configuration, GetConnection());
         }
 
         [BeforeTestRun]

@@ -1,8 +1,8 @@
-﻿namespace BullOak.Repositories.EventStore
+﻿namespace BullOak.Repositories.EventStore.Metadata
 {
     using System;
 
-    public class EventMetadata_V1 : IHoldMetadata
+    internal class EventMetadata_V1 : IHoldMetadata
     {
         public string EventTypeFQN { get; set; }
         public int MetadataVersion { get; set; }
