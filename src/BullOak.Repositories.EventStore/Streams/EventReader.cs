@@ -12,6 +12,8 @@
     {
         private const int SliceSize = 1024; //4095 is max allowed value
 
+        private static readonly Type SoftDeleteEventType = typeof(SoftDelete);
+
         private readonly ICreateStateInstances stateFactory;
         private readonly IEventStoreConnection eventStoreConnection;
 
@@ -25,15 +27,16 @@
         {
             checked
             {
-                int currentVersion;
+                int currentVersion = -1;
+                bool foundSoftDelete = false;
                 var events = new List<ItemWithType>();
                 StreamEventsSlice currentSlice;
-                long nextSliceStart = StreamPosition.Start;
+                long nextSliceStart = StreamPosition.End;
                 do
                 {
                     currentSlice =
-                        await eventStoreConnection.ReadStreamEventsForwardAsync(streamId, nextSliceStart, SliceSize,
-                            true);
+                        await eventStoreConnection.ReadStreamEventsBackwardAsync(streamId, nextSliceStart,
+                            SliceSize, true);
                     if (currentSlice.Status == SliceReadStatus.StreamDeleted ||
                         currentSlice.Status == SliceReadStatus.StreamNotFound)
                     {
@@ -43,10 +46,23 @@
                     }
 
                     nextSliceStart = currentSlice.NextEventNumber;
-                    events.AddRange(currentSlice.Events.Select(x=> x.ToItemWithType(stateFactory)));
-                    currentVersion = (int) currentSlice.LastEventNumber;
-                } while (!currentSlice.IsEndOfStream);
+                    var newEvents =
+                        currentSlice.Events.Select(x => x.ToItemWithType(stateFactory))
+                            .TakeWhile(itemWithType =>
+                            {
+                                foundSoftDelete = itemWithType.type == SoftDeleteEventType;
+                                return !foundSoftDelete;
+                            });
+                    events.AddRange(newEvents);
 
+                    currentVersion = Math.Max(currentVersion, (int) currentSlice.LastEventNumber);
+                } while (nextSliceStart != -1 && !foundSoftDelete);
+
+                if (events.Count == 0 || currentVersion == -1)
+                {
+                    return new StreamReadResults(events, -1);
+                }
+                events.Reverse();
                 return new StreamReadResults(events, currentVersion);
             }
         }

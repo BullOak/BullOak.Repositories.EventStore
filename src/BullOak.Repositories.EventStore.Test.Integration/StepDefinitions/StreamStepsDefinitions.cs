@@ -53,7 +53,7 @@
         [When(@"I try to save the new events in the stream through their interface")]
         public async Task GivenITryToSaveTheNewEventsInTheStreamThroughTheirInterface()
         {
-            testDataContext.RecordedException = await Record.ExceptionAsync(async () => 
+            testDataContext.RecordedException = await Record.ExceptionAsync(async () =>
             {
                 using (var session = await eventStoreContainer.StartSession(testDataContext.CurrentStreamId))
                 {
@@ -71,8 +71,9 @@
             });
         }
 
+        [Given(@"I try to save the new events in the stream")]
         [When(@"I try to save the new events in the stream")]
-        public async Task WhenITryToSaveTheNewEventsInTheStream()
+        public async Task GivenITryToSaveTheNewEventsInTheStream()
         {
             testDataContext.RecordedException = await Record.ExceptionAsync(() =>
                 eventStoreContainer.AppendEventsToCurrentStream(
@@ -87,6 +88,16 @@
         [Given(@"I hard-delete the stream")]
         public async Task GivenIHard_DeleteTheStream()
             => await eventStoreContainer.HardDeleteStream(testDataContext.CurrentStreamId);
+
+        [Given(@"I soft-delete-by-event the stream")]
+        public async Task GivenI_Soft_Delete_by_EventTheStream()
+        {
+            await eventStoreContainer.SoftDeleteByEvent(testDataContext.CurrentStreamId);
+            using (var session = await eventStoreContainer.StartSession(testDataContext.CurrentStreamId))
+            {
+                testDataContext.LatestLoadedState = session.GetCurrentState();
+            }
+        }
 
         [Then(@"the load process should succeed")]
         [Then(@"the save process should succeed")]
@@ -172,6 +183,13 @@
         public void ThenTheSaveProcessShouldFailFor(string sessionName)
         {
             testDataContext.NamedSessionsExceptions[sessionName].Should().NotBeEmpty();
+        }
+
+        [Then(@"the soft delete event should have been found")]
+        public void ThenTheSoftDeleteEventWithTimeShouldBeFound()
+        {
+            testDataContext.LatestLoadedState.SoftDeleteFound.Should().BeTrue(
+                "a soft delete event should have been added to the stream");
         }
     }
 }
