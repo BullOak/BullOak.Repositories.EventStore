@@ -93,10 +93,6 @@
         public async Task GivenI_Soft_Delete_by_EventTheStream()
         {
             await eventStoreContainer.SoftDeleteByEvent(testDataContext.CurrentStreamId);
-            using (var session = await eventStoreContainer.StartSession(testDataContext.CurrentStreamId))
-            {
-                testDataContext.LatestLoadedState = session.GetCurrentState();
-            }
         }
 
         [Then(@"the load process should succeed")]
@@ -183,13 +179,6 @@
         public void ThenTheSaveProcessShouldFailFor(string sessionName)
         {
             testDataContext.NamedSessionsExceptions[sessionName].Should().NotBeEmpty();
-        }
-
-        [Then(@"the soft delete event should have been found")]
-        public void ThenTheSoftDeleteEventWithTimeShouldBeFound()
-        {
-            testDataContext.LatestLoadedState.SoftDeleteFound.Should().BeTrue(
-                "a soft delete event should have been added to the stream");
         }
     }
 }

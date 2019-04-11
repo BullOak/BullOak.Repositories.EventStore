@@ -8,9 +8,10 @@
     using System;
     using System.Threading.Tasks;
 
-    public class EventStoreRepository<TId, TState> : IStartSessions<TId, TState>
+    public class EventStoreRepository<TId, TState> : IStartSessions<TId, TState>, IEventStoreStreamDeleter<TId>
     {
         private static readonly Task<bool> falseResult = Task.FromResult(false);
+        private static readonly ItemWithType softDeleteEvent = new ItemWithType(new SoftDeleteEvent());
         private readonly IHoldAllConfiguration configs;
         private readonly IEventStoreConnection connection;
 
@@ -44,7 +45,7 @@
                 }
                 var itemAndType = eventsTail.Events[0].ToItemWithType(configs.StateFactory);
                 return eventsTail.Status == SliceReadStatus.Success
-                    && itemAndType.type != typeof(SoftDelete);
+                    && itemAndType.type != typeof(SoftDeleteEvent);
             }
             catch (Exception)
             {
@@ -52,33 +53,47 @@
             }
         }
 
-        // TODO Clarify the delete types
-        // When ES does a soft-delete the stream will eventually be reclaimed by the Scavenger, so SoftDeleteStream
-        // (an ES soft-delete) isn't actually what BullOak considers to be a soft delete. A BullOak soft-delete is
-        // achieved by SoftDeleteByEvent via a specific event added to the stream. So, in effect both the hard and soft
-        // delete from ES would both be considered hard deletes as far as we are concerned here.
-        // Ideally we want to remove Delete from IStartSessions and
-        // TODO MS Finish this, also how are we going to do soft/hard delete when the interface only has Delete with no flag?
-        // Is this where we need the calling system to publish the BullOakStreamSoftDeleted Alexey mentioned?
-        // Or are we changing the IStartSessions interface? Add HardDelete / SoftDelete & mark Delete as obsolete?
-
-
+        /// <summary>
+        /// This is provided to implement the <see cref="IStartSessions{TEntitySelector,TState}"/> interface,
+        /// but is not ideally how event store streams should be deleted.
+        /// Please use the <see cref="IEventStoreStreamDeleter{TId}"/> interface this class also implements.
+        /// </summary>
+        /// <param name="selector"></param>
+        /// <returns></returns>
+        /// This Delete implementation corresponds to an EventStore soft-delete, which is actually what BullOak
+        /// would consider to be a hard-delete; the scavenger will eventually delete even a soft-deleted stream so if
+        /// you want proper soft-delete semantics then use <see cref="IEventStoreStreamDeleter{TId}.SoftDeleteByEvent"/>
+        [Obsolete("Please use either IEventStoreStreamDeleter.SoftDelete or IEventStoreStreamDeleter.SoftDeleteByEvent")]
         public async Task Delete(TId selector)
         {
+            await SoftDelete(selector);
+        }
+
+        public async Task SoftDeleteByEvent(TId selector)
+        {
             var id = selector.ToString();
-            var eventsTail = await connection.ReadStreamEventsBackwardAsync(id, 0, 1, false);
-            var expectedVersion = eventsTail.LastEventNumber;
+
+            var expectedVersion = await GetLastEventNumber(id);
+            var writeResult = await connection.ConditionalAppendToStreamAsync(
+                id,
+                expectedVersion,
+                new[] {softDeleteEvent.CreateEventData()})
+                .ConfigureAwait(false);
+
+            StreamAppendHelpers.CheckConditionalWriteResultStatus(writeResult, id);
+        }
+
+        public async Task SoftDelete(TId selector)
+        {
+            var id = selector.ToString();
+            var expectedVersion = await GetLastEventNumber(id);
             await connection.DeleteStreamAsync(id, expectedVersion);
         }
 
-        // TODO MS Is it right to use a Session here?
-        public async Task SoftDeleteByEvent(TId selector)
+        private async Task<long> GetLastEventNumber(string id)
         {
-            using (var session = await BeginSessionFor(selector))
-            {
-                session.AddEvent(new SoftDelete());
-                await session.SaveChanges();
-            }
+            var eventsTail = await connection.ReadStreamEventsBackwardAsync(id, 0, 1, false);
+            return eventsTail.LastEventNumber;
         }
     }
 }

@@ -7,7 +7,7 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Components
 
     public class StateApplier : IApplyEvent<IHoldHigherOrder, MyEvent>
         , IApplyEvent<IHoldHigherOrder, IMyEvent>
-        , IApplyEvent<IHoldHigherOrder, SoftDelete>
+        , IApplyEvent<IHoldHigherOrder, SoftDeleteEvent>
     {
         IHoldHigherOrder IApplyEvent<IHoldHigherOrder, MyEvent>.Apply(IHoldHigherOrder state, MyEvent @event)
             => Apply(state, @event);
@@ -19,11 +19,7 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Components
             return state;
         }
 
-        public IHoldHigherOrder Apply(IHoldHigherOrder state, SoftDelete @event)
-        {
-            state.SoftDeleteFound = true;
-
-            return state;
-        }
+        public IHoldHigherOrder Apply(IHoldHigherOrder state, SoftDeleteEvent @event)
+            => state;
     }
 }

@@ -12,7 +12,7 @@
     {
         private const int SliceSize = 1024; //4095 is max allowed value
 
-        private static readonly Type SoftDeleteEventType = typeof(SoftDelete);
+        private static readonly Type SoftDeleteEventType = typeof(SoftDeleteEvent);
 
         private readonly ICreateStateInstances stateFactory;
         private readonly IEventStoreConnection eventStoreConnection;
@@ -58,10 +58,6 @@
                     currentVersion = Math.Max(currentVersion, (int) currentSlice.LastEventNumber);
                 } while (nextSliceStart != -1 && !foundSoftDelete);
 
-                if (events.Count == 0 || currentVersion == -1)
-                {
-                    return new StreamReadResults(events, -1);
-                }
                 events.Reverse();
                 return new StreamReadResults(events, currentVersion);
             }

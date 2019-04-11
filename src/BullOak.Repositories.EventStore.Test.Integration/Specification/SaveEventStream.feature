@@ -9,7 +9,7 @@ Scenario Outline: Save events in a new stream
 	When I try to save the new events in the stream
 	Then the save process should succeed
 	 And there should be <eventsCount> events in the stream
-Examples: 
+Examples:
 	| eventsCount |
 	| 1           |
 	| 30          |
@@ -33,7 +33,7 @@ Scenario: Concurrent write should fail for outdated session
 	And session 'Session1' is open
 	And session 'Session2' is open
 	And 10 new events are added by 'Session1'
-	And 10 new events are added by 'Session2'	
+	And 10 new events are added by 'Session2'
 	When I try to save 'Session1'
 	And I try to save 'Session2'
 	Then the save process should succeed for 'Session1'
@@ -61,6 +61,16 @@ Scenario: Write after a soft deleted stream should succeed
 	Given a new stream
 	And 3 new events
 	And  I soft-delete the stream
+	And 10 new events
+	When I try to save the new events in the stream
+	And I load my entity
+	Then the load process should succeed
+	And HighOrder property should be 9
+
+Scenario: Write after a soft delete by event for a stream should succeed
+	Given a new stream
+	And 3 new events
+	And  I soft-delete-by-event the stream
 	And 10 new events
 	When I try to save the new events in the stream
 	And I load my entity

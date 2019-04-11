@@ -1,0 +1,36 @@
+﻿namespace BullOak.Repositories.EventStore
+{
+    using System;
+    using global::EventStore.ClientAPI;
+    using Metadata;
+    using Newtonsoft.Json.Linq;
+    using StateEmit;
+
+    public static class ItemWithTypeExtensions
+    {
+        private static readonly string CanEditJsonFieldName;
+
+        static ItemWithTypeExtensions()
+        {
+            CanEditJsonFieldName = nameof(ICanSwitchBackAndToReadOnly.CanEdit);
+            CanEditJsonFieldName = CanEditJsonFieldName.Substring(0, 1).ToLower()
+                                   + CanEditJsonFieldName.Substring(1);
+        }
+
+        public static EventData CreateEventData(this ItemWithType @event)
+        {
+            var metadata = EventMetadata_V1.From(@event);
+
+            var eventAsJson = JObject.FromObject(@event.instance);
+            eventAsJson.Remove(CanEditJsonFieldName);
+
+            var eventData = new EventData(
+                Guid.NewGuid(),
+                @event.type.Name,
+                true,
+                System.Text.Encoding.UTF8.GetBytes(eventAsJson.ToString()),
+                MetadataSerializer.Serialize(metadata));
+            return eventData;
+        }
+    }
+}

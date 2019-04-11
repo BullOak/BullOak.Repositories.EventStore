@@ -3,7 +3,5 @@
     public interface IHoldHigherOrder
     {
         int HigherOrder { get; set; }
-
-        bool SoftDeleteFound { get; set; }
     }
 }

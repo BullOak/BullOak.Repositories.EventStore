@@ -48,9 +48,7 @@ Scenario: Reconstitute state after a hard delete should succeed and return defau
 Scenario: Reconstitute state after a soft delete by event should succeed and return default state
 	Given a new stream
 	And 3 new events
-	#And I try to save the new events in the stream
 	And I soft-delete-by-event the stream
 	When I load my entity
 	Then the load process should succeed
 	And HighOrder property should be 0
-	And the soft delete event should have been found

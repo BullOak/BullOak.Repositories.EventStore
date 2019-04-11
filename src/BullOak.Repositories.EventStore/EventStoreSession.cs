@@ -9,7 +9,6 @@
     using System.Threading;
     using System.Threading.Tasks;
     using BullOak.Repositories.EventStore.Metadata;
-    using BullOak.Repositories.StateEmit;
     using Newtonsoft.Json.Linq;
 
     public class EventStoreSession<TState> : BaseEventSourcedSession<TState, int>
@@ -19,14 +18,6 @@
         private readonly string streamName;
         private bool isInDisposedState = false;
         private readonly EventReader eventReader;
-        private readonly static string CanEditJsonFieldName;
-
-        static EventStoreSession()
-        {
-            CanEditJsonFieldName = nameof(ICanSwitchBackAndToReadOnly.CanEdit);
-            CanEditJsonFieldName = CanEditJsonFieldName.Substring(0, 1).ToLower()
-                                   + CanEditJsonFieldName.Substring(1);
-        }
 
         public EventStoreSession(IHoldAllConfiguration configuration,
                                  IEventStoreConnection eventStoreConnection,
@@ -87,20 +78,10 @@
                 writeResult = await eventStoreConnection.ConditionalAppendToStreamAsync(
                         streamName,
                         this.ConcurrencyId,
-                        eventsToAdd.Select(eventObject => CreateEventData(eventObject)))
+                        eventsToAdd.Select(eventObject => eventObject.CreateEventData()))
                     .ConfigureAwait(false);
 
-                switch (writeResult.Status)
-                {
-                    case ConditionalWriteStatus.Succeeded:
-                        break;
-                    case ConditionalWriteStatus.VersionMismatch:
-                        throw new ConcurrencyException(streamName, null);
-                    case ConditionalWriteStatus.StreamDeleted:
-                        throw new InvalidOperationException($"Stream was deleted. StreamId: {streamName}");
-                    default:
-                        throw new InvalidOperationException($"Unexpected write result: {writeResult.Status}");
-                }
+                StreamAppendHelpers.CheckConditionalWriteResultStatus(writeResult, streamName);
 
                 if (!writeResult.NextExpectedVersion.HasValue)
                 {
@@ -111,22 +92,6 @@
                 ConsiderSessionDisposed();
                 return (int)writeResult.NextExpectedVersion.Value;
             }
-        }
-
-        private EventData CreateEventData(ItemWithType @event)
-        {
-            var metadata = EventMetadata_V1.From(@event);
-
-            var eventAsJson = JObject.FromObject(@event.instance);
-            eventAsJson.Remove(CanEditJsonFieldName);
-
-            var eventData = new EventData(
-                Guid.NewGuid(),
-                @event.type.Name,
-                true,
-                System.Text.Encoding.UTF8.GetBytes(eventAsJson.ToString()),
-                MetadataSerializer.Serialize(metadata));
-            return eventData;
         }
     }
 }
