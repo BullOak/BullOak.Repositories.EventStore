@@ -1,8 +1,7 @@
-﻿using BullOak.Repositories.EventStore.Events;
-
-namespace BullOak.Repositories.EventStore.Test.Integration.Components
+﻿namespace BullOak.Repositories.EventStore.Test.Integration.Components
 {
     using BullOak.Repositories.Appliers;
+    using BullOak.Repositories.EventStore.Events;
     using System;
 
     public class StateApplier : IApplyEvent<IHoldHigherOrder, MyEvent>

@@ -39,13 +39,20 @@
                 var id = selector.ToString();
                 var eventsTail = await connection.ReadStreamEventsBackwardAsync(
                     id, StreamPosition.End, 1, false);
-                if (eventsTail.Events.Length == 0)
+
+                if (eventsTail.Status != SliceReadStatus.Success)
                 {
                     return false;
                 }
-                var itemAndType = eventsTail.Events[0].ToItemWithType(configs.StateFactory);
-                return eventsTail.Status == SliceReadStatus.Success
-                    && itemAndType.type != typeof(SoftDeleteEvent);
+
+                // If the last event is a SoftDeleteEvent then we consider the stream to not exist
+                if (eventsTail.Events.Length > 0)
+                {
+                    var itemAndType = eventsTail.Events[0].ToItemWithType(configs.StateFactory);
+                    return itemAndType.type != typeof(SoftDeleteEvent);
+                }
+
+                return true;
             }
             catch (Exception)
             {
@@ -69,6 +76,13 @@
             await SoftDelete(selector);
         }
 
+        public async Task SoftDelete(TId selector)
+        {
+            var id = selector.ToString();
+            var expectedVersion = await GetLastEventNumber(id);
+            await connection.DeleteStreamAsync(id, expectedVersion);
+        }
+
         public async Task SoftDeleteByEvent(TId selector)
         {
             var id = selector.ToString();
@@ -81,13 +95,6 @@
                 .ConfigureAwait(false);
 
             StreamAppendHelpers.CheckConditionalWriteResultStatus(writeResult, id);
-        }
-
-        public async Task SoftDelete(TId selector)
-        {
-            var id = selector.ToString();
-            var expectedVersion = await GetLastEventNumber(id);
-            await connection.DeleteStreamAsync(id, expectedVersion);
         }
 
         private async Task<long> GetLastEventNumber(string id)

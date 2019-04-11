@@ -71,9 +71,8 @@
             });
         }
 
-        [Given(@"I try to save the new events in the stream")]
         [When(@"I try to save the new events in the stream")]
-        public async Task GivenITryToSaveTheNewEventsInTheStream()
+        public async Task WhenITryToSaveTheNewEventsInTheStream()
         {
             testDataContext.RecordedException = await Record.ExceptionAsync(() =>
                 eventStoreContainer.AppendEventsToCurrentStream(
