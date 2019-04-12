@@ -9,12 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BullOak.Repositories" Version="2.2.2" />
+    <PackageReference Include="BullOak.Repositories" Version="2.3.1" />
     <PackageReference Include="FluentAssertions" Version="5.6.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
-    <PackageReference Include="SpecFlow" Version="2.4.1" />
-    <PackageReference Include="SpecFlow.xUnit" Version="2.4.1" />
+    <PackageReference Include="SpecFlow" Version="3.0.199" />
+    <PackageReference Include="SpecFlow.Tools.MsBuild.Generation" Version="3.0.199" />
+    <PackageReference Include="SpecFlow.xUnit" Version="3.0.199" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
       <PrivateAssets>all</PrivateAssets>
@@ -29,39 +30,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Specification\ReadModelSpecs.feature.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>ReadModelSpecs.feature</DependentUpon>
-    </Compile>
-    <Compile Update="Specification\ReconstituteState.feature.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>ReconstituteState.feature</DependentUpon>
-    </Compile>
-    <Compile Update="Specification\SaveEventStream.feature.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>SaveEventStream.feature</DependentUpon>
-    </Compile>
-    <Compile Update="Specification\StateRetreivalSpecs.feature.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>StateRetreivalSpecs.feature</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="EventStoreServer\EventStore.ClusterNode.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Specification\ReadModelSpecs.feature">
-      <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>ReadModelSpecs.feature.cs</LastGenOutput>
+      <Generator></Generator>
     </None>
     <None Update="Specification\ReconstituteState.feature">
-      <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>ReconstituteState.feature.cs</LastGenOutput>
+      <Generator></Generator>
     </None>
     <None Update="Specification\ReconstituteState.feature.cs">
       <DesignTime>True</DesignTime>
@@ -69,8 +45,7 @@
       <DependentUpon>Specification\ReconstituteState.feature</DependentUpon>
     </None>
     <None Update="Specification\SaveEventStream.feature">
-      <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>SaveEventStream.feature.cs</LastGenOutput>
+      <Generator></Generator>
     </None>
     <None Update="Specification\SaveEventStream.feature.cs">
       <DesignTime>True</DesignTime>
@@ -78,8 +53,7 @@
       <DependentUpon>SaveEventStream.feature</DependentUpon>
     </None>
     <None Update="Specification\StateRetreivalSpecs.feature">
-      <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>StateRetreivalSpecs.feature.cs</LastGenOutput>
+      <Generator></Generator>
     </None>
     <None Update="Specification\StateRetreivalSpecs.feature.cs">
       <DesignTime>True</DesignTime>

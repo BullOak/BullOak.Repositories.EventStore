@@ -12,6 +12,7 @@
     using System.Reflection;
     using System.Threading.Tasks;
     using BullOak.Repositories.EventStore.Test.Integration.EventStoreServer;
+    using Events;
     using TechTalk.SpecFlow;
 
     internal class InProcEventStoreIntegrationContext
@@ -92,14 +93,18 @@
             }
         }
 
-        public async Task SoftDeleteStream(Guid id)
-            => await repository.SoftDelete(id.ToString());
+        public Task SoftDeleteStream(Guid id)
+            => repository.SoftDelete(id.ToString());
 
-        public async Task HardDeleteStream(Guid id)
-            => await GetConnection().DeleteStreamAsync(id.ToString(), -1, true);
+        public Task HardDeleteStream(Guid id)
+            => GetConnection().DeleteStreamAsync(id.ToString(), -1, true);
 
-        public async Task SoftDeleteByEvent(Guid id)
-            => await repository.SoftDeleteByEvent(id.ToString()).ConfigureAwait(false);
+        public Task SoftDeleteByEvent(Guid id)
+            => repository.SoftDeleteByEvent(id.ToString());
+
+        public Task SoftDeleteByEvent<TSoftDeleteEvent>(Guid id, Func<TSoftDeleteEvent> createSoftDeleteEvent)
+            where TSoftDeleteEvent : EntitySoftDeleted
+            => repository.SoftDeleteByEvent(id.ToString(), createSoftDeleteEvent);
 
         public async Task<ResolvedEvent[]> ReadEventsFromStreamRaw(Guid id)
         {

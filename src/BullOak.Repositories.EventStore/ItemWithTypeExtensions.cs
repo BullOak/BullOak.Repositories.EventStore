@@ -1,6 +1,7 @@
 ﻿namespace BullOak.Repositories.EventStore
 {
     using System;
+    using Events;
     using global::EventStore.ClientAPI;
     using Metadata;
     using Newtonsoft.Json.Linq;
@@ -32,5 +33,8 @@
                 MetadataSerializer.Serialize(metadata));
             return eventData;
         }
+
+        public static bool IsSoftDeleteEvent(this ItemWithType @event)
+            => @event.type == DefaultSoftDeleteEvent.Type || @event.type.IsSubclassOf(DefaultSoftDeleteEvent.Type);
     }
 }

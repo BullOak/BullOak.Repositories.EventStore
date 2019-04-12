@@ -6,7 +6,7 @@
 
     public class StateApplier : IApplyEvent<IHoldHigherOrder, MyEvent>
         , IApplyEvent<IHoldHigherOrder, IMyEvent>
-        , IApplyEvent<IHoldHigherOrder, SoftDeleteEvent>
+        , IApplyEvent<IHoldHigherOrder, EntitySoftDeleted>
     {
         IHoldHigherOrder IApplyEvent<IHoldHigherOrder, MyEvent>.Apply(IHoldHigherOrder state, MyEvent @event)
             => Apply(state, @event);
@@ -18,7 +18,7 @@
             return state;
         }
 
-        public IHoldHigherOrder Apply(IHoldHigherOrder state, SoftDeleteEvent @event)
+        public IHoldHigherOrder Apply(IHoldHigherOrder state, EntitySoftDeleted @event)
             => state;
     }
 }

@@ -11,7 +11,6 @@
     public class EventStoreRepository<TId, TState> : IStartSessions<TId, TState>, IEventStoreStreamDeleter<TId>
     {
         private static readonly Task<bool> falseResult = Task.FromResult(false);
-        private static readonly ItemWithType softDeleteEvent = new ItemWithType(new SoftDeleteEvent());
         private readonly IHoldAllConfiguration configs;
         private readonly IEventStoreConnection connection;
 
@@ -37,19 +36,18 @@
             try
             {
                 var id = selector.ToString();
-                var eventsTail = await connection.ReadStreamEventsBackwardAsync(
-                    id, StreamPosition.End, 1, false);
+                var eventsTail = await GetLastEvent(id);
 
                 if (eventsTail.Status != SliceReadStatus.Success)
                 {
                     return false;
                 }
 
-                // If the last event is a SoftDeleteEvent then we consider the stream to not exist
+                // If the last event is a soft delete then we consider the stream to not exist
                 if (eventsTail.Events.Length > 0)
                 {
-                    var itemAndType = eventsTail.Events[0].ToItemWithType(configs.StateFactory);
-                    return itemAndType.type != typeof(SoftDeleteEvent);
+                    var @event = eventsTail.Events[0].ToItemWithType(configs.StateFactory);
+                    return !@event.IsSoftDeleteEvent();
                 }
 
                 return true;
@@ -69,7 +67,8 @@
         /// <returns></returns>
         /// This Delete implementation corresponds to an EventStore soft-delete, which is actually what BullOak
         /// would consider to be a hard-delete; the scavenger will eventually delete even a soft-deleted stream so if
-        /// you want proper soft-delete semantics then use <see cref="IEventStoreStreamDeleter{TId}.SoftDeleteByEvent"/>
+        /// you want proper soft-delete semantics then use <see cref="SoftDeleteByEvent"/> or
+        /// <see cref="SoftDeleteByEvent{TSoftDeleteEventType}"/>
         [Obsolete("Please use either IEventStoreStreamDeleter.SoftDelete or IEventStoreStreamDeleter.SoftDeleteByEvent")]
         public async Task Delete(TId selector)
         {
@@ -83,15 +82,27 @@
             await connection.DeleteStreamAsync(id, expectedVersion);
         }
 
-        public async Task SoftDeleteByEvent(TId selector)
+        public Task SoftDeleteByEvent(TId selector)
+            => SoftDeleteByEventImpl(selector, DefaultSoftDeleteEvent.ItemWithType.CreateEventData());
+
+        public async Task SoftDeleteByEvent<TSoftDeleteEventType>(TId selector,
+            Func<TSoftDeleteEventType> createSoftDeleteEventFunc)
+            where TSoftDeleteEventType : EntitySoftDeleted
+        {
+            if (createSoftDeleteEventFunc == null) throw new ArgumentNullException(nameof(createSoftDeleteEventFunc));
+
+            await SoftDeleteByEventImpl(selector, new ItemWithType(createSoftDeleteEventFunc()).CreateEventData());
+        }
+
+        private async Task SoftDeleteByEventImpl(TId selector, EventData softDeleteEvent)
         {
             var id = selector.ToString();
 
             var expectedVersion = await GetLastEventNumber(id);
             var writeResult = await connection.ConditionalAppendToStreamAsync(
-                id,
-                expectedVersion,
-                new[] {softDeleteEvent.CreateEventData()})
+                    id,
+                    expectedVersion,
+                    new[] { softDeleteEvent })
                 .ConfigureAwait(false);
 
             StreamAppendHelpers.CheckConditionalWriteResultStatus(writeResult, id);
@@ -99,8 +110,11 @@
 
         private async Task<long> GetLastEventNumber(string id)
         {
-            var eventsTail = await connection.ReadStreamEventsBackwardAsync(id, 0, 1, false);
+            var eventsTail = await GetLastEvent(id);
             return eventsTail.LastEventNumber;
         }
+
+        private Task<StreamEventsSlice> GetLastEvent(string id)
+            => connection.ReadStreamEventsBackwardAsync(id, StreamPosition.End, 1, false);
     }
 }

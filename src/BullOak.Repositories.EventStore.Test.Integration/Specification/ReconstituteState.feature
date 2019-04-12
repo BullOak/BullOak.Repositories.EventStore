@@ -52,3 +52,11 @@ Scenario: Reconstitute state after a soft delete by event should succeed and ret
 	When I load my entity
 	Then the load process should succeed
 	And HighOrder property should be 0
+
+Scenario: Reconstitute state after a soft delete by custom event should succeed and return default state
+	Given a new stream
+	And 3 new events
+	And I soft-delete-by-custom-event the stream
+	When I load my entity
+	Then the load process should succeed
+	And HighOrder property should be 0
