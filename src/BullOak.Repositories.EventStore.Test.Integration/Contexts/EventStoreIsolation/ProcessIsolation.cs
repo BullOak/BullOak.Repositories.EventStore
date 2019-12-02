@@ -15,11 +15,7 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Contexts.EventStoreIs
             var assemblyPath = (new System.Uri(typeof(ProcessIsolation).Assembly.CodeBase)).AbsolutePath;
             var currentDir = new DirectoryInfo(Path.GetDirectoryName(assemblyPath)).FullName;
 
-            var command = Path.IsPathFullyQualified(isolationCommand)
-                ? isolationCommand :
-                Path.Combine(currentDir, isolationCommand);
-
-            process = StartProcess(command, isolationArguments, currentDir);
+            process = StartProcess(isolationCommand, isolationArguments, currentDir);
         }
 
         public void Dispose()
