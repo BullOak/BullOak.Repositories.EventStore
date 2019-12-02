@@ -12,7 +12,7 @@ Scenario Outline: When I add new events in the stream I want the state to be upd
 	Given an existing stream with <eventCount> events
 	When I add <addedEvents> events in the session without saving it
 	Then HighOrder property should be <highOrder>
-Examples: 
+Examples:
 	| eventCount | addedEvents | highOrder |
 	| 0          | 3           | 2         |
 	| 2          | 3           | 2         |
