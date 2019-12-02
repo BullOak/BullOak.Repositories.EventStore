@@ -12,7 +12,7 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Contexts.EventStoreIs
             string isolationCommand,
             string isolationArguments)
         {
-            var assemblyPath = (new System.Uri(typeof(IntegrationTestsSettings).Assembly.CodeBase)).AbsolutePath;
+            var assemblyPath = (new System.Uri(typeof(ProcessIsolation).Assembly.CodeBase)).AbsolutePath;
             var currentDir = new DirectoryInfo(Path.GetDirectoryName(assemblyPath)).FullName;
 
             var command = Path.IsPathFullyQualified(isolationCommand)
