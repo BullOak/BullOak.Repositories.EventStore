@@ -21,13 +21,13 @@ namespace BullOak.Repositories.EventStore.Test.Integration.StepDefinitions
         [BeforeTestRun]
         public static Task SetupEventStoreNode()
         {
-            return InProcEventStoreIntegrationContext.SetupNode();
+            return EventStoreIntegrationContext.SetupNode();
         }
 
         [AfterTestRun]
         public static void TeardownNode()
         {
-            InProcEventStoreIntegrationContext.TeardownNode();
+            EventStoreIntegrationContext.TeardownNode();
         }
     }
 }
