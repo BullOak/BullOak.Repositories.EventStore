@@ -18,13 +18,22 @@
         private readonly string streamName;
         private bool isInDisposedState = false;
         private readonly EventReader eventReader;
+        private static readonly IValidateState<TState> defaultValidator = new AlwaysPassValidator<TState>();
 
         public EventStoreSession(IHoldAllConfiguration configuration,
-                                 IEventStoreConnection eventStoreConnection,
-                                 string streamName)
-            : base(configuration)
+            IEventStoreConnection eventStoreConnection,
+            string streamName)
+            : this(defaultValidator, configuration, eventStoreConnection, streamName)
+        { }
+
+        public EventStoreSession(IValidateState<TState> stateValidator,
+            IHoldAllConfiguration configuration,
+            IEventStoreConnection eventStoreConnection,
+            string streamName)
+            : base(stateValidator, configuration)
         {
-            this.eventStoreConnection = eventStoreConnection ?? throw new ArgumentNullException(nameof(eventStoreConnection));
+            this.eventStoreConnection =
+                eventStoreConnection ?? throw new ArgumentNullException(nameof(eventStoreConnection));
             this.streamName = streamName ?? throw new ArgumentNullException(nameof(streamName));
 
             this.eventReader = new EventReader(eventStoreConnection, configuration);

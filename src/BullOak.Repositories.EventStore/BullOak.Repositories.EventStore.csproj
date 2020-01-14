@@ -27,8 +27,8 @@
     <WarningsAsErrors />
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="BullOak.Repositories" Version="2.3.1" />
-    <PackageReference Include="EventStore.Client" Version="5.0.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+    <PackageReference Include="BullOak.Repositories" Version="2.4.2" />
+    <PackageReference Include="EventStore.Client" Version="6.0.0-preview1" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 </Project>

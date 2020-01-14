@@ -23,7 +23,7 @@
         private static IEventStoreConnection connection;
         private static Process eventStoreProcess;
 
-        public InProcEventStoreIntegrationContext()
+        public InProcEventStoreIntegrationContext(PassThroughValidator validator)
         {
             var configuration = Configuration.Begin()
                .WithDefaultCollection()
@@ -36,7 +36,7 @@
                .WithNoUpconverters()
                .Build();
 
-            repository = new EventStoreRepository<string, IHoldHigherOrder>(configuration, GetConnection());
+            repository = new EventStoreRepository<string, IHoldHigherOrder>(validator, configuration, GetConnection());
             readOnlyRepository = new EventStoreReadOnlyRepository<string, IHoldHigherOrder>(configuration, GetConnection());
         }
 
