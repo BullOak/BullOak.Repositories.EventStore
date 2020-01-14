@@ -1,7 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
+
+    <PropertyGroup>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <AssemblyName>BullOak.Repositories.EventStore</AssemblyName>
+    <LangVersion>7.1</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <OutputPath>$(MSBuildProjectDirectory)\bin\Any CPU\release</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <PackageId>BullOak.Repositories.EventStore</PackageId>
     <Description>The BullOak.Repositories implementation for EventStore</Description>
     <Summary>This is the EventStore implementation of a repository for BullOak.Repositories. See BullOak.Repositories nuget for more info.</Summary>
@@ -13,19 +23,9 @@
     <PackageIcon>icon128.png</PackageIcon>
     <PackageIconUrl>https://raw.githubusercontent.com/BullOak/BullOak/master/icons/Icon128.png</PackageIconUrl>
     <PackageTags>CQRS EventStourcing event-driven repository repositories DDD domain-driven-design</PackageTags>
-    <Version>2.4.1</Version>
-    <AssemblyVersion>2.4.1.0</AssemblyVersion>
-    <FileVersion>2.4.1.0</FileVersion>
-    <TargetFrameworks>net461;netstandard2.0</TargetFrameworks>
-    <NoWarn>NU5125</NoWarn>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <LangVersion>latest</LangVersion>
-    <OutputPath>bin\Any CPU\release</OutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net462|AnyCPU'">
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <WarningsAsErrors />
+    <Version>2.0.2</Version>
+    <AssemblyVersion>2.0.2.0</AssemblyVersion>
+    <FileVersion>2.0.2.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>

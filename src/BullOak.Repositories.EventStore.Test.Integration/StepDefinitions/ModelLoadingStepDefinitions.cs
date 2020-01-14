@@ -10,10 +10,10 @@
     [Binding]
     internal class ModelLoadingStepDefinitions
     {
-        private readonly InProcEventStoreIntegrationContext eventStoreContainer;
+        private readonly EventStoreIntegrationContext eventStoreContainer;
         private readonly TestDataContext testDataContext;
 
-        public ModelLoadingStepDefinitions(InProcEventStoreIntegrationContext eventStoreContainer,
+        public ModelLoadingStepDefinitions(EventStoreIntegrationContext eventStoreContainer,
             TestDataContext testDataContext)
         {
             this.eventStoreContainer =

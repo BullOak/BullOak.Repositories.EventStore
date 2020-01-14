@@ -13,12 +13,12 @@
     [Binding]
     internal class SaveEventsStreamSteps
     {
-        private readonly InProcEventStoreIntegrationContext eventStoreContainer;
+        private readonly EventStoreIntegrationContext eventStoreContainer;
         private readonly EventGenerator eventGenerator;
         private readonly TestDataContext testDataContext;
 
         public SaveEventsStreamSteps(
-            InProcEventStoreIntegrationContext eventStoreContainer,
+            EventStoreIntegrationContext eventStoreContainer,
             EventGenerator eventGenerator,
             TestDataContext testDataContext)
         {
