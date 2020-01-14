@@ -3,14 +3,14 @@
 #---------------------------------#
 
 # version format
-version: 2.2.{build}
+version: 2.4.{build}
 
 # you can use {branch} name in version format too
 # version: 1.0.{build}-{branch}
 
 environment:
 #  standard_version: '2.2.$(appveyor_build_number)'
-  standard_version: '2.3.2'
+  standard_version: '2.4.1'
 
 
 before_build:
@@ -126,7 +126,7 @@ deploy:
     # Deploying to NuGet feed
   - provider: NuGet
     api_key:
-      secure: +tceHEN4n1HCeAOyBGT3/7PJMmGGv9LPcLN38Q0hNJpJS6C+h3PyCt8wxSwe/LwZ
+      secure: qTUJuiOZcGz/5ZjxlDdMbpOrFy+jifEgSJebflyaWe2FSIfu/V2I5zEXhThhXBvJ
     skip_symbols: false
     artifact: /.*\.nupkg/
 

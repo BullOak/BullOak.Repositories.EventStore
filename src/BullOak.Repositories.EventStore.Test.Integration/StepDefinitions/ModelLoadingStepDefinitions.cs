@@ -21,18 +21,24 @@
             this.testDataContext = testDataContext ?? throw new ArgumentNullException(nameof(testDataContext));
         }
 
+        [When("I load my entity ignoring any errors")]
+        public async Task WhenILoadIgnoringAnyPreviousErrors()
+        {
+            using (var session = await eventStoreContainer.StartSession(testDataContext.CurrentStreamId))
+            {
+                testDataContext.LatestLoadedState = session.GetCurrentState();
+            }
+        }
+
         [When(@"I load my entity")]
         public async Task WhenILoadMyEntity()
         {
             if (testDataContext.RecordedException != null) return;
 
             testDataContext.RecordedException = await Record.ExceptionAsync(async () =>
-            {
-                using (var session = await eventStoreContainer.StartSession(testDataContext.CurrentStreamId))
                 {
-                    testDataContext.LatestLoadedState = session.GetCurrentState();
-                }
-            });
+                    await WhenILoadIgnoringAnyPreviousErrors();
+                });
         }
 
         [When(@"I load my entity through the read-only repository")]

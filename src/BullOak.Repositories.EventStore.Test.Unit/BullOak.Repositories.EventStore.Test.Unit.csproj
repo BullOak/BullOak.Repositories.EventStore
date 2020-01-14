@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BullOak.Repositories" Version="2.3.1" />
+    <PackageReference Include="BullOak.Repositories" Version="2.4.2" />
   </ItemGroup>
 
 </Project>

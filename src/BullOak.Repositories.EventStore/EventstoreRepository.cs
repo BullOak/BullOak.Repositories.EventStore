@@ -13,19 +13,28 @@
         private static readonly Task<bool> falseResult = Task.FromResult(false);
         private readonly IHoldAllConfiguration configs;
         private readonly IEventStoreConnection connection;
+        private readonly IValidateState<TState> stateValidator;
 
-        public EventStoreRepository(IHoldAllConfiguration configs, IEventStoreConnection connection)
+        private static AlwaysPassValidator<TState> defaultValidator = new AlwaysPassValidator<TState>();
+
+        public EventStoreRepository(IValidateState<TState> stateValidator, IHoldAllConfiguration configs, IEventStoreConnection connection)
         {
+            this.stateValidator = stateValidator ?? throw new ArgumentNullException(nameof(stateValidator));
             this.configs = configs ?? throw new ArgumentNullException(nameof(connection));
             this.connection = connection ?? throw new ArgumentNullException(nameof(connection));
         }
+
+        public EventStoreRepository(IHoldAllConfiguration configs,
+            IEventStoreConnection connection)
+            : this(defaultValidator, configs, connection)
+        { }
 
         public async Task<IManageSessionOf<TState>> BeginSessionFor(TId id, bool throwIfNotExists = false)
         {
             if (throwIfNotExists && !(await Contains(id)))
                 throw new StreamNotFoundException(id.ToString());
 
-            var session = new EventStoreSession<TState>(configs, connection, id.ToString());
+            var session = new EventStoreSession<TState>(stateValidator, configs, connection, id.ToString());
             await session.Initialize();
 
             return session;

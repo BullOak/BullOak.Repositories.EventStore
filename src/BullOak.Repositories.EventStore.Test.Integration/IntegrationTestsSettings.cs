@@ -2,6 +2,7 @@ namespace BullOak.Repositories.EventStore.Test.Integration
 {
     using System;
     using System.IO;
+    using System.Reflection;
     using System.Text;
     using Microsoft.Extensions.Configuration;
     using BullOak.Repositories.EventStore.Test.Integration.Contexts.EventStoreIsolation;
@@ -48,11 +49,8 @@ namespace BullOak.Repositories.EventStore.Test.Integration
 
         static IntegrationTestsSettings()
         {
-            var assemblyPath = (new System.Uri(typeof(IntegrationTestsSettings).Assembly.CodeBase)).AbsolutePath;
-            var currentDir = new DirectoryInfo(Path.GetDirectoryName(assemblyPath)).FullName;
-
             var configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.SetBasePath(currentDir);
+            configurationBuilder.SetBasePath(CurrentDirectoryInfoProvider.Get().FullName);
             configurationBuilder.AddJsonFile("appsettings.json", true);
             var configuration = configurationBuilder.Build();
 

@@ -20,19 +20,21 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/BullOak/BullOak</PackageProjectUrl>
     <RepositoryUrl>https://github.com/BullOak/BullOak</RepositoryUrl>
-    <PackageIcon>icon256.png</PackageIcon>
+    <PackageIcon>icon128.png</PackageIcon>
+    <PackageIconUrl>https://raw.githubusercontent.com/BullOak/BullOak/master/icons/Icon128.png</PackageIconUrl>
     <PackageTags>CQRS EventStourcing event-driven repository repositories DDD domain-driven-design</PackageTags>
     <Version>2.0.2</Version>
     <AssemblyVersion>2.0.2.0</AssemblyVersion>
     <FileVersion>2.0.2.0</FileVersion>
   </PropertyGroup>
-  <ItemGroup>
-      <None Include="..\..\icons\icon256.png" Pack="true" PackagePath="\"/>
-  </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BullOak.Repositories" Version="2.3.1" />
-    <PackageReference Include="EventStore.Client" Version="5.0.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+      <None Include="..\..\icons\icon128.png" Pack="true" PackagePath="" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="BullOak.Repositories" Version="2.4.2" />
+    <PackageReference Include="EventStore.Client" Version="5.0.5" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 </Project>
