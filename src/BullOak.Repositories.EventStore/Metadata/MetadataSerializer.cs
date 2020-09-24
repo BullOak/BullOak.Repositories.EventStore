@@ -1,6 +1,5 @@
 ﻿namespace BullOak.Repositories.EventStore.Metadata
 {
-    using System;
     using System.Text;
     using Newtonsoft.Json;
 
@@ -11,7 +10,7 @@
         public static byte[] Serialize(EventMetadata_V2 metadata)
             => Encoding.GetBytes(JsonConvert.SerializeObject(metadata));
 
-        public static (EventMetadata_V2 metadata, int version) DeserializeMetadata(byte[] metadata)
+        public static (IHoldMetadata metadata, int version) DeserializeMetadata(byte[] metadata)
         {
             var data = Encoding.GetString(metadata);
             var asJson = Newtonsoft.Json.Linq.JObject.Parse(data);

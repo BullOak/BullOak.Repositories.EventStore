@@ -4,7 +4,7 @@
 
     internal class MetadataFactory
     {
-        internal static (EventMetadata_V2 metadata,int version) GetMetadataFrom(int metadataVersion, JObject asJson)
+        internal static (IHoldMetadata metadata,int version) GetMetadataFrom(int metadataVersion, JObject asJson)
         {
             switch (metadataVersion)
             {

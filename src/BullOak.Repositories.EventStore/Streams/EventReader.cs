@@ -21,7 +21,7 @@
             eventStoreConnection = connection ?? throw new ArgumentNullException(nameof(connection));
         }
 
-        public async Task<StreamReadResults> ReadFrom(string streamId, DateTime? asOf = null)
+        public async Task<StreamReadResults> ReadFrom(string streamId, DateTime? upTo = null)
         {
             checked
             {
@@ -43,17 +43,24 @@
                         break;
                     }
 
-                    //ItemWithType to ItemWithMetadata?
-
                     nextSliceStart = currentSlice.NextEventNumber;
                     var newEvents =
                         currentSlice.Events
                             .Select(x => x.ToItemWithType(stateFactory))
-                            .TakeWhile(@event =>
+                            .TakeWhile(deserialised =>
                             {
-                                foundSoftDelete = @event.Item1.IsSoftDeleteEvent();
+                                if (upTo.HasValue)
+                                {
+                                    if (!deserialised.Metadata.ShouldInclude(upTo.Value))
+                                        return false;
+                                }
+
+                                foundSoftDelete = deserialised.Item.IsSoftDeleteEvent();
+
                                 return !foundSoftDelete;
-                            });
+                            })
+                            .Select(x => x.Item);
+
                     events.AddRange(newEvents);
 
                     if (currentVersion == -1)

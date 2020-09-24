@@ -20,7 +20,7 @@
 
         public static EventData CreateEventData(this ItemWithType @event)
         {
-            var metadata = EventMetadata_V2.From(@event);
+            var metadata = EventMetadata_V2.From(@event, (MetadataProperties.Timestamp, DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")));
 
             var eventAsJson = JObject.FromObject(@event.instance);
             eventAsJson.Remove(CanEditJsonFieldName);

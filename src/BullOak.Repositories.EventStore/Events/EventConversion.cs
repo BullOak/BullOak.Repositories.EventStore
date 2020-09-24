@@ -16,7 +16,7 @@
 
     internal static class EventConversion
     {
-        public static (ItemWithType, EventMetadata_V2) ToItemWithType(this ResolvedEvent resolvedEvent, ICreateStateInstances stateFactory)
+        public static (ItemWithType Item, EventMetadata_V2 Metadata) ToItemWithType(this ResolvedEvent resolvedEvent, ICreateStateInstances stateFactory)
         {
             var serializedEvent = System.Text.Encoding.UTF8.GetString(resolvedEvent.Event.Data);
 
