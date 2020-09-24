@@ -1,19 +1,26 @@
 ﻿namespace BullOak.Repositories.EventStore.Events
 {
+    using global::EventStore.ClientAPI;
+    using Metadata;
+    using Newtonsoft.Json;
+    using StateEmit;
     using System;
     using System.Linq;
-    using BullOak.Repositories.EventStore.Metadata;
-    using BullOak.Repositories.StateEmit;
-    using global::EventStore.ClientAPI;
-    using Newtonsoft.Json;
 
-    public static class EventConversion
+    // public struct ItemWithMetadata
+    // {
+    //     public readonly Type type;
+    //     public readonly object instance;
+    //     public DateTime? AsOf;
+    // }
+
+    internal static class EventConversion
     {
-        public static ItemWithType ToItemWithType(this ResolvedEvent resolvedEvent, ICreateStateInstances stateFactory)
+        public static (ItemWithType, EventMetadata_V2) ToItemWithType(this ResolvedEvent resolvedEvent, ICreateStateInstances stateFactory)
         {
             var serializedEvent = System.Text.Encoding.UTF8.GetString(resolvedEvent.Event.Data);
 
-            Type type = ReadTypeFromMetadata(resolvedEvent);
+            var (metadata, type) = ReadTypeFromMetadata(resolvedEvent);
 
             object @event;
             if (type.IsInterface)
@@ -32,17 +39,18 @@
             else
                 @event = JsonConvert.DeserializeObject(serializedEvent, type);
 
-            return new ItemWithType(@event, type);
+            return (new ItemWithType(@event, type), metadata);
         }
 
-        private static Type ReadTypeFromMetadata(ResolvedEvent resolvedEvent)
+        private static (EventMetadata_V2 metadata, Type type) ReadTypeFromMetadata(ResolvedEvent resolvedEvent)
         {
             Type type;
-            (IHoldMetadata metadata, int version) metadata;
+            (EventMetadata_V2 metadata, int version) metadata;
 
             if (resolvedEvent.Event.Metadata == null || resolvedEvent.Event.Metadata.Length == 0)
             {
                 type = Type.GetType(resolvedEvent.Event.EventType);
+                return (null, type);
             }
             else
             {
@@ -52,7 +60,7 @@
                     .FirstOrDefault(x => x != null);
             }
 
-            return type;
+            return (metadata.metadata, type);
         }
     }
 }

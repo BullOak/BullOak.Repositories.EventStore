@@ -29,13 +29,13 @@
             : this(defaultValidator, configs, connection)
         { }
 
-        public async Task<IManageSessionOf<TState>> BeginSessionFor(TId id, bool throwIfNotExists = false)
+        public async Task<IManageSessionOf<TState>> BeginSessionFor(TId id, bool throwIfNotExists = false, DateTime? upTo = null)
         {
             if (throwIfNotExists && !(await Contains(id)))
                 throw new StreamNotFoundException(id.ToString());
 
             var session = new EventStoreSession<TState>(stateValidator, configs, connection, id.ToString());
-            await session.Initialize();
+            await session.Initialize(upTo);
 
             return session;
         }
@@ -55,7 +55,7 @@
                 // If the last event is a soft delete then we consider the stream to not exist
                 if (eventsTail.Events.Length > 0)
                 {
-                    var @event = eventsTail.Events[0].ToItemWithType(configs.StateFactory);
+                    var (@event, metdata) = eventsTail.Events[0].ToItemWithType(configs.StateFactory);
                     return !@event.IsSoftDeleteEvent();
                 }
 

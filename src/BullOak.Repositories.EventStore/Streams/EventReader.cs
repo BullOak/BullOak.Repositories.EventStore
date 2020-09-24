@@ -1,12 +1,12 @@
-﻿namespace BullOak.Repositories.EventStore
+﻿namespace BullOak.Repositories.EventStore.Streams
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using BullOak.Repositories.EventStore.Events;
-    using BullOak.Repositories.StateEmit;
+    using Events;
     using global::EventStore.ClientAPI;
+    using StateEmit;
 
     internal class EventReader : IReadEventsFromStream
     {
@@ -21,7 +21,7 @@
             eventStoreConnection = connection ?? throw new ArgumentNullException(nameof(connection));
         }
 
-        public async Task<StreamReadResults> ReadFrom(string streamId)
+        public async Task<StreamReadResults> ReadFrom(string streamId, DateTime? asOf = null)
         {
             checked
             {
@@ -43,12 +43,15 @@
                         break;
                     }
 
+                    //ItemWithType to ItemWithMetadata?
+
                     nextSliceStart = currentSlice.NextEventNumber;
                     var newEvents =
-                        currentSlice.Events.Select(x => x.ToItemWithType(stateFactory))
+                        currentSlice.Events
+                            .Select(x => x.ToItemWithType(stateFactory))
                             .TakeWhile(@event =>
                             {
-                                foundSoftDelete = @event.IsSoftDeleteEvent();
+                                foundSoftDelete = @event.Item1.IsSoftDeleteEvent();
                                 return !foundSoftDelete;
                             });
                     events.AddRange(newEvents);

@@ -1,5 +1,6 @@
 ﻿namespace BullOak.Repositories.EventStore.Metadata
 {
+    using System;
     using System.Text;
     using Newtonsoft.Json;
 
@@ -7,15 +8,15 @@
     {
         public static readonly Encoding Encoding = Encoding.UTF8;
 
-        public static byte[] Serialize(IHoldMetadata metadata)
+        public static byte[] Serialize(EventMetadata_V2 metadata)
             => Encoding.GetBytes(JsonConvert.SerializeObject(metadata));
 
-        public static (IHoldMetadata metadata, int version) DeserializeMetadata(byte[] metadata)
+        public static (EventMetadata_V2 metadata, int version) DeserializeMetadata(byte[] metadata)
         {
             var data = Encoding.GetString(metadata);
             var asJson = Newtonsoft.Json.Linq.JObject.Parse(data);
 
-            var metadataVersion = asJson[nameof(IHoldMetadata.MetadataVersion)].ToObject<int>();
+            var metadataVersion = asJson[nameof(EventMetadata_V2.MetadataVersion)].ToObject<int>();
 
             return MetadataFactory.GetMetadataFrom(metadataVersion, asJson);
         }

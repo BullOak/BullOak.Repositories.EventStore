@@ -10,6 +10,7 @@
     using System.Threading.Tasks;
     using BullOak.Repositories.EventStore.Metadata;
     using Newtonsoft.Json.Linq;
+    using Streams;
 
     public class EventStoreSession<TState> : BaseEventSourcedSession<TState, int>
     {
@@ -39,11 +40,11 @@
             this.eventReader = new EventReader(eventStoreConnection, configuration);
         }
 
-        public async Task Initialize()
+        public async Task Initialize(DateTime? upTo = null)
         {
             CheckDisposedState();
             //TODO: user credentials
-            var streamData = await eventReader.ReadFrom(streamName);
+            var streamData = await eventReader.ReadFrom(streamName, upTo);
             LoadFromEvents(streamData.events.ToArray(), streamData.streamVersion);
         }
 
