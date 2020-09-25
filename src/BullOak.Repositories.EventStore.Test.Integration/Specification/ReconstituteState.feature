@@ -24,7 +24,7 @@ Scenario: Reconstitute state from one event stored using interface
 	Then the load process should succeed
 	And HighOrder property should be 2
 
-Scenario: Reconstitute state up to a given datet
+Scenario: Reconstitute state up to a given date
 	Given a new stream
 	And 3 new events with the following timestamps
 		| Timestamp           |

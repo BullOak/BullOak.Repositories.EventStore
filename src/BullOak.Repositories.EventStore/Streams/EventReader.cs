@@ -49,15 +49,18 @@
                             .Select(x => x.ToItemWithType(stateFactory))
                             .TakeWhile(deserialised =>
                             {
+                                foundSoftDelete = deserialised.Item.IsSoftDeleteEvent();
+                                return !foundSoftDelete;
+                            })
+                            .Where(deserialised =>
+                            {
                                 if (upTo.HasValue)
                                 {
                                     if (!deserialised.Metadata.ShouldInclude(upTo.Value))
                                         return false;
                                 }
 
-                                foundSoftDelete = deserialised.Item.IsSoftDeleteEvent();
-
-                                return !foundSoftDelete;
+                                return true;
                             })
                             .Select(x => x.Item);
 

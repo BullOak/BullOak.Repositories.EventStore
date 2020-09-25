@@ -105,7 +105,9 @@
                     throw new InvalidOperationException("Eventstore data write outcome unexpected. NextExpectedVersion is null");
                 }
 
-                await Initialize();
+                //TODO: is this necessary?? All tests still pass with it removed
+                //await Initialize();
+
                 ConsiderSessionDisposed();
                 return (int)writeResult.NextExpectedVersion.Value;
             }
