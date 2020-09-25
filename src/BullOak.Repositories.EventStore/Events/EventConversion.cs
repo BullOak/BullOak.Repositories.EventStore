@@ -7,16 +7,9 @@
     using System;
     using System.Linq;
 
-    // public struct ItemWithMetadata
-    // {
-    //     public readonly Type type;
-    //     public readonly object instance;
-    //     public DateTime? AsOf;
-    // }
-
     internal static class EventConversion
     {
-        public static (ItemWithType Item, EventMetadata_V2 Metadata) ToItemWithType(this ResolvedEvent resolvedEvent, ICreateStateInstances stateFactory)
+        public static (ItemWithType Item, IHoldMetadata Metadata) ToItemWithType(this ResolvedEvent resolvedEvent, ICreateStateInstances stateFactory)
         {
             var serializedEvent = System.Text.Encoding.UTF8.GetString(resolvedEvent.Event.Data);
 
@@ -42,10 +35,10 @@
             return (new ItemWithType(@event, type), metadata);
         }
 
-        private static (EventMetadata_V2 metadata, Type type) ReadTypeFromMetadata(ResolvedEvent resolvedEvent)
+        private static (IHoldMetadata metadata, Type type) ReadTypeFromMetadata(ResolvedEvent resolvedEvent)
         {
             Type type;
-            (EventMetadata_V2 metadata, int version) metadata;
+            (IHoldMetadata metadata, int version) metadata;
 
             if (resolvedEvent.Event.Metadata == null || resolvedEvent.Event.Metadata.Length == 0)
             {

@@ -7,7 +7,7 @@
     {
         public static readonly Encoding Encoding = Encoding.UTF8;
 
-        public static byte[] Serialize(EventMetadata_V2 metadata)
+        public static byte[] Serialize(IHoldMetadata metadata)
             => Encoding.GetBytes(JsonConvert.SerializeObject(metadata));
 
         public static (IHoldMetadata metadata, int version) DeserializeMetadata(byte[] metadata)
