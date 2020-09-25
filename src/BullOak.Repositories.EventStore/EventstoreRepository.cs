@@ -31,13 +31,13 @@
             : this(defaultValidator, configs, connection)
         { }
 
-        public async Task<IManageSessionOf<TState>> BeginSessionFor(TId id, bool throwIfNotExists = false, DateTime? upTo = null)
+        public async Task<IManageSessionOf<TState>> BeginSessionFor(TId id, bool throwIfNotExists = false, DateTime? appliesAt = null)
         {
             if (throwIfNotExists && !(await Contains(id)))
                 throw new StreamNotFoundException(id.ToString());
 
             var session = new EventStoreSession<TState>(stateValidator, configs, connection, id.ToString(), dateTimeProvider);
-            await session.Initialize(upTo);
+            await session.Initialize(appliesAt);
 
             return session;
         }

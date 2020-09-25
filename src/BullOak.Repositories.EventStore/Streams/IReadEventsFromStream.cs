@@ -5,6 +5,6 @@
 
     internal interface IReadEventsFromStream
     {
-        Task<StreamReadResults> ReadFrom(string streamId, DateTime? upTo = null);
+        Task<StreamReadResults> ReadFrom(string streamId, DateTime? appliesAt = null);
     }
 }

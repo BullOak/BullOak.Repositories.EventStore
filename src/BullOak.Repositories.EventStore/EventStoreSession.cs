@@ -47,11 +47,11 @@
             this.eventReader = new EventReader(eventStoreConnection, configuration);
         }
 
-        public async Task Initialize(DateTime? upTo = null)
+        public async Task Initialize(DateTime? appliesAt = null)
         {
             CheckDisposedState();
             //TODO: user credentials
-            var streamData = await eventReader.ReadFrom(streamName, upTo);
+            var streamData = await eventReader.ReadFrom(streamName, appliesAt);
             LoadFromEvents(streamData.events.ToArray(), streamData.streamVersion);
         }
 

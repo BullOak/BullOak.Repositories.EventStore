@@ -5,7 +5,7 @@
 
     internal static class MetadataExtensions
     {
-        public static bool ShouldInclude(this IHoldMetadata metadata, DateTime upTo)
+        public static bool ShouldInclude(this IHoldMetadata metadata, DateTime appliesAt)
         {
             if (metadata.Properties.TryGetValue(MetadataProperties.Timestamp,
                 out var eventTimestamp))
@@ -13,7 +13,7 @@
                 DateTime timestamp;
                 if (DateTime.TryParse(eventTimestamp, out timestamp))
                 {
-                    if (timestamp > upTo) return false;
+                    if (timestamp > appliesAt) return false;
                 }
             }
 

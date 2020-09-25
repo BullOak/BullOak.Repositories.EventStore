@@ -77,9 +77,9 @@
             eventStoreIsolation?.Dispose();
         }
 
-        public async Task<IManageSessionOf<IHoldHigherOrder>> StartSession(Guid currentStreamId, DateTime? applysAt = null)
+        public async Task<IManageSessionOf<IHoldHigherOrder>> StartSession(Guid currentStreamId, DateTime? appliesAt = null)
         {
-            var session = await repository.BeginSessionFor(currentStreamId.ToString(), upTo:applysAt).ConfigureAwait(false);
+            var session = await repository.BeginSessionFor(currentStreamId.ToString(), appliesAt:appliesAt).ConfigureAwait(false);
             return session;
 
         }

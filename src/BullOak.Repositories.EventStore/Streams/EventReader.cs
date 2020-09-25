@@ -21,7 +21,7 @@
             eventStoreConnection = connection ?? throw new ArgumentNullException(nameof(connection));
         }
 
-        public async Task<StreamReadResults> ReadFrom(string streamId, DateTime? upTo = null)
+        public async Task<StreamReadResults> ReadFrom(string streamId, DateTime? appliesAt = null)
         {
             checked
             {
@@ -54,9 +54,9 @@
                             })
                             .Where(deserialised =>
                             {
-                                if (upTo.HasValue)
+                                if (appliesAt.HasValue)
                                 {
-                                    if (!deserialised.Metadata.ShouldInclude(upTo.Value))
+                                    if (!deserialised.Metadata.ShouldInclude(appliesAt.Value))
                                         return false;
                                 }
 
