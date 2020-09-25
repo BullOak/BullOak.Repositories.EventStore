@@ -180,13 +180,13 @@ this.ScenarioInitialize(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableFactAttribute(DisplayName="Reconstitute state up to a given datet")]
+        [Xunit.SkippableFactAttribute(DisplayName="Reconstitute state up to a given date")]
         [Xunit.TraitAttribute("FeatureTitle", "ReconstituteState")]
-        [Xunit.TraitAttribute("Description", "Reconstitute state up to a given datet")]
-        public virtual void ReconstituteStateUpToAGivenDatet()
+        [Xunit.TraitAttribute("Description", "Reconstitute state up to a given date")]
+        public virtual void ReconstituteStateUpToAGivenDate()
         {
             string[] tagsOfScenario = ((string[])(null));
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Reconstitute state up to a given datet", null, ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Reconstitute state up to a given date", null, ((string[])(null)));
 #line 27
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
