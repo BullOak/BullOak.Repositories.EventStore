@@ -15,6 +15,9 @@
     public class EventStoreSession<TState> : BaseEventSourcedSession<TState, int>
     {
         private static readonly Task<int> done = Task.FromResult(0);
+
+        private readonly IDateTimeProvider dateTimeProvider;
+
         private readonly IEventStoreConnection eventStoreConnection;
         private readonly string streamName;
         private bool isInDisposedState = false;
@@ -23,19 +26,24 @@
 
         public EventStoreSession(IHoldAllConfiguration configuration,
             IEventStoreConnection eventStoreConnection,
-            string streamName)
+            string streamName,
+            IDateTimeProvider dateTimeProvider = null)
             : this(defaultValidator, configuration, eventStoreConnection, streamName)
-        { }
+        {
+            this.dateTimeProvider = dateTimeProvider ?? new SystemDateTimeProvider();
+        }
 
         public EventStoreSession(IValidateState<TState> stateValidator,
             IHoldAllConfiguration configuration,
             IEventStoreConnection eventStoreConnection,
-            string streamName)
+            string streamName,
+            IDateTimeProvider dateTimeProvider = null)
             : base(stateValidator, configuration)
         {
             this.eventStoreConnection =
                 eventStoreConnection ?? throw new ArgumentNullException(nameof(eventStoreConnection));
             this.streamName = streamName ?? throw new ArgumentNullException(nameof(streamName));
+            this.dateTimeProvider = dateTimeProvider ?? new SystemDateTimeProvider();
 
             this.eventReader = new EventReader(eventStoreConnection, configuration);
         }
@@ -88,7 +96,7 @@
                 writeResult = await eventStoreConnection.ConditionalAppendToStreamAsync(
                         streamName,
                         this.ConcurrencyId,
-                        eventsToAdd.Select(eventObject => eventObject.CreateEventData()))
+                        eventsToAdd.Select(eventObject => eventObject.CreateEventData(dateTimeProvider)))
                     .ConfigureAwait(false);
 
                 StreamAppendHelpers.CheckConditionalWriteResultStatus(writeResult, streamName);

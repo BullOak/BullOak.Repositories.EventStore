@@ -22,6 +22,8 @@
         private static IEventStoreConnection connection;
         private static IDisposable eventStoreIsolation;
 
+        public TestDateTimeProvider DateTimeProvider { get; }
+
         public EventStoreIntegrationContext(PassThroughValidator validator)
         {
             var configuration = Configuration.Begin()
@@ -33,6 +35,8 @@
                .AndNoMoreAppliers()
                .WithNoUpconverters()
                .Build();
+
+            DateTimeProvider = new TestDateTimeProvider();
 
             repository = new EventStoreRepository<string, IHoldHigherOrder>(validator, configuration, GetConnection());
             readOnlyRepository = new EventStoreReadOnlyRepository<string, IHoldHigherOrder>(configuration, GetConnection());
@@ -73,9 +77,9 @@
             eventStoreIsolation?.Dispose();
         }
 
-        public async Task<IManageSessionOf<IHoldHigherOrder>> StartSession(Guid currentStreamId)
+        public async Task<IManageSessionOf<IHoldHigherOrder>> StartSession(Guid currentStreamId, DateTime? applysAt = null)
         {
-            var session = await repository.BeginSessionFor(currentStreamId.ToString()).ConfigureAwait(false);
+            var session = await repository.BeginSessionFor(currentStreamId.ToString(), upTo:applysAt).ConfigureAwait(false);
             return session;
 
         }
@@ -133,5 +137,18 @@
                         null);
                 }));
         }
+    }
+
+    public class TestDateTimeProvider : IDateTimeProvider
+    {
+        private readonly Queue<DateTime> times = new Queue<DateTime>();
+
+        public void AddTestTimes(IEnumerable<DateTime> times)
+        {
+            foreach (var time in times)
+                this.times.Enqueue(time);
+        }
+
+        public DateTime UtcNow => times.Dequeue();
     }
 }

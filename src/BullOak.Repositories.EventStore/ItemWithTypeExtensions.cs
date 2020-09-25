@@ -18,9 +18,9 @@
                                    + CanEditJsonFieldName.Substring(1);
         }
 
-        public static EventData CreateEventData(this ItemWithType @event)
+        public static EventData CreateEventData(this ItemWithType @event, IDateTimeProvider dateTimeProvider)
         {
-            var metadata = EventMetadata_V2.From(@event, (MetadataProperties.Timestamp, DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")));
+            var metadata = EventMetadata_V2.From(@event, (MetadataProperties.Timestamp, dateTimeProvider.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")));
 
             var eventAsJson = JObject.FromObject(@event.instance);
             eventAsJson.Remove(CanEditJsonFieldName);

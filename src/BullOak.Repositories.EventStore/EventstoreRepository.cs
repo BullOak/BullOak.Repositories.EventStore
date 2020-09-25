@@ -13,15 +13,17 @@
         private static readonly Task<bool> falseResult = Task.FromResult(false);
         private readonly IHoldAllConfiguration configs;
         private readonly IEventStoreConnection connection;
+        private readonly IDateTimeProvider dateTimeProvider;
         private readonly IValidateState<TState> stateValidator;
 
         private static AlwaysPassValidator<TState> defaultValidator = new AlwaysPassValidator<TState>();
 
-        public EventStoreRepository(IValidateState<TState> stateValidator, IHoldAllConfiguration configs, IEventStoreConnection connection)
+        public EventStoreRepository(IValidateState<TState> stateValidator, IHoldAllConfiguration configs, IEventStoreConnection connection, IDateTimeProvider dateTimeProvider = null)
         {
             this.stateValidator = stateValidator ?? throw new ArgumentNullException(nameof(stateValidator));
             this.configs = configs ?? throw new ArgumentNullException(nameof(connection));
             this.connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            this.dateTimeProvider = dateTimeProvider ?? new SystemDateTimeProvider();
         }
 
         public EventStoreRepository(IHoldAllConfiguration configs,
@@ -92,7 +94,7 @@
         }
 
         public Task SoftDeleteByEvent(TId selector)
-            => SoftDeleteByEventImpl(selector, DefaultSoftDeleteEvent.ItemWithType.CreateEventData());
+            => SoftDeleteByEventImpl(selector, DefaultSoftDeleteEvent.ItemWithType.CreateEventData(dateTimeProvider));
 
         public async Task SoftDeleteByEvent<TSoftDeleteEventType>(TId selector,
             Func<TSoftDeleteEventType> createSoftDeleteEventFunc)
@@ -100,7 +102,7 @@
         {
             if (createSoftDeleteEventFunc == null) throw new ArgumentNullException(nameof(createSoftDeleteEventFunc));
 
-            await SoftDeleteByEventImpl(selector, new ItemWithType(createSoftDeleteEventFunc()).CreateEventData());
+            await SoftDeleteByEventImpl(selector, new ItemWithType(createSoftDeleteEventFunc()).CreateEventData(dateTimeProvider));
         }
 
         private async Task SoftDeleteByEventImpl(TId selector, EventData softDeleteEvent)
