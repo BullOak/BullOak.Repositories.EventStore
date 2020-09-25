@@ -36,7 +36,7 @@
             if (throwIfNotExists && !(await Contains(id)))
                 throw new StreamNotFoundException(id.ToString());
 
-            var session = new EventStoreSession<TState>(stateValidator, configs, connection, id.ToString());
+            var session = new EventStoreSession<TState>(stateValidator, configs, connection, id.ToString(), dateTimeProvider);
             await session.Initialize(upTo);
 
             return session;

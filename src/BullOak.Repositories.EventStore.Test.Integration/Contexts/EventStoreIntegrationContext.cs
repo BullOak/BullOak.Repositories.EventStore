@@ -38,7 +38,7 @@
 
             DateTimeProvider = new TestDateTimeProvider();
 
-            repository = new EventStoreRepository<string, IHoldHigherOrder>(validator, configuration, GetConnection());
+            repository = new EventStoreRepository<string, IHoldHigherOrder>(validator, configuration, GetConnection(), DateTimeProvider);
             readOnlyRepository = new EventStoreReadOnlyRepository<string, IHoldHigherOrder>(configuration, GetConnection());
         }
 
@@ -149,6 +149,13 @@
                 this.times.Enqueue(time);
         }
 
-        public DateTime UtcNow => times.Dequeue();
+        public DateTime UtcNow
+        {
+            get
+            {
+                var t = times.Any() ? times.Dequeue() : DateTime.UtcNow.AddHours(-5);
+                return t;
+            }
+        }
     }
 }

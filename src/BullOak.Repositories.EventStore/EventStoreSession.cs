@@ -28,9 +28,8 @@
             IEventStoreConnection eventStoreConnection,
             string streamName,
             IDateTimeProvider dateTimeProvider = null)
-            : this(defaultValidator, configuration, eventStoreConnection, streamName)
+            : this(defaultValidator, configuration, eventStoreConnection, streamName, dateTimeProvider)
         {
-            this.dateTimeProvider = dateTimeProvider ?? new SystemDateTimeProvider();
         }
 
         public EventStoreSession(IValidateState<TState> stateValidator,

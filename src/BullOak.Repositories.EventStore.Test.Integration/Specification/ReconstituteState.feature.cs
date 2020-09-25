@@ -180,13 +180,13 @@ this.ScenarioInitialize(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableFactAttribute(DisplayName="Reconstitute state up to a given date")]
+        [Xunit.SkippableFactAttribute(DisplayName="Reconstitute state up to a given datet")]
         [Xunit.TraitAttribute("FeatureTitle", "ReconstituteState")]
-        [Xunit.TraitAttribute("Description", "Reconstitute state up to a given date")]
-        public virtual void ReconstituteStateUpToAGivenDate()
+        [Xunit.TraitAttribute("Description", "Reconstitute state up to a given datet")]
+        public virtual void ReconstituteStateUpToAGivenDatet()
         {
             string[] tagsOfScenario = ((string[])(null));
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Reconstitute state up to a given date", null, ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Reconstitute state up to a given datet", null, ((string[])(null)));
 #line 27
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -217,7 +217,7 @@ this.ScenarioInitialize(scenarioInfo);
                 table1.AddRow(new string[] {
                             "2020-09-20 11:10:00"});
                 table1.AddRow(new string[] {
-                            "2020-09-25 11:10:00"});
+                            "2020-09-23 11:10:00"});
 #line 29
  testRunner.And("3 new events with the following timestamps", ((string)(null)), table1, "And ");
 #line hidden
@@ -225,7 +225,7 @@ this.ScenarioInitialize(scenarioInfo);
  testRunner.And("I try to save the new events in the stream through their interface", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
 #line 35
- testRunner.When("I load my entity as of \'2020-09-23 11:10:00\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+ testRunner.When("I load my entity as of \'2020-09-22 11:10:00\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
 #line 36
  testRunner.Then("the load process should succeed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");

@@ -13,8 +13,7 @@
                 DateTime timestamp;
                 if (DateTime.TryParse(eventTimestamp, out timestamp))
                 {
-                    if (upTo > timestamp)
-                        return false;
+                    if (timestamp > upTo) return false;
                 }
             }
 
