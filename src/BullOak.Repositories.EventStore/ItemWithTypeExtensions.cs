@@ -26,13 +26,12 @@
             var eventAsJson = JObject.FromObject(@event.instance);
             eventAsJson.Remove(CanEditJsonFieldName);
 
-            var eventData = new EventData(
+            return new EventData(
                 Guid.NewGuid(),
                 @event.type.Name,
                 true,
                 System.Text.Encoding.UTF8.GetBytes(eventAsJson.ToString()),
                 MetadataSerializer.Serialize(metadata));
-            return eventData;
         }
 
         public static bool IsSoftDeleteEvent(this ItemWithType @event)
