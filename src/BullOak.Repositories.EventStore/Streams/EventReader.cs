@@ -52,16 +52,7 @@
                                 foundSoftDelete = deserialised.Item.IsSoftDeleteEvent();
                                 return !foundSoftDelete;
                             })
-                            .Where(deserialised =>
-                            {
-                                if (appliesAt.HasValue)
-                                {
-                                    if (!deserialised.Metadata.ShouldInclude(appliesAt.Value))
-                                        return false;
-                                }
-
-                                return true;
-                            })
+                            .Where(deserialised => !appliesAt.HasValue || deserialised.Metadata.ShouldInclude(appliesAt.Value))
                             .Select(x => x.Item);
 
                     events.AddRange(newEvents);

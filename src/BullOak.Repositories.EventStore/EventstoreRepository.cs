@@ -1,16 +1,15 @@
 ﻿namespace BullOak.Repositories.EventStore
 {
-    using BullOak.Repositories.EventStore.Events;
-    using BullOak.Repositories.Exceptions;
-    using BullOak.Repositories.Repository;
-    using BullOak.Repositories.Session;
+    using Events;
+    using Exceptions;
+    using Repository;
+    using Session;
     using global::EventStore.ClientAPI;
     using System;
     using System.Threading.Tasks;
 
     public class EventStoreRepository<TId, TState> : IStartSessions<TId, TState>, IEventStoreStreamDeleter<TId>
     {
-        private static readonly Task<bool> falseResult = Task.FromResult(false);
         private readonly IHoldAllConfiguration configs;
         private readonly IEventStoreConnection connection;
         private readonly IDateTimeProvider dateTimeProvider;
@@ -57,7 +56,7 @@
                 // If the last event is a soft delete then we consider the stream to not exist
                 if (eventsTail.Events.Length > 0)
                 {
-                    var (@event, metdata) = eventsTail.Events[0].ToItemWithType(configs.StateFactory);
+                    var (@event, _) = eventsTail.Events[0].ToItemWithType(configs.StateFactory);
                     return !@event.IsSoftDeleteEvent();
                 }
 

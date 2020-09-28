@@ -16,6 +16,7 @@
             var (metadata, type) = ReadTypeFromMetadata(resolvedEvent);
 
             object @event;
+
             if (type.IsInterface)
             {
                 @event = stateFactory.GetState(type);
@@ -45,13 +46,11 @@
                 type = Type.GetType(resolvedEvent.Event.EventType);
                 return (null, type);
             }
-            else
-            {
-                metadata = MetadataSerializer.DeserializeMetadata(resolvedEvent.Event.Metadata);
-                type = AppDomain.CurrentDomain.GetAssemblies()
-                    .Select(x => x.GetType(metadata.metadata.EventTypeFQN))
-                    .FirstOrDefault(x => x != null);
-            }
+
+            metadata = MetadataSerializer.DeserializeMetadata(resolvedEvent.Event.Metadata);
+            type = AppDomain.CurrentDomain.GetAssemblies()
+                .Select(x => x.GetType(metadata.metadata.EventTypeFQN))
+                .FirstOrDefault(x => x != null);
 
             return (metadata.metadata, type);
         }
