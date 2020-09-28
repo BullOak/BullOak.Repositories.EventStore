@@ -15,7 +15,7 @@
             var data = Encoding.GetString(metadata);
             var asJson = Newtonsoft.Json.Linq.JObject.Parse(data);
 
-            var metadataVersion = asJson[nameof(IHoldMetadata.MetadataVersion)].ToObject<int>();
+            var metadataVersion = asJson[nameof(EventMetadata_V2.MetadataVersion)].ToObject<int>();
 
             return MetadataFactory.GetMetadataFrom(metadataVersion, asJson);
         }

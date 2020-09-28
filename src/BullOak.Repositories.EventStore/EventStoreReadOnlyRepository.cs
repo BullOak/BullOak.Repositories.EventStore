@@ -3,6 +3,7 @@
     using System;
     using System.Threading.Tasks;
     using global::EventStore.ClientAPI;
+    using Streams;
 
     public class EventStoreReadOnlyRepository<TId, TState> : IReadQueryModels<TId, TState>
     {

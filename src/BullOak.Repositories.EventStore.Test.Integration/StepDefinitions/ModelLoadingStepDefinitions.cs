@@ -41,6 +41,23 @@
                 });
         }
 
+        [When(@"I load my entity as of '(.*)'")]
+        public async Task WhenILoadMyEntityAsOf(string applyAtTimeStr)
+        {
+            var applyAtTime = DateTime.Parse(applyAtTimeStr);
+
+            if (testDataContext.RecordedException != null) return;
+
+            testDataContext.RecordedException = await Record.ExceptionAsync(async () =>
+            {
+                using (var session = await eventStoreContainer.StartSession(testDataContext.CurrentStreamId, applyAtTime))
+                {
+                    testDataContext.LatestLoadedState = session.GetCurrentState();
+                }
+            });
+        }
+
+
         [When(@"I load my entity through the read-only repository")]
         public async Task WhenILoadMyEntityThroughTheRead_OnlyRepository()
         {

@@ -1,9 +1,10 @@
-﻿namespace BullOak.Repositories.EventStore
+﻿namespace BullOak.Repositories.EventStore.Streams
 {
+    using System;
     using System.Threading.Tasks;
 
     internal interface IReadEventsFromStream
     {
-        Task<StreamReadResults> ReadFrom(string streamId);
+        Task<StreamReadResults> ReadFrom(string streamId, DateTime? appliesAt = null);
     }
 }

@@ -6,6 +6,7 @@
     using FluentAssertions;
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
     using TechTalk.SpecFlow;
     using Xunit;
@@ -49,6 +50,18 @@
             testDataContext.LastGeneratedEvents = events;
         }
 
+        [Given(@"(.*) new events with the following timestamps")]
+        public void GivenNewEventsWithTheFollowingTimestamps(int eventsNumber, Table table)
+        {
+            var events = eventGenerator.GenerateEvents(eventsNumber);
+
+            var times = table.Rows.Select(x => DateTime.Parse(x["Timestamp"]));
+            eventStoreContainer.DateTimeProvider.AddTestTimes(times);
+
+            testDataContext.LastGeneratedEvents = events;
+        }
+
+
         [Given(@"I try to save the new events in the stream through their interface")]
         [When(@"I try to save the new events in the stream through their interface")]
         public async Task GivenITryToSaveTheNewEventsInTheStreamThroughTheirInterface()
@@ -77,7 +90,7 @@
             testDataContext.RecordedException = await Record.ExceptionAsync(() =>
                 eventStoreContainer.AppendEventsToCurrentStream(
                     testDataContext.CurrentStreamId,
-                    testDataContext.LastGeneratedEvents));
+                    testDataContext.LastGeneratedEvents.ToArray()));
         }
 
         [Given(@"I soft-delete the stream")]

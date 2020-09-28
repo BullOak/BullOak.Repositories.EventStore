@@ -1,4 +1,4 @@
-﻿namespace BullOak.Repositories.EventStore
+﻿namespace BullOak.Repositories.EventStore.Streams
 {
     using System;
     using System.Collections.Generic;

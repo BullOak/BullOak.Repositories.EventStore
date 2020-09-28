@@ -1,27 +1,28 @@
 ﻿namespace BullOak.Repositories.EventStore
 {
-    using BullOak.Repositories.EventStore.Events;
-    using BullOak.Repositories.Exceptions;
-    using BullOak.Repositories.Repository;
-    using BullOak.Repositories.Session;
+    using Events;
+    using Exceptions;
+    using Repository;
+    using Session;
     using global::EventStore.ClientAPI;
     using System;
     using System.Threading.Tasks;
 
     public class EventStoreRepository<TId, TState> : IStartSessions<TId, TState>, IEventStoreStreamDeleter<TId>
     {
-        private static readonly Task<bool> falseResult = Task.FromResult(false);
         private readonly IHoldAllConfiguration configs;
         private readonly IEventStoreConnection connection;
+        private readonly IDateTimeProvider dateTimeProvider;
         private readonly IValidateState<TState> stateValidator;
 
         private static AlwaysPassValidator<TState> defaultValidator = new AlwaysPassValidator<TState>();
 
-        public EventStoreRepository(IValidateState<TState> stateValidator, IHoldAllConfiguration configs, IEventStoreConnection connection)
+        public EventStoreRepository(IValidateState<TState> stateValidator, IHoldAllConfiguration configs, IEventStoreConnection connection, IDateTimeProvider dateTimeProvider = null)
         {
             this.stateValidator = stateValidator ?? throw new ArgumentNullException(nameof(stateValidator));
             this.configs = configs ?? throw new ArgumentNullException(nameof(connection));
             this.connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            this.dateTimeProvider = dateTimeProvider ?? new SystemDateTimeProvider();
         }
 
         public EventStoreRepository(IHoldAllConfiguration configs,
@@ -29,13 +30,13 @@
             : this(defaultValidator, configs, connection)
         { }
 
-        public async Task<IManageSessionOf<TState>> BeginSessionFor(TId id, bool throwIfNotExists = false)
+        public async Task<IManageSessionOf<TState>> BeginSessionFor(TId id, bool throwIfNotExists = false, DateTime? appliesAt = null)
         {
             if (throwIfNotExists && !(await Contains(id)))
                 throw new StreamNotFoundException(id.ToString());
 
-            var session = new EventStoreSession<TState>(stateValidator, configs, connection, id.ToString());
-            await session.Initialize();
+            var session = new EventStoreSession<TState>(stateValidator, configs, connection, id.ToString(), dateTimeProvider);
+            await session.Initialize(appliesAt);
 
             return session;
         }
@@ -55,7 +56,7 @@
                 // If the last event is a soft delete then we consider the stream to not exist
                 if (eventsTail.Events.Length > 0)
                 {
-                    var @event = eventsTail.Events[0].ToItemWithType(configs.StateFactory);
+                    var (@event, _) = eventsTail.Events[0].ToItemWithType(configs.StateFactory);
                     return !@event.IsSoftDeleteEvent();
                 }
 
@@ -92,7 +93,7 @@
         }
 
         public Task SoftDeleteByEvent(TId selector)
-            => SoftDeleteByEventImpl(selector, DefaultSoftDeleteEvent.ItemWithType.CreateEventData());
+            => SoftDeleteByEventImpl(selector, DefaultSoftDeleteEvent.ItemWithType.CreateEventData(dateTimeProvider));
 
         public async Task SoftDeleteByEvent<TSoftDeleteEventType>(TId selector,
             Func<TSoftDeleteEventType> createSoftDeleteEventFunc)
@@ -100,7 +101,7 @@
         {
             if (createSoftDeleteEventFunc == null) throw new ArgumentNullException(nameof(createSoftDeleteEventFunc));
 
-            await SoftDeleteByEventImpl(selector, new ItemWithType(createSoftDeleteEventFunc()).CreateEventData());
+            await SoftDeleteByEventImpl(selector, new ItemWithType(createSoftDeleteEventFunc()).CreateEventData(dateTimeProvider));
         }
 
         private async Task SoftDeleteByEventImpl(TId selector, EventData softDeleteEvent)
