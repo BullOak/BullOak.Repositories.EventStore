@@ -1,9 +1,9 @@
 ﻿namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
 {
-    using BullOak.Repositories.Config;
-    using BullOak.Repositories.EventStore.Test.Integration.Components;
-    using BullOak.Repositories.EventStore.Test.Integration.Contexts.EventStoreIsolation;
-    using BullOak.Repositories.Session;
+    using Config;
+    using Components;
+    using EventStoreIsolation;
+    using Session;
     using global::EventStore.ClientAPI;
     using Newtonsoft.Json;
     using System;
@@ -149,13 +149,6 @@
                 this.times.Enqueue(time);
         }
 
-        public DateTime UtcNow
-        {
-            get
-            {
-                var t = times.Any() ? times.Dequeue() : DateTime.UtcNow.AddHours(-5);
-                return t;
-            }
-        }
+        public DateTime UtcNow => times.Any() ? times.Dequeue() : DateTime.UtcNow.AddHours(-5);
     }
 }
