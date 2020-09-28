@@ -84,6 +84,12 @@
 
         }
 
+        public async Task<IManageSessionOf<IHoldHigherOrder>> StartSession(string streamName, DateTime? appliesAt = null)
+        {
+            var session = await repository.BeginSessionForStreamCategory(streamName, appliesAt: appliesAt).ConfigureAwait(false);
+            return session;
+        }
+
         public async Task AppendEventsToCurrentStream(Guid id, MyEvent[] events)
         {
             using (var session = await StartSession(id))

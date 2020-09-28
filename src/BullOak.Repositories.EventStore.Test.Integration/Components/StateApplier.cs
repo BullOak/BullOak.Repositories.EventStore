@@ -1,7 +1,7 @@
 ﻿namespace BullOak.Repositories.EventStore.Test.Integration.Components
 {
-    using BullOak.Repositories.Appliers;
-    using BullOak.Repositories.EventStore.Events;
+    using Appliers;
+    using Events;
     using System;
 
     public class StateApplier : IApplyEvent<IHoldHigherOrder, MyEvent>

@@ -41,6 +41,14 @@
             return session;
         }
 
+        public async Task<IManageSessionOf<TState>> BeginSessionForStreamCategory(string streamName, DateTime? appliesAt = null)
+        {
+            var session = new EventStoreSession<TState>(stateValidator, configs, connection, $"ce-{streamName}", dateTimeProvider);
+            await session.Initialize(appliesAt);
+
+            return session;
+        }
+
         public async Task<bool> Contains(TId selector)
         {
             try

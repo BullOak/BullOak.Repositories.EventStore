@@ -61,7 +61,6 @@
             testDataContext.LastGeneratedEvents = events;
         }
 
-
         [Given(@"I try to save the new events in the stream through their interface")]
         [When(@"I try to save the new events in the stream through their interface")]
         public async Task GivenITryToSaveTheNewEventsInTheStreamThroughTheirInterface()
