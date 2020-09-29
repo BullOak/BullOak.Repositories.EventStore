@@ -79,7 +79,7 @@
                 long nextSliceStart = StreamPosition.Start;
                 do
                 {
-                    var currentSlice = await eventStoreConnection.ReadStreamEventsForwardAsync(categoryName, nextSliceStart,
+                    var currentSlice = await eventStoreConnection.ReadStreamEventsForwardAsync($"$ce-{categoryName}", nextSliceStart,
                     SliceSize, true);
 
                     if (currentSlice.Status == SliceReadStatus.StreamDeleted || currentSlice.Status == SliceReadStatus.StreamNotFound)

@@ -1,7 +1,6 @@
 namespace BullOak.Repositories.EventStore.Test.Integration.Contexts.EventStoreIsolation
 {
     using System;
-    using System.IO;
     using System.Diagnostics;
 
     internal class ProcessIsolation : IDisposable

@@ -1,6 +1,7 @@
 ﻿namespace BullOak.Repositories.EventStore
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using global::EventStore.ClientAPI;
@@ -26,20 +27,20 @@
             return new ReadModel<TState>(rehydratedState, streamData.streamVersion);
         }
 
-        public async Task<ReadModel<IEnumerable<TState>>> ReadFromCategory(string categoryName, DateTime? appliesAt = null)
+        public async Task<IEnumerable<ReadModel<TState>>> ReadFromCategory(string categoryName, DateTime? appliesAt = null)
         {
             var streamData = await reader.ReadFromCategory(categoryName, appliesAt);
 
-            var results = new List<ReadModel<IEnumerable<TState>>>();
+            var results = new List<ReadModel<TState>>();
 
             foreach (var categoryResult in streamData)
             {
                 var rehydratedState = configs.StateRehydrator.RehydrateFrom<TState>(categoryResult.events);
-                results.Add(new ReadModel<IEnumerable<TState>>(rehydratedState, streamData.streamVersion));
+                var readModel = new ReadModel<TState>(rehydratedState, categoryResult.streamVersion);
+                results.Add(readModel);
             }
 
-
-            return new ReadModel<IEnumerable<TState>>(rehydratedState, streamData.streamVersion);
+            return results;
         }
     }
 }

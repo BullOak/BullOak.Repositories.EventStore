@@ -17,6 +17,7 @@
         private readonly EventStoreIntegrationContext eventStoreContainer;
         private readonly EventGenerator eventGenerator;
         private readonly IList<TestDataContext> testDataContexts;
+        private List<ReadModel<IHoldHigherOrder>> States;
 
         public SaveEventsStreamSteps(
             EventStoreIntegrationContext eventStoreContainer,
@@ -109,10 +110,9 @@
 
             testDataContext.RecordedException = await Record.ExceptionAsync(async () =>
             {
-                var state = await eventStoreContainer.ReadFromCategory(categoryName, dateTime);
+                States = await eventStoreContainer.ReadFromCategory(categoryName, dateTime);
             });
         }
-
 
         [When(@"I try to save the new events in the stream")]
         public async Task WhenITryToSaveTheNewEventsInTheStream()
@@ -154,7 +154,7 @@
         [Then(@"HighOrder property for stream (.*) should be (.*)")]
         public void ThenHighOrderPropertyForStreamShouldBe(int streamNumber, int highestOrderValue)
         {
-            testDataContexts.ElementAt(--streamNumber).LatestLoadedState.HigherOrder.Should().Be(highestOrderValue);
+            States.ElementAt(--streamNumber).state.HigherOrder.Should().Be(highestOrderValue);
         }
 
         [Then(@"the save process should fail")]
