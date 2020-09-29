@@ -67,5 +67,43 @@
                 return new StreamReadResults(events, currentVersion);
             }
         }
+
+        public async Task<StreamReadResults> ReadFromCategory(string categoryName, DateTime? appliesAt = null)
+        {
+            checked
+            {
+                int currentVersion = -1;
+                var events = new List<ItemWithType>();
+                bool endOfStream;
+                long nextSliceStart = StreamPosition.Start;
+                do
+                {
+                    var currentSlice = await eventStoreConnection.ReadStreamEventsForwardAsync(categoryName, nextSliceStart,
+                    SliceSize, true);
+
+                    if (currentSlice.Status == SliceReadStatus.StreamDeleted || currentSlice.Status == SliceReadStatus.StreamNotFound)
+                    {
+                        break;
+                    }
+
+                    nextSliceStart = currentSlice.NextEventNumber;
+                    var newEvents =
+                        currentSlice.Events
+                            .Select(x => x.ToItemWithType(stateFactory))
+                            .Where(deserialised => !appliesAt.HasValue || deserialised.Metadata.ShouldInclude(appliesAt.Value))
+                            .Select(x => x.Item);
+
+                    events.AddRange(newEvents);
+
+                    endOfStream = currentSlice.IsEndOfStream;
+
+                    if(endOfStream)
+                        currentVersion = (int)currentSlice.LastEventNumber;
+
+                } while (!endOfStream);
+
+                return new StreamReadResults(events, currentVersion);
+            }
+        }
     }
 }

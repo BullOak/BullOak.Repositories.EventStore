@@ -1,15 +1,11 @@
 ﻿namespace BullOak.Repositories.EventStore
 {
-    using BullOak.Repositories.Exceptions;
     using BullOak.Repositories.Session;
     using global::EventStore.ClientAPI;
-    using Newtonsoft.Json;
     using System;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
-    using BullOak.Repositories.EventStore.Metadata;
-    using Newtonsoft.Json.Linq;
     using Streams;
 
     public class EventStoreSession<TState> : BaseEventSourcedSession<TState, int>
@@ -52,6 +48,13 @@
             CheckDisposedState();
             //TODO: user credentials
             var streamData = await eventReader.ReadFrom(streamName, appliesAt);
+            LoadFromEvents(streamData.events.ToArray(), streamData.streamVersion);
+        }
+
+        public async Task InitializeForCategory(DateTime? appliesAt = null)
+        {
+            CheckDisposedState();
+            var streamData = await eventReader.ReadFromCategory(streamName, appliesAt);
             LoadFromEvents(streamData.events.ToArray(), streamData.streamVersion);
         }
 

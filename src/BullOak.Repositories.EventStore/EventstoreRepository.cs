@@ -6,6 +6,7 @@
     using Session;
     using global::EventStore.ClientAPI;
     using System;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
 
     public class EventStoreRepository<TId, TState> : IStartSessions<TId, TState>, IEventStoreStreamDeleter<TId>
@@ -41,10 +42,10 @@
             return session;
         }
 
-        public async Task<IManageSessionOf<TState>> BeginSessionForStreamCategory(string streamName, DateTime? appliesAt = null)
+        public async Task<IManageSessionOf<IEnumerable<TState>>> BeginSessionForStreamCategory(string categoryName, DateTime? appliesAt = null)
         {
-            var session = new EventStoreSession<TState>(stateValidator, configs, connection, $"ce-{streamName}", dateTimeProvider);
-            await session.Initialize(appliesAt);
+            var session = new EventStoreSession<IEnumerable<TState>>(configs, connection, $"$ce-{categoryName}", dateTimeProvider);
+            await session.InitializeForCategory(appliesAt);
 
             return session;
         }

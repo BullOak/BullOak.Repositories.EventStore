@@ -10,6 +10,10 @@
             => Enumerable.Range(0, count).Select(x => new MyEvent(x)).ToList();
 
         public List<MyEvent> GenerateEvents(Guid id, int count)
-            => Enumerable.Range(0, count).Select(x => new MyEvent(id, x)).ToList();
+            => Enumerable.Range(0, count).Select(x =>
+            {
+                var myEvent = new MyEvent(x) { Id = id };
+                return myEvent;
+            }).ToList();
     }
 }

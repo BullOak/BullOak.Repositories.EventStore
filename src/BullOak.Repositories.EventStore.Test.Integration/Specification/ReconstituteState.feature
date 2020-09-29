@@ -38,7 +38,7 @@ Scenario: Reconstitute state up to a given date
 
 Scenario: Reconstitute streams with one event type state based on category up to a given date
 	Given a new stream
-    And a second stream with the same category
+    And another new stream
 	And the following events with timestamps for stream 1
 		| Timestamp           |
 		| 2020-09-10 11:10:00 |
@@ -52,9 +52,8 @@ Scenario: Reconstitute streams with one event type state based on category up to
         | 2020-09-20 12:20:00 |
 		| 2020-09-23 11:10:00 |
 	And I try to save the new events in the stream through their interface
-	When I load all my entities as of '2020-09-22 11:10:00'
+	When I load all my entities as of '2020-09-22 11:10:00' for the streams category
 	Then the load process should succeed
-	And two streams should be returned
     And HighOrder property for stream 1 should be 1
     And HighOrder property for stream 2 should be 3
 

@@ -77,20 +77,19 @@
             eventStoreIsolation?.Dispose();
         }
 
-        public async Task<IManageSessionOf<IHoldHigherOrder>> StartSession(Guid currentStreamId, DateTime? appliesAt = null)
-        {
-            var session = await repository.BeginSessionFor(currentStreamId.ToString(), appliesAt:appliesAt).ConfigureAwait(false);
-            return session;
-
-        }
-
         public async Task<IManageSessionOf<IHoldHigherOrder>> StartSession(string streamName, DateTime? appliesAt = null)
         {
-            var session = await repository.BeginSessionForStreamCategory(streamName, appliesAt: appliesAt).ConfigureAwait(false);
+            var session = await repository.BeginSessionFor(streamName, appliesAt: appliesAt).ConfigureAwait(false);
             return session;
         }
 
-        public async Task AppendEventsToCurrentStream(Guid id, MyEvent[] events)
+        public async Task<IManageSessionOf<IEnumerable<IHoldHigherOrder>>> StartSessionForCategory(string categoryName, DateTime? appliesAt = null)
+        {
+            var session = await repository.BeginSessionForStreamCategory(categoryName, appliesAt: appliesAt).ConfigureAwait(false);
+            return session;
+        }
+
+        public async Task AppendEventsToCurrentStream(string id, MyEvent[] events)
         {
             using (var session = await StartSession(id))
             {
@@ -99,20 +98,20 @@
             }
         }
 
-        public Task SoftDeleteStream(Guid id)
-            => repository.SoftDelete(id.ToString());
+        public Task SoftDeleteStream(string id)
+            => repository.SoftDelete(id);
 
-        public Task HardDeleteStream(Guid id)
-            => GetConnection().DeleteStreamAsync(id.ToString(), -1, true);
+        public Task HardDeleteStream(string id)
+            => GetConnection().DeleteStreamAsync(id, -1, true);
 
-        public Task SoftDeleteByEvent(Guid id)
-            => repository.SoftDeleteByEvent(id.ToString());
+        public Task SoftDeleteByEvent(string id)
+            => repository.SoftDeleteByEvent(id);
 
-        public Task SoftDeleteByEvent<TSoftDeleteEvent>(Guid id, Func<TSoftDeleteEvent> createSoftDeleteEvent)
+        public Task SoftDeleteByEvent<TSoftDeleteEvent>(string id, Func<TSoftDeleteEvent> createSoftDeleteEvent)
             where TSoftDeleteEvent : EntitySoftDeleted
-            => repository.SoftDeleteByEvent(id.ToString(), createSoftDeleteEvent);
+            => repository.SoftDeleteByEvent(id, createSoftDeleteEvent);
 
-        public async Task<ResolvedEvent[]> ReadEventsFromStreamRaw(Guid id)
+        public async Task<ResolvedEvent[]> ReadEventsFromStreamRaw(string id)
         {
             var conn = GetConnection();
             var result = new List<ResolvedEvent>();
@@ -120,7 +119,7 @@
             long nextSliceStart = StreamPosition.Start;
             do
             {
-                currentSlice = await conn.ReadStreamEventsForwardAsync(id.ToString(), nextSliceStart, 100, false);
+                currentSlice = await conn.ReadStreamEventsForwardAsync(id, nextSliceStart, 100, false);
                 nextSliceStart = currentSlice.NextEventNumber;
                 result.AddRange(currentSlice.Events);
             } while (!currentSlice.IsEndOfStream);
@@ -128,10 +127,10 @@
             return result.ToArray();
         }
 
-        internal Task WriteEventsToStreamRaw(Guid currentStreamInUse, IEnumerable<MyEvent> myEvents)
+        internal Task WriteEventsToStreamRaw(string currentStreamInUse, IEnumerable<MyEvent> myEvents)
         {
             var conn = GetConnection();
-            return conn.AppendToStreamAsync(currentStreamInUse.ToString(), ExpectedVersion.Any,
+            return conn.AppendToStreamAsync(currentStreamInUse, ExpectedVersion.Any,
                 myEvents.Select(e =>
                 {
                     var serialized = JsonConvert.SerializeObject(e);
