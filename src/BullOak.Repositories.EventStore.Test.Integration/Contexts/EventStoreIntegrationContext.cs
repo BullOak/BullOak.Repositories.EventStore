@@ -83,10 +83,10 @@
             return session;
         }
 
-        public async Task<IManageSessionOf<IEnumerable<IHoldHigherOrder>>> StartSessionForCategory(string categoryName, DateTime? appliesAt = null)
+        public async Task<IEnumerable<IHoldHigherOrder>> ReadFromCategory(string categoryName, DateTime? appliesAt = null)
         {
-            var session = await repository.BeginSessionForStreamCategory(categoryName, appliesAt: appliesAt).ConfigureAwait(false);
-            return session;
+            var categoryStream = await readOnlyRepository.ReadFromCategory(categoryName, appliesAt: appliesAt).ConfigureAwait(false);
+            return categoryStream.state;
         }
 
         public async Task AppendEventsToCurrentStream(string id, MyEvent[] events)

@@ -42,14 +42,6 @@
             return session;
         }
 
-        public async Task<IManageSessionOf<IEnumerable<TState>>> BeginSessionForStreamCategory(string categoryName, DateTime? appliesAt = null)
-        {
-            var session = new EventStoreSession<IEnumerable<TState>>(configs, connection, $"$ce-{categoryName}", dateTimeProvider);
-            await session.InitializeForCategory(appliesAt);
-
-            return session;
-        }
-
         public async Task<bool> Contains(TId selector)
         {
             try

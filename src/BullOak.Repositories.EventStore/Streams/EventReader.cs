@@ -6,6 +6,7 @@
     using System.Threading.Tasks;
     using Events;
     using global::EventStore.ClientAPI;
+    using Metadata;
     using StateEmit;
 
     internal class EventReader : IReadEventsFromStream
@@ -68,12 +69,12 @@
             }
         }
 
-        public async Task<StreamReadResults> ReadFromCategory(string categoryName, DateTime? appliesAt = null)
+        public async Task<IEnumerable<StreamCategoryReadResults>> ReadFromCategory(string categoryName, DateTime? appliesAt = null)
         {
             checked
             {
                 int currentVersion = -1;
-                var events = new List<ItemWithType>();
+                var events = new Dictionary<string, List<ItemWithType>>();
                 bool endOfStream;
                 long nextSliceStart = StreamPosition.Start;
                 do
@@ -89,20 +90,26 @@
                     nextSliceStart = currentSlice.NextEventNumber;
                     var newEvents =
                         currentSlice.Events
-                            .Select(x => x.ToItemWithType(stateFactory))
-                            .Where(deserialised => !appliesAt.HasValue || deserialised.Metadata.ShouldInclude(appliesAt.Value))
-                            .Select(x => x.Item);
+                            .Select(x => new KeyValuePair<string, (ItemWithType Item, IHoldMetadata Metadata)>(x.Event.EventStreamId, x.ToItemWithType(stateFactory)))
+                            .Where(deserialised => !appliesAt.HasValue || deserialised.Value.Metadata.ShouldInclude(appliesAt.Value))
+                            .Select(x => new KeyValuePair<string, ItemWithType>(x.Key, x.Value.Item));
 
-                    events.AddRange(newEvents);
+                    foreach (var eventWithId in newEvents)
+                    {
+                        if (events.ContainsKey(eventWithId.Key))
+                            events[eventWithId.Key].Add(eventWithId.Value);
+                        else
+                            events.Add(eventWithId.Key, new List<ItemWithType> { eventWithId.Value });
+                    }
 
                     endOfStream = currentSlice.IsEndOfStream;
 
-                    if(endOfStream)
+                    if (endOfStream)
                         currentVersion = (int)currentSlice.LastEventNumber;
 
                 } while (!endOfStream);
 
-                return new StreamReadResults(events, currentVersion);
+                return events.Select(@event => new StreamCategoryReadResults(@event.Value, @event.Key, currentVersion)).ToList();
             }
         }
     }

@@ -51,13 +51,6 @@
             LoadFromEvents(streamData.events.ToArray(), streamData.streamVersion);
         }
 
-        public async Task InitializeForCategory(DateTime? appliesAt = null)
-        {
-            CheckDisposedState();
-            var streamData = await eventReader.ReadFromCategory(streamName, appliesAt);
-            LoadFromEvents(streamData.events.ToArray(), streamData.streamVersion);
-        }
-
         private void CheckDisposedState()
         {
             if (isInDisposedState)

@@ -109,11 +109,7 @@
 
             testDataContext.RecordedException = await Record.ExceptionAsync(async () =>
             {
-                using (var session = await eventStoreContainer.StartSessionForCategory(categoryName, dateTime))
-                {
-
-                    var thing = session.GetCurrentState();
-                }
+                var state = await eventStoreContainer.ReadFromCategory(categoryName, dateTime);
             });
         }
 
