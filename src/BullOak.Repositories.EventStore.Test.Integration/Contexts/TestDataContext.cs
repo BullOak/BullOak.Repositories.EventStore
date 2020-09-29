@@ -1,13 +1,14 @@
 ﻿namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
 {
-    using BullOak.Repositories.EventStore.Test.Integration.Components;
-    using BullOak.Repositories.Session;
+    using Components;
+    using Session;
     using System;
     using System.Collections.Generic;
 
     internal class TestDataContext
     {
-        internal Guid CurrentStreamId { get; set; } = Guid.NewGuid();
+        internal List<Guid> StreamIds { get; } = new List<Guid>();
+        internal Guid CurrentStreamId { get; set; }
         public Exception RecordedException { get; internal set; }
         public IHoldHigherOrder LatestLoadedState { get; internal set; }
         public Dictionary<string, IManageSessionOf<IHoldHigherOrder>> NamedSessions { get; internal set; } =
@@ -17,11 +18,18 @@
 
         public int LastConcurrencyId { get; set; }
 
-        internal MyEvent[] LastGeneratedEvents;
+        internal List<MyEvent> LastGeneratedEvents;
 
         internal void ResetStream()
         {
+            StreamIds.Clear();
             CurrentStreamId = Guid.NewGuid();
+            StreamIds.Add(CurrentStreamId);
+        }
+
+        internal void AddNewStream()
+        {
+            StreamIds.Add(Guid.NewGuid());
         }
     }
 }

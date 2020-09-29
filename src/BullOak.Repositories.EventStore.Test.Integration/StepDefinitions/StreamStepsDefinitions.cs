@@ -34,6 +34,12 @@
             testDataContext.ResetStream();
         }
 
+        [Given(@"a second stream with the same category")]
+        public void GivenASecondStreamWithTheSameCategory()
+        {
+            testDataContext.AddNewStream();
+        }
+
         [Given(@"an existing stream with (.*) events")]
         public Task GivenAnExistingStreamWithEvents(int count)
         {
@@ -47,19 +53,40 @@
         public void GivenNewEvents(int eventsNumber)
         {
             var events = eventGenerator.GenerateEvents(eventsNumber);
-            testDataContext.LastGeneratedEvents = events;
+            testDataContext.LastGeneratedEvents.Clear();
+            testDataContext.LastGeneratedEvents.AddRange(events);
         }
 
-        [Given(@"(.*) new events with the following timestamps")]
-        public void GivenNewEventsWithTheFollowingTimestamps(int eventsNumber, Table table)
+        [Given(@"the following events with the following timestamps")]
+        public void GivenNewEventsWithTheFollowingTimestamps(Table table)
         {
-            var events = eventGenerator.GenerateEvents(eventsNumber);
+            var events = eventGenerator.GenerateEvents(table.RowCount);
 
             var times = table.Rows.Select(x => DateTime.Parse(x["Timestamp"]));
             eventStoreContainer.DateTimeProvider.AddTestTimes(times);
 
-            testDataContext.LastGeneratedEvents = events;
+            testDataContext.LastGeneratedEvents.AddRange(events);
         }
+
+        [Given(@"the following events with timestamps for stream (.*)")]
+        public void GivenTheFollowingEventsWithTimestampsForStream(int streamNumber, Table table)
+        {
+            var streamId = testDataContext.StreamIds.ElementAt(--streamNumber);
+            var events = eventGenerator.GenerateEvents(streamId, table.RowCount);
+
+            var times = table.Rows.Select(x => DateTime.Parse(x["Timestamp"]));
+            eventStoreContainer.DateTimeProvider.AddTestTimes(times);
+
+            testDataContext.LastGeneratedEvents.AddRange(events);
+        }
+
+
+        [Given(@"(.*) new events with the following timestamps for the second stream")]
+        public void GivenNewEventsWithTheFollowingTimestampsForTheSecondStream(int p0, Table table)
+        {
+            // ScenarioContext.Current.Pending();
+        }
+
 
         [Given(@"I try to save the new events in the stream through their interface")]
         [When(@"I try to save the new events in the stream through their interface")]

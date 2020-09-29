@@ -12,5 +12,11 @@
             Id = Guid.NewGuid();
             Value = value;
         }
+
+        public MyEvent(Guid id, int value)
+        {
+            Id = id;
+            Value = value;
+        }
     }
 }
