@@ -8,6 +8,8 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using Polly;
+    using Polly.Retry;
     using TechTalk.SpecFlow;
     using Xunit;
 
@@ -18,6 +20,9 @@
         private readonly EventGenerator eventGenerator;
         private readonly IList<TestDataContext> testDataContexts;
         private List<ReadModel<IHoldHigherOrder>> States;
+        private readonly string categoryName = RandomString(15);
+        private static readonly Random random = new Random();
+        private readonly AsyncRetryPolicy retry = Policy.Handle<ReadModelConsistencyException>().WaitAndRetryAsync(25, count => TimeSpan.FromMilliseconds(200));
 
         public SaveEventsStreamSteps(
             EventStoreIntegrationContext eventStoreContainer,
@@ -102,15 +107,18 @@
         [When(@"I load all my entities as of '(.*)' for the streams category")]
         public async Task WhenILoadAllMyEntitiesAsOf(DateTime dateTime)
         {
-            var testDataContext = testDataContexts.First();
+            if (testDataContexts.Any(x => x.RecordedException != null)) return;
 
-            if (testDataContext.RecordedException != null) return;
+            var testDataContext = testDataContexts.First();
 
             var categoryName = testDataContext.StreamIdPrefix;
 
-            testDataContext.RecordedException = await Record.ExceptionAsync(async () =>
+            await retry.ExecuteAsync(async () =>
             {
-                States = await eventStoreContainer.ReadFromCategory(categoryName, dateTime);
+                States = (await eventStoreContainer.ReadAllEntitiesFromCategory(categoryName, dateTime)).ToList();
+
+                if (States.Count < testDataContexts.Count)
+                    throw new ReadModelConsistencyException($"Expected to read {testDataContexts.Count} read models but found {States.Count} read models in DB");
             });
         }
 
@@ -245,9 +253,16 @@
         private void AddStream()
         {
             var testDataContext = new TestDataContext();
-            testDataContext.ResetStream();
+            testDataContext.ResetStream(categoryName);
 
             testDataContexts.Add(testDataContext);
+        }
+
+        private static string RandomString(int length)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            return new string(Enumerable.Repeat(chars, length)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
         }
     }
 }

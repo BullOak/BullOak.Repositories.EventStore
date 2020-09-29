@@ -7,17 +7,12 @@
     {
         public static bool ShouldInclude(this IHoldMetadata metadata, DateTime appliesAt)
         {
-            if (metadata.Properties.TryGetValue(MetadataProperties.Timestamp,
-                out var eventTimestamp))
-            {
-                DateTime timestamp;
-                if (DateTime.TryParse(eventTimestamp, out timestamp))
-                {
-                    if (timestamp > appliesAt) return false;
-                }
-            }
+            if (metadata?.Properties == null || !metadata.Properties.TryGetValue(MetadataProperties.Timestamp,
+                    out var eventTimestamp)) return true;
 
-            return true;
+            if (!DateTime.TryParse(eventTimestamp, out var timestamp)) return true;
+
+            return timestamp <= appliesAt;
         }
     }
 }

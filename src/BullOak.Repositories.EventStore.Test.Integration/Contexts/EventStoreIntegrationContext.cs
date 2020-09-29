@@ -83,10 +83,9 @@
             return session;
         }
 
-        public async Task<List<ReadModel<IHoldHigherOrder>>> ReadFromCategory(string categoryName, DateTime? appliesAt = null)
+        public async Task<IEnumerable<ReadModel<IHoldHigherOrder>>> ReadAllEntitiesFromCategory(string categoryName, DateTime? appliesAt = null)
         {
-            var categoryStream = await readOnlyRepository.ReadFromCategory(categoryName, appliesAt: appliesAt).ConfigureAwait(false);
-            return categoryStream.ToList();
+            return await readOnlyRepository.ReadAllEntitiesFromCategory(categoryName, appliesAt: appliesAt).ConfigureAwait(false);
         }
 
         public async Task AppendEventsToCurrentStream(string id, MyEvent[] events)

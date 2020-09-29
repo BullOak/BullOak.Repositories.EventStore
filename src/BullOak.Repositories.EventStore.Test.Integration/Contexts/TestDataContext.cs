@@ -4,15 +4,10 @@
     using Session;
     using System;
     using System.Collections.Generic;
-    using System.Linq;
 
     internal class TestDataContext
     {
-        private static readonly Random random = new Random();
-
-        private static readonly string UniqueCategoryName = RandomString(15);
-
-        internal readonly string StreamIdPrefix = $"Stream_Prefix_{UniqueCategoryName}";
+        internal readonly string StreamIdPrefix = "Stream_Prefix";
 
         internal string CurrentStreamId { get; set; }
 
@@ -29,17 +24,10 @@
 
         internal List<MyEvent> LastGeneratedEvents = new List<MyEvent>();
 
-        internal void ResetStream()
+        internal void ResetStream(string categoryName = null)
         {
             RawStreamId = Guid.NewGuid();
-            CurrentStreamId = $"{StreamIdPrefix}-{RawStreamId}";
-        }
-
-        private static string RandomString(int length)
-        {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            return new string(Enumerable.Repeat(chars, length)
-                .Select(s => s[random.Next(s.Length)]).ToArray());
+            CurrentStreamId = !string.IsNullOrEmpty(categoryName) ? $"{StreamIdPrefix}_{categoryName}-{RawStreamId}" : $"{StreamIdPrefix}-{RawStreamId}";
         }
     }
 }
