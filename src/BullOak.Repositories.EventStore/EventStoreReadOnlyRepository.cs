@@ -27,6 +27,12 @@
             return new ReadModel<TState>(rehydratedState, streamData.streamVersion);
         }
 
+        public async Task<TState> ReadFrom(TId id, DateTime appliesAt)
+        {
+            var streamData = await reader.ReadFrom(id.ToString(), appliesAt);
+            return configs.StateRehydrator.RehydrateFrom<TState>(streamData.events);
+        }
+
         public async Task<IEnumerable<ReadModel<TState>>> ReadAllEntitiesFromCategory(string categoryName, DateTime? appliesAt = null)
         {
             var streamsData = await reader.ReadAllEntitiesFromCategory(categoryName, appliesAt);

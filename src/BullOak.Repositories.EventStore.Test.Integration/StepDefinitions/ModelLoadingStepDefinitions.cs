@@ -76,5 +76,19 @@
                 testDataContext.LastConcurrencyId = readModel.concurrencyId;
             });
         }
+
+        [When(@"I load my entity through the read-only repository as of '(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})'")]
+        public async Task WhenILoadMyEntityThroughTheRead_OnlyRepositoryAsOf(DateTime appliesAt)
+        {
+            var testDataContext = testDataContexts.First();
+
+            if (testDataContext.RecordedException != null) return;
+
+            testDataContext.RecordedException = await Record.ExceptionAsync(async () =>
+            {
+                var state = await eventStoreContainer.readOnlyRepository.ReadFrom(testDataContext.CurrentStreamId.ToString(), appliesAt);
+                testDataContext.LatestLoadedState = state;
+            });
+        }
     }
 }
