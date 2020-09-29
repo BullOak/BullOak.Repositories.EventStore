@@ -10,7 +10,7 @@ version: 2.4.{build}
 
 environment:
 #  standard_version: '2.2.$(appveyor_build_number)'
-  standard_version: '2.5.0'
+  standard_version: '2.5.1'
 
 
 before_build:
