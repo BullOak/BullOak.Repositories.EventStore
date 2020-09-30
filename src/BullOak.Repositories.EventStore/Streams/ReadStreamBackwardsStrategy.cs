@@ -38,16 +38,14 @@
 
         public StreamReadResults BuildResults(Dictionary<string, List<(ItemWithType Item, IHoldMetadata Metadata)>> streamsEvents, int currentVersion)
         {
-            foreach (var eventStream in streamsEvents)
-                eventStream.Value.Reverse();
-
             var readResults = new List<ReadResult>();
 
-            foreach (var stream in streamsEvents)
+            foreach (var eventStream in streamsEvents)
             {
+                eventStream.Value.Reverse();
 
-                var eventStreamId = stream.Key;
-                var streamEvents = stream.Value.Select(x => x.Item);
+                var eventStreamId = eventStream.Key;
+                var streamEvents = eventStream.Value.Select(x => x.Item);
 
                 readResults.AddRange(streamEvents.Select(itemWithType => new ReadResult(eventStreamId, itemWithType)));
             }
