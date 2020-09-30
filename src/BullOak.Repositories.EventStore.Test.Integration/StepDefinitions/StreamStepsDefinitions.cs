@@ -302,7 +302,7 @@
 
                 if (readModels.Count < testDataContexts.Count)
                     throw new ReadModelConsistencyException(
-                        $"Expected to read {testDataContexts.Count} read models but found {readModels.Count} read models in DB");
+                        $"Expected to read {testDataContexts.Count} read models but found {readModels.Count} read models in the DB");
 
                 if (testDataContexts.Count == 1)
                     testDataContexts.First().LatestLoadedState = readModels.First().state;

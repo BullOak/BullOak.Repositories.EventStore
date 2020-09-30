@@ -21,25 +21,28 @@
 
         public async Task<ReadModel<TState>> ReadFrom(TId id)
         {
-            var streamData = await reader.ReadFrom(id.ToString());
-            var rehydratedState = configs.StateRehydrator.RehydrateFrom<TState>(streamData.events);
+            var streamData = await reader.ReadFrom(new ReadStreamBackwardsStrategy(id.ToString()));
+            var rehydratedState = configs.StateRehydrator.RehydrateFrom<TState>(streamData.results.Select(x => x.Event));
 
             return new ReadModel<TState>(rehydratedState, streamData.streamVersion);
         }
 
         public async Task<TState> ReadFrom(TId id, DateTime appliesAt)
         {
-            var streamData = await reader.ReadFrom(id.ToString(), appliesAt);
-            return configs.StateRehydrator.RehydrateFrom<TState>(streamData.events);
+            var streamData = await reader.ReadFrom(new ReadStreamBackwardsStrategy(id.ToString()), appliesAt);
+            return configs.StateRehydrator.RehydrateFrom<TState>(streamData.results.Select(x => x.Event));
         }
 
         public async Task<IEnumerable<ReadModel<TState>>> ReadAllEntitiesFromCategory(string categoryName, DateTime? appliesAt = null)
         {
-            var streamsData = await reader.ReadAllEntitiesFromCategory(categoryName, appliesAt);
+            var streamsData = await reader.ReadFrom(new ReadStreamForwardsStrategy($"$ce-{categoryName}"), appliesAt);
 
-            return streamsData
-                .Select(categoryResult => (configs.StateRehydrator.RehydrateFrom<TState>(categoryResult.events), categoryResult.streamVersion))
-                .Select(rehydratedState => new ReadModel<TState>(rehydratedState.Item1, rehydratedState.streamVersion));
+            var eventStreams = streamsData.results.GroupBy(x => x.EventStreamId);
+
+            return eventStreams
+                .Select(eventStream => eventStream.Select(x => x.Event))
+                .Select(events => new ReadModel<TState>(configs.StateRehydrator.RehydrateFrom<TState>(events), streamsData.streamVersion))
+                .ToList();
         }
     }
 }

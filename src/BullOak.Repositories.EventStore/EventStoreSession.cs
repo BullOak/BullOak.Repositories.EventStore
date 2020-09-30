@@ -47,8 +47,8 @@
         {
             CheckDisposedState();
             //TODO: user credentials
-            var streamData = await eventReader.ReadFrom(streamName, appliesAt);
-            LoadFromEvents(streamData.events.ToArray(), streamData.streamVersion);
+            var streamData = await eventReader.ReadFrom(new ReadStreamBackwardsStrategy(streamName), appliesAt);
+            LoadFromEvents(streamData.results.Select(x => x.Event).ToArray(), streamData.streamVersion);
         }
 
         private void CheckDisposedState()

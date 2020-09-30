@@ -11,8 +11,6 @@
 
     internal class EventReader : IReadEventsFromStream
     {
-        private const int SliceSize = 1024; //4095 is max allowed value
-
         private readonly ICreateStateInstances stateFactory;
         private readonly IEventStoreConnection eventStoreConnection;
 
@@ -22,22 +20,19 @@
             eventStoreConnection = connection ?? throw new ArgumentNullException(nameof(connection));
         }
 
-        public async Task<StreamReadResults> ReadFrom(string streamId, DateTime? appliesAt = null)
+        public async Task<StreamReadResults> ReadFrom(IStreamReaderStrategy streamReaderStrategy, DateTime? appliesAt = null)
         {
             checked
             {
-                int currentVersion = -1;
-                bool foundSoftDelete = false;
-                var events = new List<ItemWithType>();
-                StreamEventsSlice currentSlice;
-                long nextSliceStart = StreamPosition.End;
+                var currentVersion = -1;
+                var nextSliceStart = streamReaderStrategy.NextSliceStart;
+                var streamsEvents = new List<KeyValuePair<string, (ItemWithType Item, IHoldMetadata Metadata)>>();
+
                 do
                 {
-                    currentSlice =
-                        await eventStoreConnection.ReadStreamEventsBackwardAsync(streamId, nextSliceStart,
-                            SliceSize, true);
-                    if (currentSlice.Status == SliceReadStatus.StreamDeleted ||
-                        currentSlice.Status == SliceReadStatus.StreamNotFound)
+                    var currentSlice = await streamReaderStrategy.GetCurrentSlice(eventStoreConnection, nextSliceStart, true);
+
+                    if (currentSlice.Status == SliceReadStatus.StreamDeleted || currentSlice.Status == SliceReadStatus.StreamNotFound)
                     {
                         currentVersion = -1;
 
@@ -45,74 +40,41 @@
                     }
 
                     nextSliceStart = currentSlice.NextEventNumber;
+
                     var newEvents =
                         currentSlice.Events
-                            .Select(x => x.ToItemWithType(stateFactory))
-                            .TakeWhile(deserialised =>
-                            {
-                                foundSoftDelete = deserialised.Item.IsSoftDeleteEvent();
-                                return !foundSoftDelete;
-                            })
-                            .Where(deserialised => !appliesAt.HasValue || deserialised.Metadata.ShouldInclude(appliesAt.Value))
-                            .Select(x => x.Item);
-
-                    events.AddRange(newEvents);
+                            .Select(x => new KeyValuePair<string, (ItemWithType Item, IHoldMetadata Metadata)>(x.Event.EventStreamId, x.ToItemWithType(stateFactory)))
+                            .TakeWhile(deserialised => streamReaderStrategy.TakeWhile(deserialised.Value.Item))
+                            .Where(deserialised => !appliesAt.HasValue || deserialised.Value.Metadata.ShouldInclude(appliesAt.Value))
+                            .ToList();
 
                     if (currentVersion == -1)
                     {
                         currentVersion = (int)currentSlice.LastEventNumber;
                     }
-                } while (nextSliceStart != -1 && !foundSoftDelete);
 
-                events.Reverse();
-                return new StreamReadResults(events, currentVersion);
+                    streamsEvents.AddRange(newEvents);
+
+                } while (streamReaderStrategy.CanRead);
+
+                return streamReaderStrategy.BuildResults(GroupEventsByEventStreamId(streamsEvents), currentVersion);
             }
         }
 
-        public async Task<IEnumerable<StreamReadResults>> ReadAllEntitiesFromCategory(string categoryName, DateTime? appliesAt = null)
+        private static Dictionary<string, List<(ItemWithType Item, IHoldMetadata Metadata)>> GroupEventsByEventStreamId(List<KeyValuePair<string, (ItemWithType Item, IHoldMetadata Metadata)>> streamsEvents)
         {
-            checked
+            var streamsEventDictionary = new Dictionary<string, List<(ItemWithType Item, IHoldMetadata Metadata)>>();
+
+            foreach (var eventWithId in streamsEvents)
             {
-                var streamsEvents = new Dictionary<string, List<(ItemWithType Item, IHoldMetadata Metadata)>>();
-                bool endOfStream;
-                long nextSliceStart = StreamPosition.Start;
-
-                do
-                {
-                    var currentSlice = await eventStoreConnection.ReadStreamEventsForwardAsync($"$ce-{categoryName}", nextSliceStart,
-                SliceSize, true);
-
-                    if (currentSlice.Status == SliceReadStatus.StreamDeleted || currentSlice.Status == SliceReadStatus.StreamNotFound)
-                        break;
-
-                    nextSliceStart = currentSlice.NextEventNumber;
-
-                    var newEvents =
-                        currentSlice.Events
-                            .Where(x => x.Event != null && x.Event.Metadata.Length > 0)
-                            .Select(x => new KeyValuePair<string, (ItemWithType Item, IHoldMetadata Metadata)>(x.Event.EventStreamId, x.ToItemWithType(stateFactory)))
-                            .Where(deserialised => !appliesAt.HasValue || deserialised.Value.Metadata.ShouldInclude(appliesAt.Value));
-
-                    foreach (var eventWithId in newEvents)
-                    {
-                        if (streamsEvents.ContainsKey(eventWithId.Key))
-                            streamsEvents[eventWithId.Key].Add(eventWithId.Value);
-                        else
-                            streamsEvents.Add(eventWithId.Key, new List<(ItemWithType Item, IHoldMetadata Metadata)> { eventWithId.Value });
-                    }
-
-                    endOfStream = currentSlice.IsEndOfStream;
-
-                } while (!endOfStream);
-
-                return streamsEvents.Select(stream => new StreamReadResults(SelectEvents(stream), SelectCurrentStreamVersion(stream)));
+                if (streamsEventDictionary.ContainsKey(eventWithId.Key))
+                    streamsEventDictionary[eventWithId.Key].Add(eventWithId.Value);
+                else
+                    streamsEventDictionary.Add(eventWithId.Key,
+                        new List<(ItemWithType Item, IHoldMetadata Metadata)> { eventWithId.Value });
             }
+
+            return streamsEventDictionary;
         }
-
-        private static IEnumerable<ItemWithType> SelectEvents(KeyValuePair<string, List<(ItemWithType Item, IHoldMetadata Metadata)>> stream)
-            => stream.Value.Select(x => x.Item);
-
-        private static int SelectCurrentStreamVersion(KeyValuePair<string, List<(ItemWithType Item, IHoldMetadata Metadata)>> stream)
-            => stream.Value.Select(x => x.Metadata.MetadataVersion).OrderByDescending(x => x).First();
     }
 }
