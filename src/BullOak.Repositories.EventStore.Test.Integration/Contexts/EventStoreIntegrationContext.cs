@@ -18,6 +18,7 @@
     using Events;
     using global::EventStore.ClientAPI.Common.Log;
     using global::EventStore.ClientAPI.Projections;
+    using global::EventStore.ClientAPI.SystemData;
     using TechTalk.SpecFlow;
 
     internal class EventStoreIntegrationContext
@@ -68,7 +69,8 @@
                     .KeepReconnecting()
                     .FailOnNoServerResponse()
                     .KeepRetrying()
-                    .UseConsoleLogger();
+                    .UseConsoleLogger()
+                    .SetDefaultUserCredentials(new UserCredentials("admin", "changeit"));
 
                 const string localhostConnectionString = "ConnectTo=tcp://localhost:1113; HeartBeatTimeout=500";
 
