@@ -43,7 +43,7 @@
             readOnlyRepository = new EventStoreReadOnlyRepository<string, IHoldHigherOrder>(configuration, GetConnection());
         }
 
-        private static IEventStoreConnection GetConnection()
+        private IEventStoreConnection GetConnection()
         {
             return connection;
         }
@@ -58,14 +58,13 @@
 
             if (connection == null)
             {
-                var userCredentials = new UserCredentials("admin", "changeit");
                 var settings = ConnectionSettings
                     .Create()
                     .KeepReconnecting()
                     .FailOnNoServerResponse()
                     .KeepRetrying()
                     .UseConsoleLogger()
-                    .SetDefaultUserCredentials(userCredentials);
+                    .SetDefaultUserCredentials(new UserCredentials("admin", "changeit"));
 
                 const string localhostConnectionString = "ConnectTo=tcp://localhost:1113; HeartBeatTimeout=500";
 
