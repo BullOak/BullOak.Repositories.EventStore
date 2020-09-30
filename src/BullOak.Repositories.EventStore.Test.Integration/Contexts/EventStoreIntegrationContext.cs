@@ -96,7 +96,7 @@
             return await readOnlyRepository.ReadAllEntitiesFromCategory(categoryName, appliesAt: appliesAt).ConfigureAwait(false);
         }
 
-        public async Task AppendEventsToCurrentStream(string id, MyEvent[] events)
+        public async Task AppendEventsToCurrentStream(string id, IMyEvent[] events)
         {
             using (var session = await StartSession(id))
             {

@@ -3,5 +3,7 @@
     public interface IHoldHigherOrder
     {
         int HigherOrder { get; set; }
+
+        bool Visility { get; set; }
     }
 }

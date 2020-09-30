@@ -66,6 +66,22 @@
             testDataContexts.First().LastGeneratedEvents.AddRange(events);
         }
 
+        [Given(@"I update the state of visible to be enabled as of '(.*)'")]
+        public async Task GivenIUpdateTheStateOfVisibleToBeEnabled(DateTime datetime)
+        {
+            var testDataContext = testDataContexts.First();
+            var visibleEvent = new VisibilityEnabledEvent(testDataContext.RawStreamId, 0);
+            eventStoreContainer.DateTimeProvider.AddTestTimes(new List<DateTime>{ datetime });
+
+            using (var session = await eventStoreContainer.StartSession(testDataContext.CurrentStreamId))
+            {
+                testDataContext.LastGeneratedEvents = new List<IMyEvent>{ visibleEvent };
+                session.AddEvent(visibleEvent);
+
+                await session.SaveChanges();
+            }
+        }
+
         [Given(@"the following events with timestamps for stream (.*)")]
         public void GivenTheFollowingEventsWithTimestampsForStream(int streamNumber, Table table)
         {
@@ -106,21 +122,11 @@
 
         [When(@"I load all my entities as of '(.*)' for the streams category")]
         public async Task WhenILoadAllMyEntitiesAsOf(DateTime dateTime)
-        {
-            if (testDataContexts.Any(x => x.RecordedException != null)) return;
+            => await LoadAllEntities(dateTime);
 
-            var testDataContext = testDataContexts.First();
-
-            var categoryName = testDataContext.StreamIdPrefix;
-
-            await retry.ExecuteAsync(async () =>
-            {
-                States = (await eventStoreContainer.ReadAllEntitiesFromCategory(categoryName, dateTime)).ToList();
-
-                if (States.Count < testDataContexts.Count)
-                    throw new ReadModelConsistencyException($"Expected to read {testDataContexts.Count} read models but found {States.Count} read models in DB");
-            });
-        }
+        [When(@"I load all my entities for the streams category")]
+        public async Task WhenILoadAllMyEntities()
+            => await LoadAllEntities(null);
 
         [When(@"I try to save the new events in the stream")]
         public async Task WhenITryToSaveTheNewEventsInTheStream()
@@ -163,6 +169,12 @@
         public void ThenHighOrderPropertyForStreamShouldBe(int streamNumber, int highestOrderValue)
         {
             States.ElementAt(--streamNumber).state.HigherOrder.Should().Be(highestOrderValue);
+        }
+
+        [Then(@"the visibilty should be disabled")]
+        public void ThenTheVisibiltyShouldBeEnabled()
+        {
+            testDataContexts.First().LatestLoadedState.Visility.Should().BeFalse();
         }
 
         [Then(@"the save process should fail")]
@@ -263,6 +275,29 @@
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             return new string(Enumerable.Repeat(chars, length)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
+        private async Task LoadAllEntities(DateTime? dateTime)
+        {
+            if (testDataContexts.Any(x => x.RecordedException != null)) return;
+
+            var testDataContext = testDataContexts.First();
+
+            var categoryName = testDataContext.StreamIdPrefix;
+
+            await retry.ExecuteAsync(async () =>
+            {
+                var readModels = (await eventStoreContainer.ReadAllEntitiesFromCategory(categoryName, dateTime)).ToList();
+
+                if (readModels.Count < testDataContexts.Count)
+                    throw new ReadModelConsistencyException(
+                        $"Expected to read {testDataContexts.Count} read models but found {readModels.Count} read models in DB");
+
+                if (testDataContexts.Count == 1)
+                    testDataContexts.First().LatestLoadedState = readModels.First().state;
+
+                States = readModels;
+            });
         }
     }
 }

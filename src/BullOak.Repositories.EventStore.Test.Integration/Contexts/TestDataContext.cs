@@ -22,7 +22,7 @@
 
         public int LastConcurrencyId { get; set; }
 
-        internal List<MyEvent> LastGeneratedEvents = new List<MyEvent>();
+        internal List<IMyEvent> LastGeneratedEvents = new List<IMyEvent>();
 
         internal void ResetStream(string categoryName = null)
         {
