@@ -162,7 +162,18 @@
         [Then(@"the save process should succeed")]
         public void ThenTheSaveProcessShouldSucceed()
         {
-            testDataContexts.All(x => x.RecordedException == null).Should().BeTrue();
+            var exceptionObserved = false;
+
+            foreach (var testDataContext in testDataContexts)
+            {
+                if (testDataContext.RecordedException == null)
+                    continue;
+
+                Console.WriteLine(testDataContext.RecordedException);
+                exceptionObserved = true;
+            }
+
+            exceptionObserved.Should().BeFalse();
         }
 
         [Then(@"HighOrder property for stream (.*) should be (.*)")]
