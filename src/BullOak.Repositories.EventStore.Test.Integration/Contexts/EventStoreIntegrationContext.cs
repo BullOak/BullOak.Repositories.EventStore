@@ -8,16 +8,10 @@
     using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
-    using System.Data.Common;
     using System.Linq;
-    using System.Net;
-    using System.Net.Sockets;
     using System.Reflection;
     using System.Threading.Tasks;
-    using System.Web;
     using Events;
-    using global::EventStore.ClientAPI.Common.Log;
-    using global::EventStore.ClientAPI.Projections;
     using global::EventStore.ClientAPI.SystemData;
     using TechTalk.SpecFlow;
 
@@ -64,13 +58,14 @@
 
             if (connection == null)
             {
+                var userCredentials = new UserCredentials("admin", "changeit");
                 var settings = ConnectionSettings
                     .Create()
                     .KeepReconnecting()
                     .FailOnNoServerResponse()
                     .KeepRetrying()
                     .UseConsoleLogger()
-                    .SetDefaultUserCredentials(new UserCredentials("admin", "changeit"));
+                    .SetDefaultUserCredentials(userCredentials);
 
                 const string localhostConnectionString = "ConnectTo=tcp://localhost:1113; HeartBeatTimeout=500";
 
