@@ -190,6 +190,115 @@ this.ScenarioInitialize(scenarioInfo);
             this.ScenarioCleanup();
         }
         
+        [Xunit.SkippableFactAttribute(DisplayName="Reconstitute streams with one event type based on category up to a given date")]
+        [Xunit.TraitAttribute("FeatureTitle", "ReadModelSpecs")]
+        [Xunit.TraitAttribute("Description", "Reconstitute streams with one event type based on category up to a given date")]
+        public virtual void ReconstituteStreamsWithOneEventTypeBasedOnCategoryUpToAGivenDate()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Reconstitute streams with one event type based on category up to a given date", null, ((string[])(null)));
+#line 27
+this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            bool isScenarioIgnored = default(bool);
+            bool isFeatureIgnored = default(bool);
+            if ((tagsOfScenario != null))
+            {
+                isScenarioIgnored = tagsOfScenario.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((this._featureTags != null))
+            {
+                isFeatureIgnored = this._featureTags.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((isScenarioIgnored || isFeatureIgnored))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 28
+ testRunner.Given("a new stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+#line 29
+    testRunner.And("another new stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+                TechTalk.SpecFlow.Table table2 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Timestamp"});
+                table2.AddRow(new string[] {
+                            "2020-09-10 11:10:00"});
+                table2.AddRow(new string[] {
+                            "2020-09-20 11:10:00"});
+                table2.AddRow(new string[] {
+                            "2020-09-23 11:10:00"});
+#line 30
+ testRunner.And("the following events with timestamps for stream 1", ((string)(null)), table2, "And ");
+#line hidden
+                TechTalk.SpecFlow.Table table3 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Timestamp"});
+                table3.AddRow(new string[] {
+                            "2020-09-10 11:10:00"});
+                table3.AddRow(new string[] {
+                            "2020-09-20 11:10:00"});
+                table3.AddRow(new string[] {
+                            "2020-09-20 12:10:00"});
+                table3.AddRow(new string[] {
+                            "2020-09-20 12:20:00"});
+                table3.AddRow(new string[] {
+                            "2020-09-23 11:10:00"});
+#line 35
+    testRunner.And("the following events with timestamps for stream 2", ((string)(null)), table3, "And ");
+#line hidden
+#line 42
+ testRunner.And("I try to save the new events in the stream through their interface", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 43
+ testRunner.When("I load all my entities as of \'2020-09-22 11:10:00\' for the streams category", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line hidden
+#line 44
+ testRunner.Then("the load process should succeed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+#line 45
+    testRunner.And("HighOrder property for stream 1 should be 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 46
+    testRunner.And("HighOrder property for stream 2 should be 3", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [Xunit.SkippableFactAttribute(DisplayName="Reconstitute state based on category with two event types up to a given date")]
+        [Xunit.TraitAttribute("FeatureTitle", "ReadModelSpecs")]
+        [Xunit.TraitAttribute("Description", "Reconstitute state based on category with two event types up to a given date")]
+        public virtual void ReconstituteStateBasedOnCategoryWithTwoEventTypesUpToAGivenDate()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Reconstitute state based on category with two event types up to a given date", null, ((string[])(null)));
+#line 48
+this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            bool isScenarioIgnored = default(bool);
+            bool isFeatureIgnored = default(bool);
+            if ((tagsOfScenario != null))
+            {
+                isScenarioIgnored = tagsOfScenario.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((this._featureTags != null))
+            {
+                isFeatureIgnored = this._featureTags.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((isScenarioIgnored || isFeatureIgnored))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+            }
+            this.ScenarioCleanup();
+        }
+        
         [System.CodeDom.Compiler.GeneratedCodeAttribute("TechTalk.SpecFlow", "3.1.0.0")]
         [System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
         public class FixtureData : System.IDisposable

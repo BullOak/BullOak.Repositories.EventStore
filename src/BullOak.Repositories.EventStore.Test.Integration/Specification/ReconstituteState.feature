@@ -36,29 +36,6 @@ Scenario: Reconstitute state up to a given date
 	Then the load process should succeed
 	And HighOrder property should be 1
 
-Scenario: Reconstitute streams with one event type state based on category up to a given date
-	Given a new stream
-    And another new stream
-	And the following events with timestamps for stream 1
-		| Timestamp           |
-		| 2020-09-10 11:10:00 |
-		| 2020-09-20 11:10:00 |
-		| 2020-09-23 11:10:00 |
-    And the following events with timestamps for stream 2
-		| Timestamp           |
-		| 2020-09-10 11:10:00 |
-		| 2020-09-20 11:10:00 |
-        | 2020-09-20 12:10:00 |
-        | 2020-09-20 12:20:00 |
-		| 2020-09-23 11:10:00 |
-	And I try to save the new events in the stream through their interface
-	When I load all my entities as of '2020-09-22 11:10:00' for the streams category
-	Then the load process should succeed
-    And HighOrder property for stream 1 should be 1
-    And HighOrder property for stream 2 should be 3
-
-Scenario: Reconstitute state based on category with two event types up to a given date
-
 Scenario: Reconstitute state from empty stream should succeed and return default state
 	Given a new stream
 	When I load my entity

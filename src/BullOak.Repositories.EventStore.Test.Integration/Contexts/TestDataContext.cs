@@ -7,7 +7,7 @@
 
     internal class TestDataContext
     {
-        internal readonly string StreamIdPrefix = "Stream_Prefix";
+        internal string StreamIdPrefix = "Stream_Prefix";
 
         internal string CurrentStreamId { get; set; }
 
@@ -27,7 +27,8 @@
         internal void ResetStream(string categoryName = null)
         {
             RawStreamId = Guid.NewGuid();
-            CurrentStreamId = !string.IsNullOrEmpty(categoryName) ? $"{StreamIdPrefix}_{categoryName}-{RawStreamId}" : $"{StreamIdPrefix}-{RawStreamId}";
+            StreamIdPrefix = !string.IsNullOrEmpty(categoryName) ? $"{StreamIdPrefix}_{categoryName}" : StreamIdPrefix;
+            CurrentStreamId =  $"{StreamIdPrefix}-{RawStreamId}";
         }
     }
 }

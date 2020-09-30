@@ -20,7 +20,7 @@
         private readonly EventGenerator eventGenerator;
         private readonly IList<TestDataContext> testDataContexts;
         private List<ReadModel<IHoldHigherOrder>> States;
-        private readonly string categoryName = RandomString(15);
+        private readonly string sharedCategoryName = RandomString(15);
         private static readonly Random random = new Random();
         private readonly AsyncRetryPolicy retry = Policy.Handle<ReadModelConsistencyException>().WaitAndRetryAsync(25, count => TimeSpan.FromMilliseconds(200));
 
@@ -253,7 +253,7 @@
         private void AddStream()
         {
             var testDataContext = new TestDataContext();
-            testDataContext.ResetStream(categoryName);
+            testDataContext.ResetStream(sharedCategoryName);
 
             testDataContexts.Add(testDataContext);
         }

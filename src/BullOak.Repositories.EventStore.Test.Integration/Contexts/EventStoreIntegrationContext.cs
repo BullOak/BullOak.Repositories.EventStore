@@ -8,10 +8,16 @@
     using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
+    using System.Data.Common;
     using System.Linq;
+    using System.Net;
+    using System.Net.Sockets;
     using System.Reflection;
     using System.Threading.Tasks;
+    using System.Web;
     using Events;
+    using global::EventStore.ClientAPI.Common.Log;
+    using global::EventStore.ClientAPI.Projections;
     using TechTalk.SpecFlow;
 
     internal class EventStoreIntegrationContext
@@ -64,7 +70,9 @@
                     .KeepRetrying()
                     .UseConsoleLogger();
 
-                var localhostConnectionString = "ConnectTo=tcp://localhost:1113; HeartBeatTimeout=500";
+                const string localhostConnectionString = "ConnectTo=tcp://localhost:1113; HeartBeatTimeout=500";
+
+                await VerifyProjectionRunning(localhostConnectionString, "$by_category");
 
                 connection = EventStoreConnection.Create(localhostConnectionString, settings);
                 await connection.ConnectAsync();
@@ -141,18 +149,40 @@
                         null);
                 }));
         }
-    }
 
-    public class TestDateTimeProvider : IDateTimeProvider
-    {
-        private readonly Queue<DateTime> times = new Queue<DateTime>();
-
-        public void AddTestTimes(IEnumerable<DateTime> times)
+        private static async Task VerifyProjectionRunning(string localhostConnectionString, string systemProjectionName)
         {
-            foreach (var time in times)
-                this.times.Enqueue(time);
+            const int webUIPort = 2113;
+
+            var hostname = GetUriFromConnectionString(localhostConnectionString);
+            var resolvedIpAddress = Dns.GetHostEntry(hostname.DnsSafeHost).AddressList
+                .First(address => address.AddressFamily == AddressFamily.InterNetwork);
+
+            var projectionsManager = new ProjectionsManager(new ConsoleLogger(), new IPEndPoint(resolvedIpAddress, webUIPort),
+                TimeSpan.FromSeconds(5));
+
+            var projectionStatus = JsonConvert.DeserializeObject<ProjectionStatus>(await projectionsManager.GetStatusAsync(systemProjectionName));
+
+            if (projectionStatus.Status != Status.Running)
+                throw new ProjectionDisabledException(
+                    $"{systemProjectionName} was found to be not running, please enable this projection from the EventStore admin console\nEnable this projection by selecting the \"Start\" button from http://{resolvedIpAddress}:{webUIPort}/web/index.html#/projections/{EncodeEventStoreProjectionPath(systemProjectionName, resolvedIpAddress, webUIPort)}");
         }
 
-        public DateTime UtcNow => times.Any() ? times.Dequeue() : DateTime.UtcNow.AddHours(-5);
+        private static string EncodeEventStoreProjectionPath(string systemProjectionName, IPAddress resolvedIpAddress, int webUIPort)
+            => HttpUtility.UrlEncode(HttpUtility.UrlEncode($"http://{resolvedIpAddress}:{webUIPort}/projection/{systemProjectionName}"));
+
+        private static Uri GetUriFromConnectionString(string connectionString)
+        {
+            var builder = new DbConnectionStringBuilder(false)
+            {
+                ConnectionString = connectionString
+            };
+
+            var pairs = builder.Keys.Cast<object>().Select(key => new KeyValuePair<string, string>(key.ToString(), builder[key.ToString()].ToString()));
+
+            var uriString = pairs.FirstOrDefault(x => x.Key.ToUpperInvariant() == "CONNECTTO").Value;
+
+            return uriString != null ? new Uri(uriString) : throw new ArgumentException("Invalid EventStore connection string. ConnectTo property missing.", nameof(connectionString));
+        }
     }
 }
