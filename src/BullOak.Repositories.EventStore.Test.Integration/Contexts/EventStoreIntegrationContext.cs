@@ -43,7 +43,7 @@
             readOnlyRepository = new EventStoreReadOnlyRepository<string, IHoldHigherOrder>(configuration, GetConnection());
         }
 
-        private IEventStoreConnection GetConnection()
+        private static IEventStoreConnection GetConnection()
         {
             return connection;
         }
@@ -57,20 +57,7 @@
                 testsSettings.EventStoreIsolationArguments);
 
             if (connection == null)
-            {
-                var settings = ConnectionSettings
-                    .Create()
-                    .KeepReconnecting()
-                    .FailOnNoServerResponse()
-                    .KeepRetrying()
-                    .UseConsoleLogger()
-                    .SetDefaultUserCredentials(new UserCredentials("admin", "changeit"));
-
-                const string localhostConnectionString = "ConnectTo=tcp://localhost:1113; HeartBeatTimeout=500";
-
-                connection = EventStoreConnection.Create(localhostConnectionString, settings);
-                await connection.ConnectAsync();
-            }
+                connection = await SetupConnection();
         }
 
         [AfterTestRun]
@@ -128,10 +115,11 @@
             return result.ToArray();
         }
 
-        internal Task WriteEventsToStreamRaw(string currentStreamInUse, IEnumerable<MyEvent> myEvents)
+        internal async Task WriteEventsToStreamRaw(string currentStreamInUse, IEnumerable<MyEvent> myEvents)
         {
-            var conn = GetConnection();
-            return conn.AppendToStreamAsync(currentStreamInUse, ExpectedVersion.Any,
+            var conn = await SetupConnection(true);
+
+            await conn.AppendToStreamAsync(currentStreamInUse, ExpectedVersion.Any,
                 myEvents.Select(e =>
                 {
                     var serialized = JsonConvert.SerializeObject(e);
@@ -142,6 +130,26 @@
                         bytes,
                         null);
                 }));
+        }
+
+        private static async Task<IEventStoreConnection> SetupConnection(bool withDefaultUser = false)
+        {
+            var settings = ConnectionSettings
+                .Create()
+                .KeepReconnecting()
+                .FailOnNoServerResponse()
+                .KeepRetrying()
+                .UseConsoleLogger();
+
+            if (withDefaultUser)
+                settings.SetDefaultUserCredentials(new UserCredentials("admin", "changeit"));
+
+            const string localhostConnectionString = "ConnectTo=tcp://localhost:1113; HeartBeatTimeout=500";
+
+            connection = EventStoreConnection.Create(localhostConnectionString, settings);
+            await connection.ConnectAsync();
+
+            return connection;
         }
     }
 }
