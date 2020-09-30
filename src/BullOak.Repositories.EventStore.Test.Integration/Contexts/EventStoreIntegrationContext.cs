@@ -72,8 +72,6 @@
 
                 const string localhostConnectionString = "ConnectTo=tcp://localhost:1113; HeartBeatTimeout=500";
 
-                await VerifyProjectionRunning(localhostConnectionString, "$by_category");
-
                 connection = EventStoreConnection.Create(localhostConnectionString, settings);
                 await connection.ConnectAsync();
             }
@@ -148,41 +146,6 @@
                         bytes,
                         null);
                 }));
-        }
-
-        private static async Task VerifyProjectionRunning(string localhostConnectionString, string systemProjectionName)
-        {
-            const int webUIPort = 2113;
-
-            var hostname = GetUriFromConnectionString(localhostConnectionString);
-            var resolvedIpAddress = Dns.GetHostEntry(hostname.DnsSafeHost).AddressList
-                .First(address => address.AddressFamily == AddressFamily.InterNetwork);
-
-            var projectionsManager = new ProjectionsManager(new ConsoleLogger(), new IPEndPoint(resolvedIpAddress, webUIPort),
-                TimeSpan.FromSeconds(5));
-
-            var projectionStatus = JsonConvert.DeserializeObject<ProjectionStatus>(await projectionsManager.GetStatusAsync(systemProjectionName));
-
-            if (projectionStatus.Status != Status.Running)
-                throw new ProjectionDisabledException(
-                    $"{systemProjectionName} was found to be not running, please enable this projection from the EventStore admin console\nEnable this projection by selecting the \"Start\" button from http://{resolvedIpAddress}:{webUIPort}/web/index.html#/projections/{EncodeEventStoreProjectionPath(systemProjectionName, resolvedIpAddress, webUIPort)}");
-        }
-
-        private static string EncodeEventStoreProjectionPath(string systemProjectionName, IPAddress resolvedIpAddress, int webUIPort)
-            => HttpUtility.UrlEncode(HttpUtility.UrlEncode($"http://{resolvedIpAddress}:{webUIPort}/projection/{systemProjectionName}"));
-
-        private static Uri GetUriFromConnectionString(string connectionString)
-        {
-            var builder = new DbConnectionStringBuilder(false)
-            {
-                ConnectionString = connectionString
-            };
-
-            var pairs = builder.Keys.Cast<object>().Select(key => new KeyValuePair<string, string>(key.ToString(), builder[key.ToString()].ToString()));
-
-            var uriString = pairs.FirstOrDefault(x => x.Key.ToUpperInvariant() == "CONNECTTO").Value;
-
-            return uriString != null ? new Uri(uriString) : throw new ArgumentException("Invalid EventStore connection string. ConnectTo property missing.", nameof(connectionString));
         }
     }
 }
