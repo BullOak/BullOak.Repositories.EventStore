@@ -117,7 +117,7 @@
 
         internal async Task WriteEventsToStreamRaw(string currentStreamInUse, IEnumerable<MyEvent> myEvents)
         {
-            var conn = await SetupConnection(true);
+            var conn = await SetupConnection(false);
 
             await conn.AppendToStreamAsync(currentStreamInUse, ExpectedVersion.Any,
                 myEvents.Select(e =>
@@ -132,7 +132,7 @@
                 }));
         }
 
-        private static async Task<IEventStoreConnection> SetupConnection(bool withDefaultUser = false)
+        private static async Task<IEventStoreConnection> SetupConnection(bool withDefaultUser = true)
         {
             var settings = ConnectionSettings
                 .Create()
