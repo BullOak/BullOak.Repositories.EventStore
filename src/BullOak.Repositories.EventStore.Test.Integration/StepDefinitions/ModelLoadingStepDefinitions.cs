@@ -1,9 +1,10 @@
 ﻿namespace BullOak.Repositories.EventStore.Test.Integration.StepDefinitions
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
-    using BullOak.Repositories.EventStore.Test.Integration.Components;
-    using BullOak.Repositories.EventStore.Test.Integration.Contexts;
+    using Contexts;
     using TechTalk.SpecFlow;
     using Xunit;
 
@@ -11,19 +12,20 @@
     internal class ModelLoadingStepDefinitions
     {
         private readonly EventStoreIntegrationContext eventStoreContainer;
-        private readonly TestDataContext testDataContext;
+        private readonly IList<TestDataContext> testDataContexts;
 
-        public ModelLoadingStepDefinitions(EventStoreIntegrationContext eventStoreContainer,
-            TestDataContext testDataContext)
+        public ModelLoadingStepDefinitions(EventStoreIntegrationContext eventStoreContainer, IList<TestDataContext> testDataContexts)
         {
             this.eventStoreContainer =
                 eventStoreContainer ?? throw new ArgumentNullException(nameof(eventStoreContainer));
-            this.testDataContext = testDataContext ?? throw new ArgumentNullException(nameof(testDataContext));
+            this.testDataContexts =
+                testDataContexts ?? throw new ArgumentNullException(nameof(testDataContexts));
         }
 
         [When("I load my entity ignoring any errors")]
         public async Task WhenILoadIgnoringAnyPreviousErrors()
         {
+            var testDataContext = testDataContexts.First();
             using (var session = await eventStoreContainer.StartSession(testDataContext.CurrentStreamId))
             {
                 testDataContext.LatestLoadedState = session.GetCurrentState();
@@ -33,6 +35,7 @@
         [When(@"I load my entity")]
         public async Task WhenILoadMyEntity()
         {
+            var testDataContext = testDataContexts.First();
             if (testDataContext.RecordedException != null) return;
 
             testDataContext.RecordedException = await Record.ExceptionAsync(async () =>
@@ -45,6 +48,7 @@
         public async Task WhenILoadMyEntityAsOf(string applyAtTimeStr)
         {
             var applyAtTime = DateTime.Parse(applyAtTimeStr);
+            var testDataContext = testDataContexts.First();
 
             if (testDataContext.RecordedException != null) return;
 
@@ -61,6 +65,8 @@
         [When(@"I load my entity through the read-only repository")]
         public async Task WhenILoadMyEntityThroughTheRead_OnlyRepository()
         {
+            var testDataContext = testDataContexts.First();
+
             if (testDataContext.RecordedException != null) return;
 
             testDataContext.RecordedException = await Record.ExceptionAsync(async () =>
@@ -74,6 +80,8 @@
         [When(@"I load my entity through the read-only repository as of '(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})'")]
         public async Task WhenILoadMyEntityThroughTheRead_OnlyRepositoryAsOf(DateTime appliesAt)
         {
+            var testDataContext = testDataContexts.First();
+
             if (testDataContext.RecordedException != null) return;
 
             testDataContext.RecordedException = await Record.ExceptionAsync(async () =>

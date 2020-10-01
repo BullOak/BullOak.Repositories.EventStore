@@ -3,14 +3,14 @@
 #---------------------------------#
 
 # version format
-version: 2.4.{build}
+version: 2.6.{build}
 
 # you can use {branch} name in version format too
 # version: 1.0.{build}-{branch}
 
 environment:
 #  standard_version: '2.2.$(appveyor_build_number)'
-  standard_version: '2.5.1'
+  standard_version: '2.6.0'
 
 
 before_build:

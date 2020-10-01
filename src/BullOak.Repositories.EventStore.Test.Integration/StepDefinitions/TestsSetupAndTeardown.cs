@@ -3,8 +3,9 @@
 namespace BullOak.Repositories.EventStore.Test.Integration.StepDefinitions
 {
     using BoDi;
-    using BullOak.Repositories.EventStore.Test.Integration.Contexts;
+    using Contexts;
     using System;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
     using TechTalk.SpecFlow;
 
@@ -16,6 +17,12 @@ namespace BullOak.Repositories.EventStore.Test.Integration.StepDefinitions
         public TestsSetupAndTeardown(IObjectContainer objectContainer)
         {
             this.objectContainer = objectContainer ?? throw new ArgumentNullException(nameof(objectContainer));
+        }
+
+        [BeforeScenario]
+        public void BeforeScenario()
+        {
+            objectContainer.RegisterInstanceAs<IList<TestDataContext>>(new List<TestDataContext>());
         }
 
         [BeforeTestRun]

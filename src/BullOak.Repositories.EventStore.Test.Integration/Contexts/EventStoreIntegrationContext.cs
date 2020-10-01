@@ -12,6 +12,7 @@
     using System.Reflection;
     using System.Threading.Tasks;
     using Events;
+    using global::EventStore.ClientAPI.SystemData;
     using TechTalk.SpecFlow;
 
     internal class EventStoreIntegrationContext
@@ -56,19 +57,7 @@
                 testsSettings.EventStoreIsolationArguments);
 
             if (connection == null)
-            {
-                var settings = ConnectionSettings
-                    .Create()
-                    .KeepReconnecting()
-                    .FailOnNoServerResponse()
-                    .KeepRetrying()
-                    .UseConsoleLogger();
-
-                var localhostConnectionString = "ConnectTo=tcp://localhost:1113; HeartBeatTimeout=500";
-
-                connection = EventStoreConnection.Create(localhostConnectionString, settings);
-                await connection.ConnectAsync();
-            }
+                connection = await SetupConnection();
         }
 
         [AfterTestRun]
@@ -77,14 +66,18 @@
             eventStoreIsolation?.Dispose();
         }
 
-        public async Task<IManageSessionOf<IHoldHigherOrder>> StartSession(Guid currentStreamId, DateTime? appliesAt = null)
+        public async Task<IManageSessionOf<IHoldHigherOrder>> StartSession(string streamName, DateTime? appliesAt = null)
         {
-            var session = await repository.BeginSessionFor(currentStreamId.ToString(), appliesAt:appliesAt).ConfigureAwait(false);
+            var session = await repository.BeginSessionFor(streamName, appliesAt: appliesAt).ConfigureAwait(false);
             return session;
-
         }
 
-        public async Task AppendEventsToCurrentStream(Guid id, MyEvent[] events)
+        public async Task<IEnumerable<ReadModel<IHoldHigherOrder>>> ReadAllEntitiesFromCategory(string categoryName, DateTime? appliesAt = null)
+        {
+            return await readOnlyRepository.ReadAllEntitiesFromCategory(categoryName, appliesAt: appliesAt).ConfigureAwait(false);
+        }
+
+        public async Task AppendEventsToCurrentStream(string id, IMyEvent[] events)
         {
             using (var session = await StartSession(id))
             {
@@ -93,20 +86,20 @@
             }
         }
 
-        public Task SoftDeleteStream(Guid id)
-            => repository.SoftDelete(id.ToString());
+        public Task SoftDeleteStream(string id)
+            => repository.SoftDelete(id);
 
-        public Task HardDeleteStream(Guid id)
-            => GetConnection().DeleteStreamAsync(id.ToString(), -1, true);
+        public Task HardDeleteStream(string id)
+            => GetConnection().DeleteStreamAsync(id, -1, true);
 
-        public Task SoftDeleteByEvent(Guid id)
-            => repository.SoftDeleteByEvent(id.ToString());
+        public Task SoftDeleteByEvent(string id)
+            => repository.SoftDeleteByEvent(id);
 
-        public Task SoftDeleteByEvent<TSoftDeleteEvent>(Guid id, Func<TSoftDeleteEvent> createSoftDeleteEvent)
+        public Task SoftDeleteByEvent<TSoftDeleteEvent>(string id, Func<TSoftDeleteEvent> createSoftDeleteEvent)
             where TSoftDeleteEvent : EntitySoftDeleted
-            => repository.SoftDeleteByEvent(id.ToString(), createSoftDeleteEvent);
+            => repository.SoftDeleteByEvent(id, createSoftDeleteEvent);
 
-        public async Task<ResolvedEvent[]> ReadEventsFromStreamRaw(Guid id)
+        public async Task<ResolvedEvent[]> ReadEventsFromStreamRaw(string id)
         {
             var conn = GetConnection();
             var result = new List<ResolvedEvent>();
@@ -114,7 +107,7 @@
             long nextSliceStart = StreamPosition.Start;
             do
             {
-                currentSlice = await conn.ReadStreamEventsForwardAsync(id.ToString(), nextSliceStart, 100, false);
+                currentSlice = await conn.ReadStreamEventsForwardAsync(id, nextSliceStart, 100, false);
                 nextSliceStart = currentSlice.NextEventNumber;
                 result.AddRange(currentSlice.Events);
             } while (!currentSlice.IsEndOfStream);
@@ -122,10 +115,11 @@
             return result.ToArray();
         }
 
-        internal Task WriteEventsToStreamRaw(Guid currentStreamInUse, IEnumerable<MyEvent> myEvents)
+        internal async Task WriteEventsToStreamRaw(string currentStreamInUse, IEnumerable<MyEvent> myEvents)
         {
-            var conn = GetConnection();
-            return conn.AppendToStreamAsync(currentStreamInUse.ToString(), ExpectedVersion.Any,
+            var conn = await SetupConnection(false);
+
+            await conn.AppendToStreamAsync(currentStreamInUse, ExpectedVersion.Any,
                 myEvents.Select(e =>
                 {
                     var serialized = JsonConvert.SerializeObject(e);
@@ -137,18 +131,25 @@
                         null);
                 }));
         }
-    }
 
-    public class TestDateTimeProvider : IDateTimeProvider
-    {
-        private readonly Queue<DateTime> times = new Queue<DateTime>();
-
-        public void AddTestTimes(IEnumerable<DateTime> times)
+        private static async Task<IEventStoreConnection> SetupConnection(bool withDefaultUser = true)
         {
-            foreach (var time in times)
-                this.times.Enqueue(time);
-        }
+            var settings = ConnectionSettings
+                .Create()
+                .KeepReconnecting()
+                .FailOnNoServerResponse()
+                .KeepRetrying()
+                .UseConsoleLogger();
 
-        public DateTime UtcNow => times.Any() ? times.Dequeue() : DateTime.UtcNow.AddHours(-5);
+            if (withDefaultUser)
+                settings.SetDefaultUserCredentials(new UserCredentials("admin", "changeit"));
+
+            const string localhostConnectionString = "ConnectTo=tcp://localhost:1113; HeartBeatTimeout=500";
+
+            connection = EventStoreConnection.Create(localhostConnectionString, settings);
+            await connection.ConnectAsync();
+
+            return connection;
+        }
     }
 }

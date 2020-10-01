@@ -26,7 +26,7 @@ Scenario: Reconstitute state from one event stored using interface
 
 Scenario: Reconstitute state up to a given date
 	Given a new stream
-	And 3 new events with the following timestamps
+	And the following events with the following timestamps
 		| Timestamp           |
 		| 2020-09-10 11:10:00 |
 		| 2020-09-20 11:10:00 |

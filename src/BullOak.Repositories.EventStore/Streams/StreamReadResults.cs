@@ -5,13 +5,13 @@
 
     internal struct StreamReadResults
     {
-        public readonly IEnumerable<ItemWithType> events;
+        public readonly IEnumerable<ReadResult> results;
         public readonly int streamVersion;
 
-        public StreamReadResults(IEnumerable<ItemWithType> events, int streamVersion)
+        public StreamReadResults(IEnumerable<ReadResult> events, int streamVersion)
         {
             this.streamVersion = streamVersion;
-            this.events = events ?? throw new ArgumentNullException(nameof(events));
+            results = events ?? throw new ArgumentNullException(nameof(events));
         }
     }
 }
