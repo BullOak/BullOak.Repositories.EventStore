@@ -4,6 +4,6 @@
     {
         int HigherOrder { get; set; }
 
-        bool Visility { get; set; }
+        bool Visibility { get; set; }
     }
 }

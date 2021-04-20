@@ -78,7 +78,7 @@
                 testDataContext.LastGeneratedEvents = new List<IMyEvent>{ visibleEvent };
                 session.AddEvent(visibleEvent);
 
-                await session.SaveChanges();
+                testDataContext.CurrentVersion = await session.SaveChanges();
             }
         }
 
@@ -114,7 +114,7 @@
                             });
                         }
 
-                        await session.SaveChanges();
+                        testDataContext.CurrentVersion = await session.SaveChanges();
                     }
                 });
             }
@@ -141,12 +141,16 @@
         }
 
         [Given(@"I soft-delete the stream")]
+        [When(@"I soft-delete the stream")]
         public Task GivenISoft_DeleteTheStream()
             => eventStoreContainer.SoftDeleteStream(testDataContexts.First().CurrentStreamId);
 
         [Given(@"I hard-delete the stream")]
+        [When(@"I hard-delete the stream")]
         public Task GivenIHard_DeleteTheStream()
-            => eventStoreContainer.HardDeleteStream(testDataContexts.First().CurrentStreamId);
+            => eventStoreContainer.HardDeleteStream(
+                testDataContexts.First().CurrentStreamId,
+                testDataContexts.First().CurrentVersion);
 
         [Given(@"I soft-delete-by-event the stream")]
         [When(@"I soft-delete-by-event the stream")]
@@ -182,10 +186,10 @@
             States.ElementAt(--streamNumber).state.HigherOrder.Should().Be(highestOrderValue);
         }
 
-        [Then(@"the visibilty should be disabled")]
-        public void ThenTheVisibiltyShouldBeEnabled()
+        [Then(@"the visibility should be disabled")]
+        public void ThenTheVisibilityShouldBeEnabled()
         {
-            testDataContexts.First().LatestLoadedState.Visility.Should().BeFalse();
+            testDataContexts.First().LatestLoadedState.Visibility.Should().BeFalse();
         }
 
         [Then(@"the save process should fail")]
@@ -244,7 +248,7 @@
                 {
                     testDataContext.NamedSessionsExceptions.Add(sessionName, new List<Exception>());
                 }
-                var recordedException = await Record.ExceptionAsync(() => testDataContext.NamedSessions[sessionName].SaveChanges());
+                var recordedException = await Record.ExceptionAsync(async () => testDataContext.CurrentVersion = await testDataContext.NamedSessions[sessionName].SaveChanges());
                 if (recordedException != null)
                 {
                     testDataContext.NamedSessionsExceptions[sessionName].Add(recordedException);
@@ -272,6 +276,34 @@
         {
             testDataContexts.First().NamedSessionsExceptions[sessionName].Should().NotBeEmpty();
         }
+
+        [When(@"I read all the events back from the stream")]
+        public async Task WhenIReadAllTheEventsBackFromTheStream()
+        {
+            var testDataContext = testDataContexts.First();
+
+            if (testDataContext.RecordedException != null) return;
+
+            testDataContext.RecordedException = await Record.ExceptionAsync(async () =>
+            {
+                var itemWithTypes = await eventStoreContainer.readEventsRepository.ReadFrom(testDataContext.CurrentStreamId.ToString());
+                testDataContext.LatestReadEvents = itemWithTypes;
+            });
+        }
+
+        [Then(@"I should see all the events")]
+        [Then(@"I should see all the appended events only")]
+        public void ThenIShouldSeeAllTheEvents()
+        {
+            testDataContexts.First().LatestReadEvents.Select(x => x.instance).Should().BeEquivalentTo(testDataContexts.First().LastGeneratedEvents);
+        }
+
+        [Then(@"the stream should be empty")]
+        public void ThenTheStreamShouldBeEmpty()
+        {
+            testDataContexts.First().LatestReadEvents.Should().BeEmpty();
+        }
+
 
         private void AddStream()
         {

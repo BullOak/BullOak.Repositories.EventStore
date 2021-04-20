@@ -66,4 +66,4 @@ Scenario: Reconstitute state based on category with two event types up to a give
     And I update the state of visible to be enabled as of '2020-09-22 11:10:00'
 	When I load all my entities as of '2020-09-20 11:10:00' for the streams category
 	Then the load process should succeed
-    And the visibilty should be disabled
+    And the visibility should be disabled
