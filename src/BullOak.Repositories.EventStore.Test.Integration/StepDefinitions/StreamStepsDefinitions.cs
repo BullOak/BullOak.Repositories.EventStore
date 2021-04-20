@@ -292,7 +292,7 @@
         }
 
         [Then(@"I should see all the events")]
-        [Then(@"I should see all the appnded events only")]
+        [Then(@"I should see all the appended events only")]
         public void ThenIShouldSeeAllTheEvents()
         {
             testDataContexts.First().LatestReadEvents.Select(x => x.instance).Should().BeEquivalentTo(testDataContexts.First().LastGeneratedEvents);

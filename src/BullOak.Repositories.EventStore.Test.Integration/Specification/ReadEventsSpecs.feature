@@ -44,7 +44,7 @@ Scenario: Read events after a soft delete by event with subsequant events append
      And I try to save the new events in the stream through their interface
     When I read all the events back from the stream
     Then the load process should succeed
-     And I should see all the appnded events only
+     And I should see all the appended events only
 
 Scenario: Read events after a soft delete by custom event should return empty events
    Given a new stream
@@ -63,4 +63,4 @@ Scenario: Read events after a soft delete by custom event with subsequant events
      And I try to save the new events in the stream through their interface
     When I read all the events back from the stream
     Then the load process should succeed
-     And I should see all the appnded events only
+     And I should see all the appended events only
