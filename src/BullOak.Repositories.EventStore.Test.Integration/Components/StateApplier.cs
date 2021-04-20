@@ -24,7 +24,7 @@
 
         public IHoldHigherOrder Apply(IHoldHigherOrder state, VisibilityEnabledEvent @event)
         {
-            state.Visility = true;
+            state.Visibility = true;
 
             return state;
         }

@@ -20,6 +20,7 @@
         private static readonly IntegrationTestsSettings testsSettings = new IntegrationTestsSettings();
         private readonly EventStoreRepository<string, IHoldHigherOrder> repository;
         public readonly EventStoreReadOnlyRepository<string, IHoldHigherOrder> readOnlyRepository;
+        public readonly EventStoreEventReaderRepository<string> readEventsRepository;
         private static IEventStoreConnection connection;
         private static IDisposable eventStoreIsolation;
 
@@ -41,6 +42,7 @@
 
             repository = new EventStoreRepository<string, IHoldHigherOrder>(validator, configuration, GetConnection(), DateTimeProvider);
             readOnlyRepository = new EventStoreReadOnlyRepository<string, IHoldHigherOrder>(configuration, GetConnection());
+            readEventsRepository = new EventStoreEventReaderRepository<string>(configuration, GetConnection());
         }
 
         private static IEventStoreConnection GetConnection()
@@ -86,11 +88,11 @@
             }
         }
 
+        public Task HardDeleteStream(string id, int expectedVersion = -1)
+            => GetConnection().DeleteStreamAsync(id, expectedVersion, hardDelete: true);
+
         public Task SoftDeleteStream(string id)
             => repository.SoftDelete(id);
-
-        public Task HardDeleteStream(string id)
-            => GetConnection().DeleteStreamAsync(id, -1, true);
 
         public Task SoftDeleteByEvent(string id)
             => repository.SoftDeleteByEvent(id);

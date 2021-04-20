@@ -14,7 +14,7 @@
 
         public EventStoreReadOnlyRepository(IHoldAllConfiguration configs, IEventStoreConnection connection)
         {
-            this.configs = configs ?? throw new ArgumentNullException(nameof(connection));
+            this.configs = configs ?? throw new ArgumentNullException(nameof(configs));
 
             reader = new EventReader(connection, configs);
         }
