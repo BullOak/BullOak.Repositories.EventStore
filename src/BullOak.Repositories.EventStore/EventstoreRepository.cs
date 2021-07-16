@@ -57,8 +57,8 @@
                 // If the last event is a soft delete then we consider the stream to not exist
                 if (eventsTail.Events.Length > 0)
                 {
-                    var (@event, _) = eventsTail.Events[0].ToItemWithType(configs.StateFactory);
-                    return !@event.IsSoftDeleteEvent();
+                    var itemWithTypeOption = eventsTail.Events[0].ToItemWithType(configs.StateFactory);
+                    return itemWithTypeOption?.Item.IsSoftDeleteEvent() ?? false;
                 }
 
                 return true;
@@ -90,7 +90,15 @@
         {
             var id = selector.ToString();
             var expectedVersion = await GetLastEventNumber(id);
-            await connection.DeleteStreamAsync(id, expectedVersion);
+            try
+            {
+                await connection.DeleteStreamAsync(id, expectedVersion);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                throw;
+            }
         }
 
         public Task SoftDeleteByEvent(TId selector)

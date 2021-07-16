@@ -9,11 +9,13 @@
 
     internal static class EventConversion
     {
-        public static (ItemWithType Item, IHoldMetadata Metadata) ToItemWithType(this ResolvedEvent resolvedEvent, ICreateStateInstances stateFactory)
+        public static (ItemWithType Item, IHoldMetadata Metadata)? ToItemWithType(this ResolvedEvent resolvedEvent, ICreateStateInstances stateFactory)
         {
+            if (resolvedEvent.Event?.Data == null) return null;
             var serializedEvent = System.Text.Encoding.UTF8.GetString(resolvedEvent.Event.Data);
 
             var (metadata, type) = ReadTypeFromMetadata(resolvedEvent);
+            if (type == null) return null;
 
             object @event;
 
@@ -22,7 +24,7 @@
                 @event = stateFactory.GetState(type);
                 var switchable = @event as ICanSwitchBackAndToReadOnly;
 
-                if(switchable!=null)
+                if (switchable != null)
                     switchable.CanEdit = true;
 
                 JsonConvert.PopulateObject(serializedEvent, @event);

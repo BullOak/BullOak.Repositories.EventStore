@@ -43,7 +43,9 @@
 
                     var newEvents =
                         currentSlice.Events
-                            .Select(x => new KeyValuePair<string, (ItemWithType Item, IHoldMetadata Metadata)>(x.Event.EventStreamId, x.ToItemWithType(stateFactory)))
+                            .Select(x => (ResolvedEvent: x, ItemWithTypeOption: x.ToItemWithType(stateFactory)))
+                            .Where((x,_) => x.ItemWithTypeOption.HasValue)
+                            .Select((x,_) => new KeyValuePair<string, (ItemWithType Item, IHoldMetadata Metadata)>(x.ResolvedEvent.Event.EventStreamId, x.ItemWithTypeOption.Value))
                             .TakeWhile(deserialised => streamReaderStrategy.TakeWhile(deserialised.Value.Item))
                             .Where(deserialised => !appliesAt.HasValue || deserialised.Value.Metadata.ShouldInclude(appliesAt.Value))
                             .ToList();

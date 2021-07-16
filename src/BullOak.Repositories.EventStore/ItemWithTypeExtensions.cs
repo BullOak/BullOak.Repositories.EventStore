@@ -35,6 +35,7 @@
         }
 
         public static bool IsSoftDeleteEvent(this ItemWithType @event)
-            => @event.type == DefaultSoftDeleteEvent.Type || @event.type.IsSubclassOf(DefaultSoftDeleteEvent.Type);
+            => @event.type == DefaultSoftDeleteEvent.Type ||
+               @event.type?.IsSubclassOf(DefaultSoftDeleteEvent.Type) == true;
     }
 }
