@@ -90,16 +90,8 @@
         {
             var id = selector.ToString();
             var expectedVersion = await GetLastEventNumber(id);
-            try
-            {
-                await connection.DeleteStreamAsync(id, expectedVersion);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-                throw;
-            }
-        }
+            await connection.DeleteStreamAsync(id, expectedVersion);
+        }~
 
         public Task SoftDeleteByEvent(TId selector)
             => SoftDeleteByEventImpl(selector, DefaultSoftDeleteEvent.ItemWithType.CreateEventData(dateTimeProvider));
