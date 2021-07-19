@@ -1,7 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+      <IsPackable>false</IsPackable>
+      <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+      <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
+      <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+      <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
   </PropertyGroup>
 
   <ItemGroup>
