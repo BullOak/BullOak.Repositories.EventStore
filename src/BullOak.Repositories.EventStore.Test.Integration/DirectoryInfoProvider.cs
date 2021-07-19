@@ -8,8 +8,8 @@
     {
         private static Lazy<DirectoryInfo> DirectoryInfo => new Lazy<DirectoryInfo>(() =>
         {
-            var assemblyPath = (new Uri(Assembly.GetExecutingAssembly().CodeBase)).LocalPath;
-            return new DirectoryInfo(Path.GetDirectoryName(assemblyPath));
+            var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? Directory.GetCurrentDirectory();
+            return new DirectoryInfo(assemblyPath);
         });
 
         public static DirectoryInfo Get() => DirectoryInfo.Value;

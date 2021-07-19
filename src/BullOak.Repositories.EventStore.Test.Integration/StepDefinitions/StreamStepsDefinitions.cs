@@ -7,6 +7,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text;
     using System.Threading.Tasks;
     using Polly;
     using Polly.Retry;
@@ -71,11 +72,11 @@
         {
             var testDataContext = testDataContexts.First();
             var visibleEvent = new VisibilityEnabledEvent(testDataContext.RawStreamId, 0);
-            eventStoreContainer.DateTimeProvider.AddTestTimes(new List<DateTime>{ datetime });
+            eventStoreContainer.DateTimeProvider.AddTestTimes(new List<DateTime> { datetime });
 
             using (var session = await eventStoreContainer.StartSession(testDataContext.CurrentStreamId))
             {
-                testDataContext.LastGeneratedEvents = new List<IMyEvent>{ visibleEvent };
+                testDataContext.LastGeneratedEvents = new List<IMyEvent> { visibleEvent };
                 session.AddEvent(visibleEvent);
 
                 await session.SaveChanges();
@@ -164,16 +165,18 @@
         {
             var exceptionObserved = false;
 
+            var errors = new StringBuilder();
+
             foreach (var testDataContext in testDataContexts)
             {
                 if (testDataContext.RecordedException == null)
                     continue;
 
-                Console.WriteLine(testDataContext.RecordedException);
+                errors.AppendLine(testDataContext.RecordedException.ToString());
                 exceptionObserved = true;
             }
 
-            exceptionObserved.Should().BeFalse();
+            exceptionObserved.Should().BeFalse(errors.ToString());
         }
 
         [Then(@"HighOrder property for stream (.*) should be (.*)")]
