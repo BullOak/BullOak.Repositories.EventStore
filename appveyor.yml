@@ -10,7 +10,7 @@ version: 2.6.{build}
 
 environment:
 #  standard_version: '2.2.$(appveyor_build_number)'
-  standard_version: '2.6.0'
+  standard_version: '2.6.2'
 
 
 before_build:
@@ -33,7 +33,7 @@ max_jobs: 1
 #---------------------------------#
 
 # Build worker image (VM template)
-image: Visual Studio 2017
+image: Visual Studio 2019
 
 # clone directory
 clone_folder: c:\projects\BullOak.Repositories.EventStore
