@@ -43,13 +43,13 @@ jobs:
       - name: Restore dependencies
         run: |
           echo "$PATH"
-          sudo /root/.dotnet/dotnet restore
+          dotnet restore
         working-directory: ./src
       - name: Build
         run: dotnet build --no-restore
         working-directory: ./src
       - name: Test
-        run: sudo /root/.dotnet/dotnet test --no-build --verbosity detailed
+        run: dotnet test --no-build --verbosity detailed
         working-directory: ./src
 
 #  cleanup:
