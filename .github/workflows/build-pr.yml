@@ -7,24 +7,61 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
-
+  stop-previous-ESDB:
     runs-on: ubuntu-latest
+    steps:
+      - name: Stop previous ESDB image
+        run: docker stop esdbnode
+      - name: Remove stoppped ESDB image
+        run: docker rm esdbnode
+
+  start-ESDB:
+    runs-on: ubuntu-latest
+    needs: stop-previous-ESDB
+    if: always()
+    steps:
+      - name: Run ESDB image
+        run: docker run -d --name esdbnode -it -p 2113:2113 -p 1113:1113 eventstore/eventstore:latest --insecure --run-projections=All
+
+  get-variables:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read source data
+        run: |
+          echo ::set-output name=SOURCE_NAME::${GITHUB_REF#refs/*/}
+          echo ::set-output name=SOURCE_BRANCH::${GITHUB_REF#refs/heads/}
+          echo ::set-output name=SOURCE_TAG::${GITHUB_REF#refs/tags/}            
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [start-ESDB, get-variables]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Run ESDB image
-      run: docker run -d --name esdbnode --rm -it -p 2113:2113 -p 1113:1113 eventstore/eventstore:latest --insecure --run-projections=All
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 5.0.x
-    - name: Restore dependencies
-      run: dotnet restore
-      working-directory: ./src
-    - name: Build
-      run: dotnet build --no-restore
-      working-directory: ./src
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
-      working-directory: ./src
+      - uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.x
+      - name: Restore dependencies
+        run: |
+          echo "$PATH"
+          sudo /root/.dotnet/dotnet restore
+        working-directory: ./src
+      - name: Build
+        run: dotnet build --no-restore
+        working-directory: ./src
+      - name: Test
+        run: sudo /root/.dotnet/dotnet test --no-build --verbosity detailed
+        working-directory: ./src
+
+  cleanup:
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [start-ESDB, build]
+
+    steps:
+      - name: Stop previous ESDB image
+        run: docker stop esdbnode
+      - name: Remove stoppped ESDB image
+        run: docker rm esdbnode
+

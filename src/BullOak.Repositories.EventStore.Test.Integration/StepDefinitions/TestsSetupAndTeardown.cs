@@ -28,9 +28,7 @@ namespace BullOak.Repositories.EventStore.Test.Integration.StepDefinitions
         [BeforeTestRun]
         public static Task SetupEventStoreNode()
         {
-            EventStoreIntegrationContext.SetupNode();
-
-            return Task.CompletedTask;
+            return EventStoreIntegrationContext.SetupNode();
         }
 
         [AfterTestRun]
