@@ -15,12 +15,6 @@ jobs:
 #      - name: Remove stoppped ESDB image
 #        run: docker rm esdbnode
 #
-  start-ESDB:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Run ESDB image
-        run: docker run -d --name esdbnode -it -p 2113:2113 -p 1113:1113 eventstore/eventstore:latest --insecure --run-projections=All
-
   get-variables:
     runs-on: ubuntu-latest
     steps:
@@ -32,9 +26,11 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    needs: [start-ESDB, get-variables]
+    needs: get-variables
 
     steps:
+      - name: Run ESDB image
+        run: docker run -d --name esdbnode -it -p 2113:2113 -p 1113:1113 eventstore/eventstore:latest --insecure --run-projections=All
       - uses: actions/checkout@v2
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
