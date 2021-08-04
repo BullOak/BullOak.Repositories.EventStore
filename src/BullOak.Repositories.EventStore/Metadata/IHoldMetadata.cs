@@ -2,10 +2,10 @@
 {
     using System.Collections.Generic;
 
-    internal interface IHoldMetadata
+    public interface IHoldMetadata
     {
-        int MetadataVersion { get; set; }
-        string EventTypeFQN { get; set; }
-        Dictionary<string, string> Properties { get; set; }
+        int MetadataVersion { get; }
+        string EventTypeFQN { get; }
+        Dictionary<string, string> Properties { get; }
     }
 }

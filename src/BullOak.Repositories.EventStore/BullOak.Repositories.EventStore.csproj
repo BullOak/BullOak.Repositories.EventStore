@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1</TargetFrameworks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <LangVersion>7.1</LangVersion>
+    <LangVersion>9.0</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
@@ -29,12 +29,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Streams\IStreamReaderStrategy.cs" />
+    <Compile Remove="Streams\MetadataExtensions.cs" />
+    <Compile Remove="Streams\ReadResult.cs" />
+    <Compile Remove="Streams\ReadStreamBackwardsStrategy.cs" />
+    <Compile Remove="Streams\ReadStreamForwardsStrategy.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
       <None Include="..\..\icons\icon128.png" Pack="true" PackagePath="" />
   </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="BullOak.Repositories" Version="2.6.0" />
-    <PackageReference Include="EventStore.Client" Version="5.0.5" />
+    <PackageReference Include="EventStore.Client.Grpc.Streams" Version="20.10" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.38.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 </Project>

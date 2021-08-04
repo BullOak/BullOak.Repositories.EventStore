@@ -1,54 +1,64 @@
-﻿namespace BullOak.Repositories.EventStore
+﻿using BullOak.Repositories.EventStore.Events;
+using BullOak.Repositories.Exceptions;
+using EventStore.Client;
+
+namespace BullOak.Repositories.EventStore
 {
     using BullOak.Repositories.Session;
-    using global::EventStore.ClientAPI;
     using System;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using Streams;
 
-    public class EventStoreSession<TState> : BaseEventSourcedSession<TState, int>
+    public class EventStoreSession<TState> : BaseEventSourcedSession<TState, long>
     {
         private static readonly Task<int> done = Task.FromResult(0);
 
         private readonly IDateTimeProvider dateTimeProvider;
 
-        private readonly IEventStoreConnection eventStoreConnection;
+        private readonly EventStoreClient client;
         private readonly string streamName;
         private bool isInDisposedState = false;
         private readonly EventReader eventReader;
         private static readonly IValidateState<TState> defaultValidator = new AlwaysPassValidator<TState>();
 
+        private bool streamExists;
+
         public EventStoreSession(IHoldAllConfiguration configuration,
-            IEventStoreConnection eventStoreConnection,
+            EventStoreClient eventStoreClient,
             string streamName,
             IDateTimeProvider dateTimeProvider = null)
-            : this(defaultValidator, configuration, eventStoreConnection, streamName, dateTimeProvider)
+            : this(defaultValidator, configuration, eventStoreClient, streamName, dateTimeProvider)
         {
         }
 
         public EventStoreSession(IValidateState<TState> stateValidator,
             IHoldAllConfiguration configuration,
-            IEventStoreConnection eventStoreConnection,
+            EventStoreClient eventStoreClientclient,
             string streamName,
             IDateTimeProvider dateTimeProvider = null)
             : base(stateValidator, configuration)
         {
-            this.eventStoreConnection =
-                eventStoreConnection ?? throw new ArgumentNullException(nameof(eventStoreConnection));
+            this.client =
+                eventStoreClientclient ?? throw new ArgumentNullException(nameof(eventStoreClientclient));
             this.streamName = streamName ?? throw new ArgumentNullException(nameof(streamName));
             this.dateTimeProvider = dateTimeProvider ?? new SystemDateTimeProvider();
 
-            this.eventReader = new EventReader(eventStoreConnection, configuration);
+            this.eventReader = new EventReader(client, configuration);
         }
 
-        public async Task Initialize(DateTime? appliesAt = null)
+        public async Task Initialize(Func<IAmAStoredEvent, bool> loadEventPredicate = null)
         {
             CheckDisposedState();
             //TODO: user credentials
-            var streamData = await eventReader.ReadFrom(new ReadStreamBackwardsStrategy(streamName), appliesAt);
-            LoadFromEvents(streamData.results.Select(x => x.Event).ToArray(), streamData.streamVersion);
+            var data = await eventReader.ReadFrom(streamName, loadEventPredicate);
+
+            streamExists = data.streamExists;
+
+            var events = await data.events.Reverse().ToArrayAsync();
+
+            LoadFromEvents(events.Select(x=> x.ToItemWithType()).ToArray(), data.streamPosition.ToInt64());
         }
 
         private void CheckDisposedState()
@@ -86,26 +96,32 @@
             checked
             {
                 CheckDisposedState();
-                ConditionalWriteResult writeResult;
+                IWriteResult writeResult;
 
-                writeResult = await eventStoreConnection.ConditionalAppendToStreamAsync(
-                        streamName,
-                        this.ConcurrencyId,
-                        eventsToAdd.Select(eventObject => eventObject.CreateEventData(dateTimeProvider)))
-                    .ConfigureAwait(false);
-
-                StreamAppendHelpers.CheckConditionalWriteResultStatus(writeResult, streamName);
-
-                if (!writeResult.NextExpectedVersion.HasValue)
+                if (!streamExists)
                 {
-                    throw new InvalidOperationException("Eventstore data write outcome unexpected. NextExpectedVersion is null");
+                    writeResult = await client.AppendToStreamAsync(
+                            streamName,
+                            StreamState.NoStream,
+                            eventsToAdd.Select(eventObject => eventObject.CreateEventData(dateTimeProvider)),
+                            options => options.ThrowOnAppendFailure = false)
+                        .ConfigureAwait(false);
+                }
+                else
+                {
+                    writeResult = await client.AppendToStreamAsync(
+                            streamName,
+                            StreamRevision.FromInt64(ConcurrencyId),
+                            eventsToAdd.Select(eventObject => eventObject.CreateEventData(dateTimeProvider)),
+                            options => options.ThrowOnAppendFailure = false)
+                        .ConfigureAwait(false);
                 }
 
-                //TODO: is this necessary?? All tests still pass with it removed
-                //await Initialize();
+                if (writeResult is WrongExpectedVersionResult)
+                    throw new ConcurrencyException(streamName, null);
 
                 ConsiderSessionDisposed();
-                return (int)writeResult.NextExpectedVersion.Value;
+                return (int)writeResult.NextExpectedStreamRevision.ToInt64();
             }
         }
     }

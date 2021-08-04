@@ -1,34 +1,38 @@
-﻿namespace BullOak.Repositories.EventStore
-{
-    using Events;
-    using Exceptions;
-    using Repository;
-    using Session;
-    using global::EventStore.ClientAPI;
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
+﻿using BullOak.Repositories.EventStore.Events;
+using BullOak.Repositories.Repository;
+using BullOak.Repositories.Session;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using BullOak.Repositories.EventStore.Streams;
+using EventStore.Client;
+using StreamNotFoundException = BullOak.Repositories.Exceptions.StreamNotFoundException;
 
+namespace BullOak.Repositories.EventStore
+{
     public class EventStoreRepository<TId, TState> : IStartSessions<TId, TState>, IEventStoreStreamDeleter<TId>
     {
         private readonly IHoldAllConfiguration configs;
-        private readonly IEventStoreConnection connection;
+        private readonly EventStoreClient client;
         private readonly IDateTimeProvider dateTimeProvider;
         private readonly IValidateState<TState> stateValidator;
+        private readonly EventReader eventReader;
 
         private static AlwaysPassValidator<TState> defaultValidator = new AlwaysPassValidator<TState>();
+        private static readonly Func<IAmAStoredEvent, bool> alwaysPassPredicate = _ => true;
 
-        public EventStoreRepository(IValidateState<TState> stateValidator, IHoldAllConfiguration configs, IEventStoreConnection connection, IDateTimeProvider dateTimeProvider = null)
+        public EventStoreRepository(IValidateState<TState> stateValidator, IHoldAllConfiguration configs, EventStoreClient client, IDateTimeProvider dateTimeProvider = null)
         {
             this.stateValidator = stateValidator ?? throw new ArgumentNullException(nameof(stateValidator));
-            this.configs = configs ?? throw new ArgumentNullException(nameof(connection));
-            this.connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            this.configs = configs ?? throw new ArgumentNullException(nameof(configs));
+            this.eventReader = new EventReader(client, configs);
+            this.client = client ?? throw new ArgumentNullException(nameof(client));
             this.dateTimeProvider = dateTimeProvider ?? new SystemDateTimeProvider();
         }
 
         public EventStoreRepository(IHoldAllConfiguration configs,
-            IEventStoreConnection connection)
-            : this(defaultValidator, configs, connection)
+            EventStoreClient client)
+            : this(defaultValidator, configs, client)
         { }
 
         public async Task<IManageSessionOf<TState>> BeginSessionFor(TId id, bool throwIfNotExists = false, DateTime? appliesAt = null)
@@ -36,32 +40,32 @@
             if (throwIfNotExists && !(await Contains(id)))
                 throw new StreamNotFoundException(id.ToString());
 
-            var session = new EventStoreSession<TState>(stateValidator, configs, connection, id.ToString(), dateTimeProvider);
-            await session.Initialize(appliesAt);
+            var session = new EventStoreSession<TState>(stateValidator, configs, client, id.ToString(), dateTimeProvider);
+            await session.Initialize(appliesAt.HasValue
+                ? (IAmAStoredEvent e) => GetBeforeDateEventPredicate(e, appliesAt.Value)
+                : alwaysPassPredicate);
 
             return session;
+        }
+
+        private bool GetBeforeDateEventPredicate(IAmAStoredEvent @event, DateTime appliesAt)
+        {
+            if (@event.Metadata?.Properties == null || !@event.Metadata.Properties.TryGetValue(MetadataProperties.Timestamp,
+                out var eventTimestamp)) return true;
+
+            if (!DateTime.TryParse(eventTimestamp, out var timestamp)) return true;
+
+            return timestamp <= appliesAt;
+
         }
 
         public async Task<bool> Contains(TId selector)
         {
             try
             {
-                var id = selector.ToString();
-                var eventsTail = await GetLastEvent(id);
+                var readResult = await eventReader.ReadFrom(selector.ToString());
 
-                if (eventsTail.Status != SliceReadStatus.Success)
-                {
-                    return false;
-                }
-
-                // If the last event is a soft delete then we consider the stream to not exist
-                if (eventsTail.Events.Length > 0)
-                {
-                    var (@event, _) = eventsTail.Events[0].ToItemWithType(configs.StateFactory);
-                    return !@event.IsSoftDeleteEvent();
-                }
-
-                return true;
+                return readResult.streamExists && await readResult.events.AnyAsync();
             }
             catch (Exception)
             {
@@ -86,16 +90,20 @@
             await SoftDelete(selector);
         }
 
+        //[Obsolete("This doesn't care for other operations. In the future it will be moved to session or renamed.")]
         public async Task SoftDelete(TId selector)
         {
-            var id = selector.ToString();
-            var expectedVersion = await GetLastEventNumber(id);
-            await connection.DeleteStreamAsync(id, expectedVersion);
+            var readResult = await eventReader.ReadFrom(selector.ToString());
+
+            if (readResult.streamExists)
+                await client.SoftDeleteAsync(selector.ToString(), StreamState.Any);
         }
 
+        //[Obsolete("This doesn't care for other operations. In the future it will be moved to session or renamed.")]
         public Task SoftDeleteByEvent(TId selector)
             => SoftDeleteByEventImpl(selector, DefaultSoftDeleteEvent.ItemWithType.CreateEventData(dateTimeProvider));
 
+        //[Obsolete("This doesn't care for other operations. In the future it will be moved to session or renamed.")]
         public async Task SoftDeleteByEvent<TSoftDeleteEventType>(TId selector,
             Func<TSoftDeleteEventType> createSoftDeleteEventFunc)
             where TSoftDeleteEventType : EntitySoftDeleted
@@ -107,25 +115,12 @@
 
         private async Task SoftDeleteByEventImpl(TId selector, EventData softDeleteEvent)
         {
-            var id = selector.ToString();
+            var readResult = await eventReader.ReadFrom(selector.ToString());
 
-            var expectedVersion = await GetLastEventNumber(id);
-            var writeResult = await connection.ConditionalAppendToStreamAsync(
-                    id,
-                    expectedVersion,
-                    new[] { softDeleteEvent })
-                .ConfigureAwait(false);
-
-            StreamAppendHelpers.CheckConditionalWriteResultStatus(writeResult, id);
+            if (readResult.streamExists)
+            {
+                await client.AppendToStreamAsync(selector.ToString(), StreamState.Any, new[] {softDeleteEvent});
+            }
         }
-
-        private async Task<long> GetLastEventNumber(string id)
-        {
-            var eventsTail = await GetLastEvent(id);
-            return eventsTail.LastEventNumber;
-        }
-
-        private Task<StreamEventsSlice> GetLastEvent(string id)
-            => connection.ReadStreamEventsBackwardAsync(id, StreamPosition.End, 1, false);
     }
 }

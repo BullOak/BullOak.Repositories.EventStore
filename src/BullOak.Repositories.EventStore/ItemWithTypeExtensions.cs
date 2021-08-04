@@ -1,12 +1,13 @@
-﻿namespace BullOak.Repositories.EventStore
-{
-    using System;
-    using Events;
-    using global::EventStore.ClientAPI;
-    using Metadata;
-    using Newtonsoft.Json.Linq;
-    using StateEmit;
+﻿using EventStore.Client;
+using System;
+using BullOak.Repositories.EventStore.Events;
+using BullOak.Repositories.EventStore.Metadata;
+using Newtonsoft.Json.Linq;
+using BullOak.Repositories.StateEmit;
 
+
+namespace BullOak.Repositories.EventStore
+{
     public static class ItemWithTypeExtensions
     {
         private static readonly string CanEditJsonFieldName;
@@ -27,9 +28,8 @@
             eventAsJson.Remove(CanEditJsonFieldName);
 
             return new EventData(
-                Guid.NewGuid(),
+                Uuid.NewUuid(),
                 @event.type.Name,
-                true,
                 System.Text.Encoding.UTF8.GetBytes(eventAsJson.ToString()),
                 MetadataSerializer.Serialize(metadata));
         }

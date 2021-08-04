@@ -86,7 +86,16 @@
 
             testDataContext.RecordedException = await Record.ExceptionAsync(async () =>
             {
-                var state = await eventStoreContainer.readOnlyRepository.ReadFrom(testDataContext.CurrentStreamId.ToString(), appliesAt);
+                var state = await eventStoreContainer.readOnlyRepository.ReadFrom(testDataContext.CurrentStreamId.ToString(),
+                    e =>
+                    {
+                        if (e.Metadata?.Properties == null || !e.Metadata.Properties.TryGetValue(MetadataProperties.Timestamp,
+                            out var eventTimestamp)) return true;
+
+                        if (!DateTime.TryParse(eventTimestamp, out var timestamp)) return true;
+
+                        return timestamp <= appliesAt;
+                    });
                 testDataContext.LatestLoadedState = state;
             });
         }

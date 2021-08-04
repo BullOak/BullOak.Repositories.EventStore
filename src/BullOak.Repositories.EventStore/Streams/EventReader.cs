@@ -1,80 +1,85 @@
-﻿namespace BullOak.Repositories.EventStore.Streams
+﻿using System.Text.Json;
+using EventStore.Client;
+using System.Threading;
+
+namespace BullOak.Repositories.EventStore.Streams
 {
+    using Events;
+    using Metadata;
+    using StateEmit;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using Events;
-    using global::EventStore.ClientAPI;
-    using Metadata;
-    using StateEmit;
 
     internal class EventReader : IReadEventsFromStream
     {
         private readonly ICreateStateInstances stateFactory;
-        private readonly IEventStoreConnection eventStoreConnection;
+        private readonly EventStoreClient client;
+        private static readonly IAsyncEnumerable<StoredEvent> emptyReadResult = new StoredEvent[0].ToAsyncEnumerable();
 
-        public EventReader(IEventStoreConnection connection, IHoldAllConfiguration configuration)
+        public EventReader(EventStoreClient client, IHoldAllConfiguration configuration)
         {
             stateFactory = configuration?.StateFactory ?? throw new ArgumentNullException(nameof(configuration));
-            eventStoreConnection = connection ?? throw new ArgumentNullException(nameof(connection));
+            this.client = client ?? throw new ArgumentNullException(nameof(client));
         }
 
-        public async Task<StreamReadResults> ReadFrom(IStreamReaderStrategy streamReaderStrategy, DateTime? appliesAt = null)
+        public async Task<StreamReadResults> ReadFrom(string streamId, Func<IAmAStoredEvent, bool> predicate = null, Direction direction = Direction.Backwards, CancellationToken cancellationToken = default)
         {
-            checked
+            var readResult = client.ReadStreamAsync(direction,
+                streamId,
+                direction == Direction.Backwards ? StreamPosition.End : StreamPosition.Start,
+                resolveLinkTos: true,
+                configureOperationOptions: options => options.TimeoutAfter = TimeSpan.FromSeconds(30),
+                cancellationToken: cancellationToken);
+
+            bool streamExists = false;
+            try
             {
-                var currentVersion = -1;
-                var nextSliceStart = streamReaderStrategy.NextSliceStart;
-                var streamsEvents = new List<KeyValuePair<string, (ItemWithType Item, IHoldMetadata Metadata)>>();
-
-                do
-                {
-                    var currentSlice = await streamReaderStrategy.GetCurrentSlice(eventStoreConnection, nextSliceStart, true);
-
-                    if (currentSlice.Status == SliceReadStatus.StreamDeleted || currentSlice.Status == SliceReadStatus.StreamNotFound)
-                    {
-                        currentVersion = -1;
-
-                        break;
-                    }
-
-                    nextSliceStart = currentSlice.NextEventNumber;
-
-                    var newEvents =
-                        currentSlice.Events
-                            .Select(x => new KeyValuePair<string, (ItemWithType Item, IHoldMetadata Metadata)>(x.Event.EventStreamId, x.ToItemWithType(stateFactory)))
-                            .TakeWhile(deserialised => streamReaderStrategy.TakeWhile(deserialised.Value.Item))
-                            .Where(deserialised => !appliesAt.HasValue || deserialised.Value.Metadata.ShouldInclude(appliesAt.Value))
-                            .ToList();
-
-                    if (currentVersion == -1)
-                    {
-                        currentVersion = (int)currentSlice.LastEventNumber;
-                    }
-
-                    streamsEvents.AddRange(newEvents);
-
-                } while (streamReaderStrategy.CanRead);
-
-                return streamReaderStrategy.BuildResults(GroupEventsByEventStreamId(streamsEvents), currentVersion);
+                var readState = await readResult.ReadState;
+                streamExists = readState == ReadState.Ok;
             }
-        }
-
-        private static Dictionary<string, List<(ItemWithType Item, IHoldMetadata Metadata)>> GroupEventsByEventStreamId(List<KeyValuePair<string, (ItemWithType Item, IHoldMetadata Metadata)>> streamsEvents)
-        {
-            var streamsEventDictionary = new Dictionary<string, List<(ItemWithType Item, IHoldMetadata Metadata)>>();
-
-            foreach (var eventWithId in streamsEvents)
+#pragma warning disable 168
+            catch (StreamDeletedException ex)
+            // This happens when the stream is hard-deleted. We don't want to throw in that case
+#pragma warning restore 168
             {
-                if (streamsEventDictionary.ContainsKey(eventWithId.Key))
-                    streamsEventDictionary[eventWithId.Key].Add(eventWithId.Value);
-                else
-                    streamsEventDictionary.Add(eventWithId.Key,
-                        new List<(ItemWithType Item, IHoldMetadata Metadata)> { eventWithId.Value });
+                streamExists = false;
             }
 
-            return streamsEventDictionary;
+            if (!streamExists)
+                return new StreamReadResults(emptyReadResult, false, StreamPosition.FromInt64(-1));
+
+            predicate ??= _ => true;
+
+            var lastIndex = (await client.ReadStreamAsync(Direction.Backwards, streamId,
+                revision: StreamPosition.End,
+                maxCount: 1,
+                resolveLinkTos: false).FirstAsync(cancellationToken)).OriginalEventNumber;
+
+            IAsyncEnumerable<StoredEvent> storedEvents;
+            if (direction == Direction.Backwards)
+            {
+                storedEvents = readResult
+                    // Trust me, resharper is wrong in this one. Event can be null
+                    // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+                    .Where(e => e.Event != null)
+                    .Select((e, _) => e.Event.ToStoredEvent(stateFactory))
+                    .TakeWhile(e => e.DeserializedEvent is not EntitySoftDeleted)
+                    .Where(e => predicate(e));
+            }
+            else
+            {
+                storedEvents = readResult
+                    // Trust me, resharper is wrong in this one. Event can be null
+                    // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+                    .Where(e => e.Event != null)
+                    .Select((e, c) => e.Event.ToStoredEvent(stateFactory))
+                    .Where(e => predicate(e));
+            }
+
+
+            return new StreamReadResults(storedEvents, true, lastIndex);
         }
     }
 }

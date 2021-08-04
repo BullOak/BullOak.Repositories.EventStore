@@ -1,10 +1,11 @@
-﻿namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
+﻿using EventStore.Client;
+
+namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
 {
     using Config;
     using Components;
     using EventStoreIsolation;
     using Session;
-    using global::EventStore.ClientAPI;
     using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
@@ -12,7 +13,6 @@
     using System.Reflection;
     using System.Threading.Tasks;
     using Events;
-    using global::EventStore.ClientAPI.SystemData;
     using TechTalk.SpecFlow;
 
     internal class EventStoreIntegrationContext
@@ -20,7 +20,7 @@
         private static readonly IntegrationTestsSettings testsSettings = new IntegrationTestsSettings();
         private readonly EventStoreRepository<string, IHoldHigherOrder> repository;
         public readonly EventStoreReadOnlyRepository<string, IHoldHigherOrder> readOnlyRepository;
-        private static IEventStoreConnection connection;
+        private static EventStoreClient client;
         private static IDisposable eventStoreIsolation;
 
         public TestDateTimeProvider DateTimeProvider { get; }
@@ -43,21 +43,20 @@
             readOnlyRepository = new EventStoreReadOnlyRepository<string, IHoldHigherOrder>(configuration, GetConnection());
         }
 
-        private static IEventStoreConnection GetConnection()
+        private static EventStoreClient GetConnection()
         {
-            return connection;
+            return client;
         }
 
         [BeforeTestRun]
-        public static async Task SetupNode()
+        public static void SetupNode()
         {
             eventStoreIsolation = IsolationFactory.StartIsolation(
                 testsSettings.EventStoreIsolationMode,
                 testsSettings.EventStoreIsolationCommand,
                 testsSettings.EventStoreIsolationArguments);
 
-            if (connection == null)
-                connection = await SetupConnection();
+            client ??= SetupConnection();
         }
 
         [AfterTestRun]
@@ -74,7 +73,15 @@
 
         public async Task<IEnumerable<ReadModel<IHoldHigherOrder>>> ReadAllEntitiesFromCategory(string categoryName, DateTime? appliesAt = null)
         {
-            return await readOnlyRepository.ReadAllEntitiesFromCategory(categoryName, appliesAt: appliesAt).ConfigureAwait(false);
+            return await readOnlyRepository.ReadAllEntitiesFromCategory(categoryName, e =>
+            {
+                if (!appliesAt.HasValue || e.Metadata?.Properties == null || !e.Metadata.Properties.TryGetValue(MetadataProperties.Timestamp,
+                    out var eventTimestamp)) return true;
+
+                if (!DateTime.TryParse(eventTimestamp, out var timestamp)) return true;
+
+                return timestamp <= appliesAt;
+            }).ConfigureAwait(false);
         }
 
         public async Task AppendEventsToCurrentStream(string id, IMyEvent[] events)
@@ -90,7 +97,7 @@
             => repository.SoftDelete(id);
 
         public Task HardDeleteStream(string id)
-            => GetConnection().DeleteStreamAsync(id, -1, true);
+            => GetConnection().TombstoneAsync(id, StreamState.Any);
 
         public Task SoftDeleteByEvent(string id)
             => repository.SoftDeleteByEvent(id);
@@ -101,55 +108,42 @@
 
         public async Task<ResolvedEvent[]> ReadEventsFromStreamRaw(string id)
         {
-            var conn = GetConnection();
+            var client = GetConnection();
             var result = new List<ResolvedEvent>();
-            StreamEventsSlice currentSlice;
-            long nextSliceStart = StreamPosition.Start;
-            do
-            {
-                currentSlice = await conn.ReadStreamEventsForwardAsync(id, nextSliceStart, 100, false);
-                nextSliceStart = currentSlice.NextEventNumber;
-                result.AddRange(currentSlice.Events);
-            } while (!currentSlice.IsEndOfStream);
+            var readResults = client.ReadStreamAsync(Direction.Forwards, id, StreamPosition.Start);
 
-            return result.ToArray();
+            return await readResults.ToArrayAsync();
         }
 
         internal async Task WriteEventsToStreamRaw(string currentStreamInUse, IEnumerable<MyEvent> myEvents)
         {
-            var conn = await SetupConnection(false);
+            var conn = SetupConnection();
 
-            await conn.AppendToStreamAsync(currentStreamInUse, ExpectedVersion.Any,
+            await conn.AppendToStreamAsync(currentStreamInUse, StreamState.Any,
                 myEvents.Select(e =>
                 {
                     var serialized = JsonConvert.SerializeObject(e);
                     byte[] bytes = System.Text.Encoding.UTF8.GetBytes(serialized);
-                    return new EventData(Guid.NewGuid(),
+                    return new EventData(Uuid.NewUuid(),
                         e.GetType().AssemblyQualifiedName,
-                        true,
                         bytes,
                         null);
                 }));
         }
 
-        private static async Task<IEventStoreConnection> SetupConnection(bool withDefaultUser = true)
+        private static EventStoreClient SetupConnection()
         {
-            var settings = ConnectionSettings
-                .Create()
-                .KeepReconnecting()
-                .FailOnNoServerResponse()
-                .KeepRetrying()
-                .UseConsoleLogger();
+            var settings = EventStoreClientSettings
+                .Create("esdb://localhost:2113?tls=false");
+            var client = new EventStoreClient(settings);
 
-            if (withDefaultUser)
-                settings.SetDefaultUserCredentials(new UserCredentials("admin", "changeit"));
+            //var settings = ConnectionSettings
+            //    .Create()
+            //    .KeepReconnecting()
+            //    .FailOnNoServerResponse()
+            //    .KeepRetrying()
 
-            const string localhostConnectionString = "ConnectTo=tcp://localhost:1113; HeartBeatTimeout=500";
-
-            connection = EventStoreConnection.Create(localhostConnectionString, settings);
-            await connection.ConnectAsync();
-
-            return connection;
+            return client;
         }
     }
 }

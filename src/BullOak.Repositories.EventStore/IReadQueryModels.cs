@@ -1,4 +1,6 @@
-﻿namespace BullOak.Repositories.EventStore
+﻿using BullOak.Repositories.EventStore.Events;
+
+namespace BullOak.Repositories.EventStore
 {
     using System;
     using System.Collections.Generic;
@@ -7,9 +9,9 @@
     public interface IReadQueryModels<in TId, TState>
     {
         Task<ReadModel<TState>> ReadFrom(TId id);
-        Task<TState> ReadFrom(TId id, DateTime appliesAt);
+        Task<TState> ReadFrom(TId id, Func<IAmAStoredEvent, bool> predicate);
 
         Task<IEnumerable<ReadModel<TState>>> ReadAllEntitiesFromCategory(string categoryName,
-            DateTime? appliesAt = null);
+            Func<IAmAStoredEvent, bool> predicate = null);
     }
 }

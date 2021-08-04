@@ -1,48 +1,64 @@
-﻿namespace BullOak.Repositories.EventStore
+﻿using BullOak.Repositories.EventStore.Events;
+using BullOak.Repositories.EventStore.Metadata;
+using EventStore.Client;
+
+namespace BullOak.Repositories.EventStore
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using global::EventStore.ClientAPI;
     using Streams;
+
 
     public class EventStoreReadOnlyRepository<TId, TState> : IReadQueryModels<TId, TState>
     {
         private readonly IHoldAllConfiguration configs;
         private readonly EventReader reader;
 
-        public EventStoreReadOnlyRepository(IHoldAllConfiguration configs, IEventStoreConnection connection)
+        public EventStoreReadOnlyRepository(IHoldAllConfiguration configs, EventStoreClient esClient)
         {
-            this.configs = configs ?? throw new ArgumentNullException(nameof(connection));
+            new EventStoreClient(EventStoreClientSettings.Create("esdb://localhost:2113?tls=false"));
+            this.configs = configs ?? throw new ArgumentNullException(nameof(configs));
 
-            reader = new EventReader(connection, configs);
+            reader = new EventReader(esClient, configs);
         }
 
         public async Task<ReadModel<TState>> ReadFrom(TId id)
         {
-            var streamData = await reader.ReadFrom(new ReadStreamBackwardsStrategy(id.ToString()));
-            var rehydratedState = configs.StateRehydrator.RehydrateFrom<TState>(streamData.results.Select(x => x.Event));
+            var streamData = await reader.ReadFrom(id.ToString());
+            var events = await streamData.events.Reverse().Select(x=> x.ToItemWithType()).ToArrayAsync();
+            var rehydratedState = configs.StateRehydrator.RehydrateFrom<TState>(events);
 
-            return new ReadModel<TState>(rehydratedState, streamData.streamVersion);
+            //TODO: REPLACE WHEN BO CHANGES TO LONG!!
+            return new ReadModel<TState>(rehydratedState, (int)streamData.streamPosition.ToInt64());
         }
 
-        public async Task<TState> ReadFrom(TId id, DateTime appliesAt)
+        public async Task<TState> ReadFrom(TId id, Func<IAmAStoredEvent, bool> loadEventPredicate)
         {
-            var streamData = await reader.ReadFrom(new ReadStreamBackwardsStrategy(id.ToString()), appliesAt);
-            return configs.StateRehydrator.RehydrateFrom<TState>(streamData.results.Select(x => x.Event));
+            var streamData = await reader.ReadFrom(id.ToString(), loadEventPredicate);
+            var events = await streamData.events.Select(x=> x.ToItemWithType()).ToArrayAsync();
+            return configs.StateRehydrator.RehydrateFrom<TState>(events);
         }
 
-        public async Task<IEnumerable<ReadModel<TState>>> ReadAllEntitiesFromCategory(string categoryName, DateTime? appliesAt = null)
+        public async Task<IEnumerable<ReadModel<TState>>> ReadAllEntitiesFromCategory(string categoryName,
+            Func<IAmAStoredEvent, bool> loadEventPredicate = null)
         {
-            var streamsData = await reader.ReadFrom(new ReadStreamForwardsStrategy($"$ce-{categoryName}"), appliesAt);
+            var streamsData = await reader.ReadFrom($"$ce-{categoryName}", direction: Direction.Forwards,
+                predicate: loadEventPredicate);
 
-            var eventStreams = streamsData.results.GroupBy(x => x.EventStreamId);
+            var eventsByStream = await streamsData.events.GroupBy(x => x.StreamId)
+                .SelectAwait(async group =>
+                {
+                    var events = await group.ToArrayAsync();
+                    var state = configs.StateRehydrator.RehydrateFrom<TState>(events.Select(x => x.ToItemWithType()));
 
-            return eventStreams
-                .Select(eventStream => eventStream.Select(x => x.Event))
-                .Select(events => new ReadModel<TState>(configs.StateRehydrator.RehydrateFrom<TState>(events), streamsData.streamVersion))
-                .ToList();
+                    return (state, currentStreamVersion: events.Length > 0 ? (int) events.Last().PositionInStream : -1);
+                })
+                .Select(x => new ReadModel<TState>(x.state, x.currentStreamVersion))
+                .ToListAsync();
+
+            return eventsByStream;
         }
     }
 }
