@@ -14,7 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Run ESDB image
-      run: docker run -d --name --rm esdbnode -it -p 2113:2113 -p 1113:1113 eventstore/eventstore:latest --insecure --run-projections=All
+      run: docker run -d --name esdbnode --rm -it -p 2113:2113 -p 1113:1113 eventstore/eventstore:latest --insecure --run-projections=All
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
