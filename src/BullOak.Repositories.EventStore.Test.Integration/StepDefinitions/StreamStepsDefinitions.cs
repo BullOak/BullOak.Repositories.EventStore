@@ -11,7 +11,6 @@
     using Polly;
     using Polly.Retry;
     using TechTalk.SpecFlow;
-    using Xunit;
 
     [Binding]
     internal class SaveEventsStreamSteps

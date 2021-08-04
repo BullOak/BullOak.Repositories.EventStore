@@ -49,14 +49,14 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
         }
 
         [BeforeTestRun]
-        public static void SetupNode()
+        public static async Task SetupNode()
         {
             eventStoreIsolation = IsolationFactory.StartIsolation(
                 testsSettings.EventStoreIsolationMode,
                 testsSettings.EventStoreIsolationCommand,
                 testsSettings.EventStoreIsolationArguments);
 
-            client ??= SetupConnection();
+            client ??= await SetupConnection();
         }
 
         [AfterTestRun]
@@ -117,7 +117,7 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
 
         internal async Task WriteEventsToStreamRaw(string currentStreamInUse, IEnumerable<MyEvent> myEvents)
         {
-            var conn = SetupConnection();
+            var conn = await SetupConnection();
 
             await conn.AppendToStreamAsync(currentStreamInUse, StreamState.Any,
                 myEvents.Select(e =>
@@ -131,11 +131,14 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
                 }));
         }
 
-        private static EventStoreClient SetupConnection()
+        private static async Task<EventStoreClient> SetupConnection()
         {
             var settings = EventStoreClientSettings
                 .Create("esdb://localhost:2113?tls=false");
             var client = new EventStoreClient(settings);
+
+            var projectionClient = new EventStoreProjectionManagementClient(settings);
+            await projectionClient.EnableAsync("$by_category");
 
             //var settings = ConnectionSettings
             //    .Create()

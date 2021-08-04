@@ -19,25 +19,20 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Specification
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("TechTalk.SpecFlow", "3.9.0.0")]
     [System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public partial class SaveEventsStreamFeature : object, Xunit.IClassFixture<SaveEventsStreamFeature.FixtureData>, System.IDisposable
+    [NUnit.Framework.TestFixtureAttribute()]
+    [NUnit.Framework.DescriptionAttribute("SaveEventsStream")]
+    public partial class SaveEventsStreamFeature
     {
         
-        private static TechTalk.SpecFlow.ITestRunner testRunner;
+        private TechTalk.SpecFlow.ITestRunner testRunner;
         
         private string[] _featureTags = ((string[])(null));
-        
-        private Xunit.Abstractions.ITestOutputHelper _testOutputHelper;
         
 #line 1 "SaveEventStream.feature"
 #line hidden
         
-        public SaveEventsStreamFeature(SaveEventsStreamFeature.FixtureData fixtureData, BullOak_Repositories_EventStore_Test_Integration_XUnitAssemblyFixture assemblyFixture, Xunit.Abstractions.ITestOutputHelper testOutputHelper)
-        {
-            this._testOutputHelper = testOutputHelper;
-            this.TestInitialize();
-        }
-        
-        public static void FeatureSetup()
+        [NUnit.Framework.OneTimeSetUpAttribute()]
+        public virtual void FeatureSetup()
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
             TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Specification", "SaveEventsStream", "\tIn order to persist using an event stream\r\n\tAs a developer usint this new librar" +
@@ -45,16 +40,19 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Specification
             testRunner.OnFeatureStart(featureInfo);
         }
         
-        public static void FeatureTearDown()
+        [NUnit.Framework.OneTimeTearDownAttribute()]
+        public virtual void FeatureTearDown()
         {
             testRunner.OnFeatureEnd();
             testRunner = null;
         }
         
+        [NUnit.Framework.SetUpAttribute()]
         public virtual void TestInitialize()
         {
         }
         
+        [NUnit.Framework.TearDownAttribute()]
         public virtual void TestTearDown()
         {
             testRunner.OnScenarioEnd();
@@ -63,7 +61,7 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Specification
         public virtual void ScenarioInitialize(TechTalk.SpecFlow.ScenarioInfo scenarioInfo)
         {
             testRunner.OnScenarioInitialize(scenarioInfo);
-            testRunner.ScenarioContext.ScenarioContainer.RegisterInstanceAs<Xunit.Abstractions.ITestOutputHelper>(_testOutputHelper);
+            testRunner.ScenarioContext.ScenarioContainer.RegisterInstanceAs<NUnit.Framework.TestContext>(NUnit.Framework.TestContext.CurrentContext);
         }
         
         public virtual void ScenarioStart()
@@ -76,17 +74,11 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Specification
             testRunner.CollectScenarioErrors();
         }
         
-        void System.IDisposable.Dispose()
-        {
-            this.TestTearDown();
-        }
-        
-        [Xunit.SkippableTheoryAttribute(DisplayName="Save events in a new stream")]
-        [Xunit.TraitAttribute("FeatureTitle", "SaveEventsStream")]
-        [Xunit.TraitAttribute("Description", "Save events in a new stream")]
-        [Xunit.InlineDataAttribute("1", new string[0])]
-        [Xunit.InlineDataAttribute("30", new string[0])]
-        [Xunit.InlineDataAttribute("10000", new string[0])]
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Save events in a new stream")]
+        [NUnit.Framework.TestCaseAttribute("1", null)]
+        [NUnit.Framework.TestCaseAttribute("30", null)]
+        [NUnit.Framework.TestCaseAttribute("10000", null)]
         public virtual void SaveEventsInANewStream(string eventsCount, string[] exampleTags)
         {
             string[] tagsOfScenario = exampleTags;
@@ -132,9 +124,8 @@ this.ScenarioInitialize(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableFactAttribute(DisplayName="Save one event using interface")]
-        [Xunit.TraitAttribute("FeatureTitle", "SaveEventsStream")]
-        [Xunit.TraitAttribute("Description", "Save one event using interface")]
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Save one event using interface")]
         public virtual void SaveOneEventUsingInterface()
         {
             string[] tagsOfScenario = ((string[])(null));
@@ -176,9 +167,8 @@ this.ScenarioInitialize(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableFactAttribute(DisplayName="Save additional events in an existing stream")]
-        [Xunit.TraitAttribute("FeatureTitle", "SaveEventsStream")]
-        [Xunit.TraitAttribute("Description", "Save additional events in an existing stream")]
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Save additional events in an existing stream")]
         public virtual void SaveAdditionalEventsInAnExistingStream()
         {
             string[] tagsOfScenario = ((string[])(null));
@@ -223,9 +213,8 @@ this.ScenarioInitialize(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableFactAttribute(DisplayName="Concurrent write should fail for outdated session")]
-        [Xunit.TraitAttribute("FeatureTitle", "SaveEventsStream")]
-        [Xunit.TraitAttribute("Description", "Concurrent write should fail for outdated session")]
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Concurrent write should fail for outdated session")]
         public virtual void ConcurrentWriteShouldFailForOutdatedSession()
         {
             string[] tagsOfScenario = ((string[])(null));
@@ -285,9 +274,8 @@ this.ScenarioInitialize(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableFactAttribute(DisplayName="Saving already saved session should throw meaningful usage advice exception")]
-        [Xunit.TraitAttribute("FeatureTitle", "SaveEventsStream")]
-        [Xunit.TraitAttribute("Description", "Saving already saved session should throw meaningful usage advice exception")]
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Saving already saved session should throw meaningful usage advice exception")]
         public virtual void SavingAlreadySavedSessionShouldThrowMeaningfulUsageAdviceException()
         {
             string[] tagsOfScenario = ((string[])(null));
@@ -338,9 +326,8 @@ this.ScenarioInitialize(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableFactAttribute(DisplayName="Write after a hard deleted stream should fail")]
-        [Xunit.TraitAttribute("FeatureTitle", "SaveEventsStream")]
-        [Xunit.TraitAttribute("Description", "Write after a hard deleted stream should fail")]
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Write after a hard deleted stream should fail")]
         public virtual void WriteAfterAHardDeletedStreamShouldFail()
         {
             string[] tagsOfScenario = ((string[])(null));
@@ -388,9 +375,8 @@ this.ScenarioInitialize(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableFactAttribute(DisplayName="Write after a soft deleted stream should succeed")]
-        [Xunit.TraitAttribute("FeatureTitle", "SaveEventsStream")]
-        [Xunit.TraitAttribute("Description", "Write after a soft deleted stream should succeed")]
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Write after a soft deleted stream should succeed")]
         public virtual void WriteAfterASoftDeletedStreamShouldSucceed()
         {
             string[] tagsOfScenario = ((string[])(null));
@@ -444,13 +430,12 @@ this.ScenarioInitialize(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableTheoryAttribute(DisplayName="Write after a soft delete by event for a stream should succeed")]
-        [Xunit.TraitAttribute("FeatureTitle", "SaveEventsStream")]
-        [Xunit.TraitAttribute("Description", "Write after a soft delete by event for a stream should succeed")]
-        [Xunit.InlineDataAttribute("3", "10", "9", new string[0])]
-        [Xunit.InlineDataAttribute("10", "3", "2", new string[0])]
-        [Xunit.InlineDataAttribute("10", "10000", "9999", new string[0])]
-        [Xunit.InlineDataAttribute("10000", "10", "9", new string[0])]
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Write after a soft delete by event for a stream should succeed")]
+        [NUnit.Framework.TestCaseAttribute("3", "10", "9", null)]
+        [NUnit.Framework.TestCaseAttribute("10", "3", "2", null)]
+        [NUnit.Framework.TestCaseAttribute("10", "10000", "9999", null)]
+        [NUnit.Framework.TestCaseAttribute("10000", "10", "9", null)]
         public virtual void WriteAfterASoftDeleteByEventForAStreamShouldSucceed(string eventsCount1, string eventsCount2, string highOrder, string[] exampleTags)
         {
             string[] tagsOfScenario = exampleTags;
@@ -504,13 +489,12 @@ this.ScenarioInitialize(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableTheoryAttribute(DisplayName="Write after a soft delete by event and new session opened should succeed")]
-        [Xunit.TraitAttribute("FeatureTitle", "SaveEventsStream")]
-        [Xunit.TraitAttribute("Description", "Write after a soft delete by event and new session opened should succeed")]
-        [Xunit.InlineDataAttribute("3", "10", "9", new string[0])]
-        [Xunit.InlineDataAttribute("10", "3", "2", new string[0])]
-        [Xunit.InlineDataAttribute("10", "10000", "9999", new string[0])]
-        [Xunit.InlineDataAttribute("10000", "10", "9", new string[0])]
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Write after a soft delete by event and new session opened should succeed")]
+        [NUnit.Framework.TestCaseAttribute("3", "10", "9", null)]
+        [NUnit.Framework.TestCaseAttribute("10", "3", "2", null)]
+        [NUnit.Framework.TestCaseAttribute("10", "10000", "9999", null)]
+        [NUnit.Framework.TestCaseAttribute("10000", "10", "9", null)]
         public virtual void WriteAfterASoftDeleteByEventAndNewSessionOpenedShouldSucceed(string eventsCount1, string eventsCount2, string highOrder, string[] exampleTags)
         {
             string[] tagsOfScenario = exampleTags;
@@ -576,13 +560,12 @@ this.ScenarioInitialize(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableTheoryAttribute(DisplayName="Write after a soft delete by custom event for a stream should succeed")]
-        [Xunit.TraitAttribute("FeatureTitle", "SaveEventsStream")]
-        [Xunit.TraitAttribute("Description", "Write after a soft delete by custom event for a stream should succeed")]
-        [Xunit.InlineDataAttribute("3", "10", "9", new string[0])]
-        [Xunit.InlineDataAttribute("10", "3", "2", new string[0])]
-        [Xunit.InlineDataAttribute("10", "10000", "9999", new string[0])]
-        [Xunit.InlineDataAttribute("10000", "10", "9", new string[0])]
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Write after a soft delete by custom event for a stream should succeed")]
+        [NUnit.Framework.TestCaseAttribute("3", "10", "9", null)]
+        [NUnit.Framework.TestCaseAttribute("10", "3", "2", null)]
+        [NUnit.Framework.TestCaseAttribute("10", "10000", "9999", null)]
+        [NUnit.Framework.TestCaseAttribute("10000", "10", "9", null)]
         public virtual void WriteAfterASoftDeleteByCustomEventForAStreamShouldSucceed(string eventsCount1, string eventsCount2, string highOrder, string[] exampleTags)
         {
             string[] tagsOfScenario = exampleTags;
@@ -636,13 +619,12 @@ this.ScenarioInitialize(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableTheoryAttribute(DisplayName="Write after a soft delete by custom event and new session opened should succeed")]
-        [Xunit.TraitAttribute("FeatureTitle", "SaveEventsStream")]
-        [Xunit.TraitAttribute("Description", "Write after a soft delete by custom event and new session opened should succeed")]
-        [Xunit.InlineDataAttribute("3", "10", "9", new string[0])]
-        [Xunit.InlineDataAttribute("10", "3", "2", new string[0])]
-        [Xunit.InlineDataAttribute("10", "10000", "9999", new string[0])]
-        [Xunit.InlineDataAttribute("10000", "10", "9", new string[0])]
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Write after a soft delete by custom event and new session opened should succeed")]
+        [NUnit.Framework.TestCaseAttribute("3", "10", "9", null)]
+        [NUnit.Framework.TestCaseAttribute("10", "3", "2", null)]
+        [NUnit.Framework.TestCaseAttribute("10", "10000", "9999", null)]
+        [NUnit.Framework.TestCaseAttribute("10000", "10", "9", null)]
         public virtual void WriteAfterASoftDeleteByCustomEventAndNewSessionOpenedShouldSucceed(string eventsCount1, string eventsCount2, string highOrder, string[] exampleTags)
         {
             string[] tagsOfScenario = exampleTags;
@@ -708,9 +690,8 @@ this.ScenarioInitialize(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableFactAttribute(DisplayName="When invariants fail no events are saved")]
-        [Xunit.TraitAttribute("FeatureTitle", "SaveEventsStream")]
-        [Xunit.TraitAttribute("Description", "When invariants fail no events are saved")]
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("When invariants fail no events are saved")]
         public virtual void WhenInvariantsFailNoEventsAreSaved()
         {
             string[] tagsOfScenario = ((string[])(null));
@@ -761,12 +742,11 @@ this.ScenarioInitialize(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableTheoryAttribute(DisplayName="When invariants pass events are saved normally")]
-        [Xunit.TraitAttribute("FeatureTitle", "SaveEventsStream")]
-        [Xunit.TraitAttribute("Description", "When invariants pass events are saved normally")]
-        [Xunit.InlineDataAttribute("3", "10", "5", "fail", "2", new string[0])]
-        [Xunit.InlineDataAttribute("10", "20", "20", "succeed", "19", new string[0])]
-        [Xunit.InlineDataAttribute("1", "5", "20", "succeed", "4", new string[0])]
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("When invariants pass events are saved normally")]
+        [NUnit.Framework.TestCaseAttribute("3", "10", "5", "fail", "2", null)]
+        [NUnit.Framework.TestCaseAttribute("10", "20", "20", "succeed", "19", null)]
+        [NUnit.Framework.TestCaseAttribute("1", "5", "20", "succeed", "4", null)]
         public virtual void WhenInvariantsPassEventsAreSavedNormally(string existingCount, string newEventsCount, string maxHighOrder, string outcome, string expectedHighOrder, string[] exampleTags)
         {
             string[] tagsOfScenario = exampleTags;
@@ -820,22 +800,6 @@ this.ScenarioInitialize(scenarioInfo);
 #line hidden
             }
             this.ScenarioCleanup();
-        }
-        
-        [System.CodeDom.Compiler.GeneratedCodeAttribute("TechTalk.SpecFlow", "3.9.0.0")]
-        [System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-        public class FixtureData : System.IDisposable
-        {
-            
-            public FixtureData()
-            {
-                SaveEventsStreamFeature.FeatureSetup();
-            }
-            
-            void System.IDisposable.Dispose()
-            {
-                SaveEventsStreamFeature.FeatureTearDown();
-            }
         }
     }
 }

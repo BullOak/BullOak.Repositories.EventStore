@@ -6,7 +6,6 @@
     using System.Threading.Tasks;
     using Contexts;
     using TechTalk.SpecFlow;
-    using Xunit;
 
     [Binding]
     internal class ModelLoadingStepDefinitions
