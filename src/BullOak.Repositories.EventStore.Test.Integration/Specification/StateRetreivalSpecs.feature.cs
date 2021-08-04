@@ -19,20 +19,25 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Specification
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("TechTalk.SpecFlow", "3.9.0.0")]
     [System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [NUnit.Framework.TestFixtureAttribute()]
-    [NUnit.Framework.DescriptionAttribute("StateRetrievalSpecs")]
-    public partial class StateRetrievalSpecsFeature
+    public partial class StateRetrievalSpecsFeature : object, Xunit.IClassFixture<StateRetrievalSpecsFeature.FixtureData>, System.IDisposable
     {
         
-        private TechTalk.SpecFlow.ITestRunner testRunner;
+        private static TechTalk.SpecFlow.ITestRunner testRunner;
         
         private string[] _featureTags = ((string[])(null));
+        
+        private Xunit.Abstractions.ITestOutputHelper _testOutputHelper;
         
 #line 1 "StateRetreivalSpecs.feature"
 #line hidden
         
-        [NUnit.Framework.OneTimeSetUpAttribute()]
-        public virtual void FeatureSetup()
+        public StateRetrievalSpecsFeature(StateRetrievalSpecsFeature.FixtureData fixtureData, BullOak_Repositories_EventStore_Test_Integration_XUnitAssemblyFixture assemblyFixture, Xunit.Abstractions.ITestOutputHelper testOutputHelper)
+        {
+            this._testOutputHelper = testOutputHelper;
+            this.TestInitialize();
+        }
+        
+        public static void FeatureSetup()
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
             TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Specification", "StateRetrievalSpecs", "\tIn order to implement complex logic without further state storage\r\n\tAs a develop" +
@@ -41,19 +46,16 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Specification
             testRunner.OnFeatureStart(featureInfo);
         }
         
-        [NUnit.Framework.OneTimeTearDownAttribute()]
-        public virtual void FeatureTearDown()
+        public static void FeatureTearDown()
         {
             testRunner.OnFeatureEnd();
             testRunner = null;
         }
         
-        [NUnit.Framework.SetUpAttribute()]
         public virtual void TestInitialize()
         {
         }
         
-        [NUnit.Framework.TearDownAttribute()]
         public virtual void TestTearDown()
         {
             testRunner.OnScenarioEnd();
@@ -62,7 +64,7 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Specification
         public virtual void ScenarioInitialize(TechTalk.SpecFlow.ScenarioInfo scenarioInfo)
         {
             testRunner.OnScenarioInitialize(scenarioInfo);
-            testRunner.ScenarioContext.ScenarioContainer.RegisterInstanceAs<NUnit.Framework.TestContext>(NUnit.Framework.TestContext.CurrentContext);
+            testRunner.ScenarioContext.ScenarioContainer.RegisterInstanceAs<Xunit.Abstractions.ITestOutputHelper>(_testOutputHelper);
         }
         
         public virtual void ScenarioStart()
@@ -75,12 +77,18 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Specification
             testRunner.CollectScenarioErrors();
         }
         
-        [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("When I add new events in the stream I want the state to be updated immediately")]
-        [NUnit.Framework.TestCaseAttribute("0", "3", "2", null)]
-        [NUnit.Framework.TestCaseAttribute("2", "3", "2", null)]
-        [NUnit.Framework.TestCaseAttribute("7", "3", "6", null)]
-        [NUnit.Framework.TestCaseAttribute("0", "10000", "9999", null)]
+        void System.IDisposable.Dispose()
+        {
+            this.TestTearDown();
+        }
+        
+        [Xunit.SkippableTheoryAttribute(DisplayName="When I add new events in the stream I want the state to be updated immediately")]
+        [Xunit.TraitAttribute("FeatureTitle", "StateRetrievalSpecs")]
+        [Xunit.TraitAttribute("Description", "When I add new events in the stream I want the state to be updated immediately")]
+        [Xunit.InlineDataAttribute("0", "3", "2", new string[0])]
+        [Xunit.InlineDataAttribute("2", "3", "2", new string[0])]
+        [Xunit.InlineDataAttribute("7", "3", "6", new string[0])]
+        [Xunit.InlineDataAttribute("0", "10000", "9999", new string[0])]
         public virtual void WhenIAddNewEventsInTheStreamIWantTheStateToBeUpdatedImmediately(string eventCount, string addedEvents, string highOrder, string[] exampleTags)
         {
             string[] tagsOfScenario = exampleTags;
@@ -120,6 +128,22 @@ this.ScenarioInitialize(scenarioInfo);
 #line hidden
             }
             this.ScenarioCleanup();
+        }
+        
+        [System.CodeDom.Compiler.GeneratedCodeAttribute("TechTalk.SpecFlow", "3.9.0.0")]
+        [System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+        public class FixtureData : System.IDisposable
+        {
+            
+            public FixtureData()
+            {
+                StateRetrievalSpecsFeature.FeatureSetup();
+            }
+            
+            void System.IDisposable.Dispose()
+            {
+                StateRetrievalSpecsFeature.FeatureTearDown();
+            }
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace BullOak.Repositories.EventStore.Test.Integration.StepDefinitions
+﻿[assembly: Xunit.CollectionBehavior(DisableTestParallelization = true)]
+
+namespace BullOak.Repositories.EventStore.Test.Integration.StepDefinitions
 {
     using BoDi;
     using Contexts;
@@ -24,9 +26,11 @@
         }
 
         [BeforeTestRun]
-        public static async Task SetupEventStoreNode()
+        public static Task SetupEventStoreNode()
         {
-            await EventStoreIntegrationContext.SetupNode();
+            EventStoreIntegrationContext.SetupNode();
+
+            return Task.CompletedTask;
         }
 
         [AfterTestRun]

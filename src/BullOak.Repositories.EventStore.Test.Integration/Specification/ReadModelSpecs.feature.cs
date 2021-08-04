@@ -19,20 +19,25 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Specification
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("TechTalk.SpecFlow", "3.9.0.0")]
     [System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [NUnit.Framework.TestFixtureAttribute()]
-    [NUnit.Framework.DescriptionAttribute("ReadModelSpecs")]
-    public partial class ReadModelSpecsFeature
+    public partial class ReadModelSpecsFeature : object, Xunit.IClassFixture<ReadModelSpecsFeature.FixtureData>, System.IDisposable
     {
         
-        private TechTalk.SpecFlow.ITestRunner testRunner;
+        private static TechTalk.SpecFlow.ITestRunner testRunner;
         
         private string[] _featureTags = ((string[])(null));
+        
+        private Xunit.Abstractions.ITestOutputHelper _testOutputHelper;
         
 #line 1 "ReadModelSpecs.feature"
 #line hidden
         
-        [NUnit.Framework.OneTimeSetUpAttribute()]
-        public virtual void FeatureSetup()
+        public ReadModelSpecsFeature(ReadModelSpecsFeature.FixtureData fixtureData, BullOak_Repositories_EventStore_Test_Integration_XUnitAssemblyFixture assemblyFixture, Xunit.Abstractions.ITestOutputHelper testOutputHelper)
+        {
+            this._testOutputHelper = testOutputHelper;
+            this.TestInitialize();
+        }
+        
+        public static void FeatureSetup()
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
             TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Specification", "ReadModelSpecs", "\tIn order to support read models\r\n\tAs a user of this library\r\n\tI want to be able " +
@@ -40,19 +45,16 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Specification
             testRunner.OnFeatureStart(featureInfo);
         }
         
-        [NUnit.Framework.OneTimeTearDownAttribute()]
-        public virtual void FeatureTearDown()
+        public static void FeatureTearDown()
         {
             testRunner.OnFeatureEnd();
             testRunner = null;
         }
         
-        [NUnit.Framework.SetUpAttribute()]
         public virtual void TestInitialize()
         {
         }
         
-        [NUnit.Framework.TearDownAttribute()]
         public virtual void TestTearDown()
         {
             testRunner.OnScenarioEnd();
@@ -61,7 +63,7 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Specification
         public virtual void ScenarioInitialize(TechTalk.SpecFlow.ScenarioInfo scenarioInfo)
         {
             testRunner.OnScenarioInitialize(scenarioInfo);
-            testRunner.ScenarioContext.ScenarioContainer.RegisterInstanceAs<NUnit.Framework.TestContext>(NUnit.Framework.TestContext.CurrentContext);
+            testRunner.ScenarioContext.ScenarioContainer.RegisterInstanceAs<Xunit.Abstractions.ITestOutputHelper>(_testOutputHelper);
         }
         
         public virtual void ScenarioStart()
@@ -74,8 +76,14 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Specification
             testRunner.CollectScenarioErrors();
         }
         
-        [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Reconstitute state from one event stored using interface")]
+        void System.IDisposable.Dispose()
+        {
+            this.TestTearDown();
+        }
+        
+        [Xunit.SkippableFactAttribute(DisplayName="Reconstitute state from one event stored using interface")]
+        [Xunit.TraitAttribute("FeatureTitle", "ReadModelSpecs")]
+        [Xunit.TraitAttribute("Description", "Reconstitute state from one event stored using interface")]
         public virtual void ReconstituteStateFromOneEventStoredUsingInterface()
         {
             string[] tagsOfScenario = ((string[])(null));
@@ -126,8 +134,9 @@ this.ScenarioInitialize(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Load entity as at a point in time")]
+        [Xunit.SkippableFactAttribute(DisplayName="Load entity as at a point in time")]
+        [Xunit.TraitAttribute("FeatureTitle", "ReadModelSpecs")]
+        [Xunit.TraitAttribute("Description", "Load entity as at a point in time")]
         public virtual void LoadEntityAsAtAPointInTime()
         {
             string[] tagsOfScenario = ((string[])(null));
@@ -183,8 +192,9 @@ this.ScenarioInitialize(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Reconstitute streams with one event type based on category")]
+        [Xunit.SkippableFactAttribute(DisplayName="Reconstitute streams with one event type based on category")]
+        [Xunit.TraitAttribute("FeatureTitle", "ReadModelSpecs")]
+        [Xunit.TraitAttribute("Description", "Reconstitute streams with one event type based on category")]
         public virtual void ReconstituteStreamsWithOneEventTypeBasedOnCategory()
         {
             string[] tagsOfScenario = ((string[])(null));
@@ -240,8 +250,9 @@ this.ScenarioInitialize(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Reconstitute streams with one event type based on category up to a given date")]
+        [Xunit.SkippableFactAttribute(DisplayName="Reconstitute streams with one event type based on category up to a given date")]
+        [Xunit.TraitAttribute("FeatureTitle", "ReadModelSpecs")]
+        [Xunit.TraitAttribute("Description", "Reconstitute streams with one event type based on category up to a given date")]
         public virtual void ReconstituteStreamsWithOneEventTypeBasedOnCategoryUpToAGivenDate()
         {
             string[] tagsOfScenario = ((string[])(null));
@@ -318,8 +329,9 @@ this.ScenarioInitialize(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Reconstitute state based on category with two event types up to a given date")]
+        [Xunit.SkippableFactAttribute(DisplayName="Reconstitute state based on category with two event types up to a given date")]
+        [Xunit.TraitAttribute("FeatureTitle", "ReadModelSpecs")]
+        [Xunit.TraitAttribute("Description", "Reconstitute state based on category with two event types up to a given date")]
         public virtual void ReconstituteStateBasedOnCategoryWithTwoEventTypesUpToAGivenDate()
         {
             string[] tagsOfScenario = ((string[])(null));
@@ -372,6 +384,22 @@ this.ScenarioInitialize(scenarioInfo);
 #line hidden
             }
             this.ScenarioCleanup();
+        }
+        
+        [System.CodeDom.Compiler.GeneratedCodeAttribute("TechTalk.SpecFlow", "3.9.0.0")]
+        [System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+        public class FixtureData : System.IDisposable
+        {
+            
+            public FixtureData()
+            {
+                ReadModelSpecsFeature.FeatureSetup();
+            }
+            
+            void System.IDisposable.Dispose()
+            {
+                ReadModelSpecsFeature.FeatureTearDown();
+            }
         }
     }
 }
