@@ -7,18 +7,16 @@ on:
     branches: [ master ]
 
 jobs:
-  stop-previous-ESDB:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Stop previous ESDB image
-        run: docker stop esdbnode
-      - name: Remove stoppped ESDB image
-        run: docker rm esdbnode
-
+#  stop-previous-ESDB:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Stop previous ESDB image
+#        run: docker stop esdbnode
+#      - name: Remove stoppped ESDB image
+#        run: docker rm esdbnode
+#
   start-ESDB:
     runs-on: ubuntu-latest
-    needs: stop-previous-ESDB
-    if: always()
     steps:
       - name: Run ESDB image
         run: docker run -d --name esdbnode -it -p 2113:2113 -p 1113:1113 eventstore/eventstore:latest --insecure --run-projections=All
@@ -54,14 +52,14 @@ jobs:
         run: sudo /root/.dotnet/dotnet test --no-build --verbosity detailed
         working-directory: ./src
 
-  cleanup:
-    runs-on: ubuntu-latest
-    if: always()
-    needs: [start-ESDB, build]
-
-    steps:
-      - name: Stop previous ESDB image
-        run: docker stop esdbnode
-      - name: Remove stoppped ESDB image
-        run: docker rm esdbnode
+#  cleanup:
+#    runs-on: ubuntu-latest
+#    if: always()
+#    needs: [start-ESDB, build]
+#
+#    steps:
+#      - name: Stop previous ESDB image
+#        run: docker stop esdbnode
+#      - name: Remove stoppped ESDB image
+#        run: docker rm esdbnode
 
