@@ -56,17 +56,13 @@ jobs:
         run: dotnet restore
         working-directory: ./src
       - name: Build
-        run: dotnet build --no-restore
+        run: dotnet build -c Release --no-restore/p:VersionPrefix="${{ needs.parse-version.outputs.version }}" /p:VersionSuffix="${{ needs.parse-version.outputs.version-suffix }}"
         working-directory: ./src
       - name: Test
-        run: dotnet test --no-build --verbosity minimal
-        working-directory: ./src
-      - name: Pack nuget
-        run: |
-          dotnet pack -c Release /p:VersionPrefix="${{ needs.parse-version.outputs.version }}" /p:VersionSuffix="${{ needs.parse-version.outputs.version-suffix }}"
+        run: dotnet test -c Release --no-build --verbosity minimal
         working-directory: ./src
       - name: Nuget push
         env:
           nuget_key: ${{ secrets.PUBLISH_BO_EVENTSTORE }}
-        run: dotnet nuget push ./BullOak.Repositories.EventStore/bin/Release/**.nupkg --api-key "$nuget_key"  -s https://api.nuget.org/v3/index.json --skip-duplicate
+        run: dotnet nuget push ./BullOak.Repositories.EventStore/bin/Release/netstandard2.1/BullOak.Repositories.EventStore.dll*.nupkg --api-key "$nuget_key"  -s https://api.nuget.org/v3/index.json --skip-duplicate
         working-directory: ./src
