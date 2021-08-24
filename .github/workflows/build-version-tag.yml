@@ -55,8 +55,8 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
         working-directory: ./src
-      - name: Build
-        run: dotnet build -c Release --no-restore/p:VersionPrefix="${{ needs.parse-version.outputs.version }}" /p:VersionSuffix="${{ needs.parse-version.outputs.version-suffix }}"
+      - name: Build and pack
+        run: dotnet build -c Release --no-restore /p:VersionPrefix="${{ needs.parse-version.outputs.version }}" /p:VersionSuffix="${{ needs.parse-version.outputs.version-suffix }}"
         working-directory: ./src
       - name: Test
         run: dotnet test -c Release --no-build --verbosity minimal
