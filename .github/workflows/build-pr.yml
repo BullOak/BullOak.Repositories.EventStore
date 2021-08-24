@@ -1,33 +1,13 @@
-name: .NET
+name: Build PR's
 
 on:
-  push:
-    branches: [ master ]
   pull_request:
     branches: [ master ]
 
 jobs:
-#  stop-previous-ESDB:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Stop previous ESDB image
-#        run: docker stop esdbnode
-#      - name: Remove stoppped ESDB image
-#        run: docker rm esdbnode
-#
-  get-variables:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Read source data
-        run: |
-          echo ::set-output name=SOURCE_NAME::${GITHUB_REF#refs/*/}
-          echo ::set-output name=SOURCE_BRANCH::${GITHUB_REF#refs/heads/}
-          echo ::set-output name=SOURCE_TAG::${GITHUB_REF#refs/tags/}            
 
   build:
     runs-on: ubuntu-latest
-    needs: get-variables
-
     steps:
       - name: Run ESDB image
         run: docker run -d --name esdbnode -it -p 2113:2113 -p 1113:1113 eventstore/eventstore:latest --insecure --run-projections=All
@@ -45,17 +25,17 @@ jobs:
         run: dotnet build --no-restore
         working-directory: ./src
       - name: Test
-        run: dotnet test --no-build --verbosity detailed
+        run: dotnet test --no-build --verbosity minimal
         working-directory: ./src
 
-#  cleanup:
-#    runs-on: ubuntu-latest
-#    if: always()
-#    needs: [start-ESDB, build]
-#
-#    steps:
-#      - name: Stop previous ESDB image
-#        run: docker stop esdbnode
-#      - name: Remove stoppped ESDB image
-#        run: docker rm esdbnode
+  cleanup:
+    runs-on: ubuntu-latest
+    if: always()
+    needs: build
+
+    steps:
+      - name: Stop previous ESDB image
+        run: docker stop esdbnode
+      - name: Remove stoppped ESDB image
+        run: docker rm esdbnode
 
