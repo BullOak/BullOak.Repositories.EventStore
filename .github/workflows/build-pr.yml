@@ -22,20 +22,10 @@ jobs:
           dotnet restore
         working-directory: ./src
       - name: Build
-        run: dotnet build --no-restore
+        run: dotnet build --no-restore /p:VersionPrefix=1.0.0 /p:VersionSuffix=testbuild
         working-directory: ./src
       - name: Test
         run: dotnet test --no-build --verbosity minimal
         working-directory: ./src
 
-  cleanup:
-    runs-on: ubuntu-latest
-    if: always()
-    needs: build
-
-    steps:
-      - name: Stop previous ESDB image
-        run: docker stop esdbnode
-      - name: Remove stoppped ESDB image
-        run: docker rm esdbnode
 
