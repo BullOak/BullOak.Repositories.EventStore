@@ -64,5 +64,5 @@ jobs:
       - name: Nuget push
         env:
           nuget_key: ${{ secrets.PUBLISH_BO_EVENTSTORE }}
-        run: dotnet nuget push ./BullOak.Repositories.EventStore/bin/Release/netstandard2.1/BullOak.Repositories.EventStore.dll*.nupkg --api-key "$nuget_key"  -s https://api.nuget.org/v3/index.json --skip-duplicate
+        run: dotnet nuget push ./BullOak.Repositories.EventStore/bin/Any CPU/release/BullOak.Repositories.EventStore.dll*.nupkg --api-key "$nuget_key"  -s https://api.nuget.org/v3/index.json --skip-duplicate
         working-directory: ./src
