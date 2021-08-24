@@ -23,7 +23,7 @@ jobs:
           dotnet restore
         working-directory: ./src
       - name: Build
-        run: dotnet build --no-restore /p:Version=1.0.0
+        run: dotnet build --no-restore /p:VersionPrefix=1.0.0 /p:VersionSuffix=testbuild
         working-directory: ./src
       - name: Test
         run: dotnet test --no-build --verbosity minimal
