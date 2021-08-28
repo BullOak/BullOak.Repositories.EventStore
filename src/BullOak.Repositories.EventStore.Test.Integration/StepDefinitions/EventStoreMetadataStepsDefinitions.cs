@@ -45,9 +45,10 @@
         }
 
         [Given(@"I truncate the stream in EventStore")]
-        public Task GivenITruncateStreamInEventStore()
+        public async Task GivenITruncateStreamInEventStore()
         {
-            return eventStoreContainer.TruncateStream(streamId);
+            await eventStoreContainer.TruncateStream(streamId);
+            await eventStoreContainer.AssertStreamHasNoResolvedEvents(streamId);
         }
 
         [When(@"I try to open the stream")]

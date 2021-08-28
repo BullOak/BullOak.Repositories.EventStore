@@ -1,5 +1,4 @@
 ﻿using EventStore.Client;
-using EventStore.Client.Projections;
 
 namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
 {
@@ -14,6 +13,8 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
     using System.Threading.Tasks;
     using Events;
     using TechTalk.SpecFlow;
+    using Polly;
+    using FluentAssertions;
 
     internal class EventStoreIntegrationContext
     {
@@ -85,7 +86,7 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
             }
         }
 
-        public async Task TruncateStream(string id, int eventVersion = 0)
+        public async Task TruncateStream(string id)
         {
             var connection = GetConnection();
             var metadata = await connection.GetStreamMetadataAsync(id);
@@ -94,8 +95,35 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
                 await connection.SetStreamMetadataAsync(
                     id,
                     new StreamRevision(metadata.MetastreamRevision.Value),
-                    new StreamMetadata(truncateBefore: StreamPosition.FromInt64(eventVersion)));
+                    new StreamMetadata(truncateBefore: metadata.MetastreamRevision.Value));
             }
+        }
+
+        public async Task AssertStreamHasNoResolvedEvents(string id)
+        {
+            var retry = Policy
+                .HandleResult(true)
+                .WaitAndRetryAsync(3, count => TimeSpan.FromMilliseconds(500));
+
+            var anyResolvedEvents = await retry.ExecuteAsync(async () =>
+            {
+                var connection = GetConnection();
+                var result = connection.ReadStreamAsync(Direction.Forwards, id, StreamPosition.Start, 1);
+                var eventFound = false;
+
+                await foreach (var x in result)
+                {
+                    if (x.IsResolved)
+                    {
+                        eventFound = true;
+                        break;
+                    }
+                }
+                return eventFound;
+            });
+
+
+            anyResolvedEvents.Should().BeFalse();
         }
 
         public Task SoftDeleteStream(string id)
