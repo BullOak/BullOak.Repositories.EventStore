@@ -142,7 +142,7 @@
 
         [Given(@"I soft-delete the stream")]
         public Task GivenISoft_DeleteTheStream()
-            => eventStoreContainer.SoftDeleteStreamByRepository(testDataContexts.First().CurrentStreamId);
+            => eventStoreContainer.SoftDeleteStreamFromRepository(testDataContexts.First().CurrentStreamId);
 
         [Given(@"I hard-delete the stream")]
         public Task GivenIHard_DeleteTheStream()

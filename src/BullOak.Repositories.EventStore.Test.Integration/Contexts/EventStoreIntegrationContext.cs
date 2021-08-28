@@ -132,7 +132,7 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
         public Task HardDeleteStream(string id)
             => GetConnection().TombstoneAsync(id, StreamState.Any);
 
-        public Task SoftDeleteStreamByRepository(string id)
+        public Task SoftDeleteStreamFromRepository(string id)
             => repository.SoftDelete(id);
         public Task SoftDeleteFromRepositoryBySoftDeleteEvent(string id)
             => repository.SoftDeleteByEvent(id);
