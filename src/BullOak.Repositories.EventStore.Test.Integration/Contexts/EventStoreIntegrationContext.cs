@@ -108,7 +108,11 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
             var anyResolvedEvents = await retry.ExecuteAsync(async () =>
             {
                 var connection = GetConnection();
-                var result = connection.ReadStreamAsync(Direction.Forwards, id, StreamPosition.Start, 1);
+                var result = connection.ReadStreamAsync(
+                    Direction.Forwards,
+                    id,
+                    revision: StreamPosition.Start,
+                    resolveLinkTos: true);
                 var eventFound = false;
 
                 await foreach (var x in result)
