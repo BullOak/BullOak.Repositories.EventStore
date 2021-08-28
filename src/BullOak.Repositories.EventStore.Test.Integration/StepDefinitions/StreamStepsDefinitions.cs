@@ -142,7 +142,7 @@
 
         [Given(@"I soft-delete the stream")]
         public Task GivenISoft_DeleteTheStream()
-            => eventStoreContainer.SoftDeleteStream(testDataContexts.First().CurrentStreamId);
+            => eventStoreContainer.SoftDeleteStreamByRepository(testDataContexts.First().CurrentStreamId);
 
         [Given(@"I hard-delete the stream")]
         public Task GivenIHard_DeleteTheStream()
@@ -151,12 +151,12 @@
         [Given(@"I soft-delete-by-event the stream")]
         [When(@"I soft-delete-by-event the stream")]
         public Task GivenI_Soft_Delete_by_EventTheStream()
-            => eventStoreContainer.SoftDeleteByEvent(testDataContexts.First().CurrentStreamId);
+            => eventStoreContainer.SoftDeleteFromRepositoryBySoftDeleteEvent(testDataContexts.First().CurrentStreamId);
 
         [Given(@"I soft-delete-by-custom-event the stream")]
         [When(@"I soft-delete-by-custom-event the stream")]
         public Task GivenI_Soft_Delete_by_Custom_EventTheStream()
-            => eventStoreContainer.SoftDeleteByEvent(testDataContexts.First().CurrentStreamId, () => new MyEntitySoftDeleted());
+            => eventStoreContainer.SoftDeleteFromRepositoryBySoftDeleteEvent(testDataContexts.First().CurrentStreamId, () => new MyEntitySoftDeleted());
 
         [Then(@"the load process should succeed")]
         [Then(@"the save process should succeed")]

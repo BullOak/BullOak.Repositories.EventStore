@@ -85,16 +85,31 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
             }
         }
 
+        public async Task TruncateStream(string id, int eventVersion = 0)
+        {
+            var connection = GetConnection();
+            var metadata = await connection.GetStreamMetadataAsync(id);
+            if (metadata.MetastreamRevision.HasValue)
+            {
+                await connection.SetStreamMetadataAsync(
+                    id,
+                    new StreamRevision(metadata.MetastreamRevision.Value),
+                    new StreamMetadata(truncateBefore: StreamPosition.FromInt64(eventVersion)));
+            }
+        }
+
         public Task SoftDeleteStream(string id)
-            => repository.SoftDelete(id);
+            => GetConnection().SoftDeleteAsync(id, StreamState.Any);
 
         public Task HardDeleteStream(string id)
             => GetConnection().TombstoneAsync(id, StreamState.Any);
 
-        public Task SoftDeleteByEvent(string id)
+        public Task SoftDeleteStreamByRepository(string id)
+            => repository.SoftDelete(id);
+        public Task SoftDeleteFromRepositoryBySoftDeleteEvent(string id)
             => repository.SoftDeleteByEvent(id);
 
-        public Task SoftDeleteByEvent<TSoftDeleteEvent>(string id, Func<TSoftDeleteEvent> createSoftDeleteEvent)
+        public Task SoftDeleteFromRepositoryBySoftDeleteEvent<TSoftDeleteEvent>(string id, Func<TSoftDeleteEvent> createSoftDeleteEvent)
             where TSoftDeleteEvent : EntitySoftDeleted
             => repository.SoftDeleteByEvent(id, createSoftDeleteEvent);
 
