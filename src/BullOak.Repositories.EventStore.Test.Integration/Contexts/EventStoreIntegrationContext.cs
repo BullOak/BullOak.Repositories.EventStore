@@ -89,13 +89,25 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
         public async Task TruncateStream(string id)
         {
             var connection = GetConnection();
-            var metadata = await connection.GetStreamMetadataAsync(id);
-            if (metadata.MetastreamRevision.HasValue)
+
+            var lastEventResult = connection.ReadStreamAsync(Direction.Backwards, id, StreamPosition.End, 1);
+            ResolvedEvent lastEvent = default;
+            await foreach (var e in lastEventResult)
             {
+                lastEvent = e;
+                break;
+            }
+
+            if (lastEvent.OriginalEventNumber >= 0)
+            {
+                var metadata = await connection.GetStreamMetadataAsync(id);
+
                 await connection.SetStreamMetadataAsync(
                     id,
-                    new StreamRevision(metadata.MetastreamRevision.Value),
-                    new StreamMetadata(truncateBefore: metadata.MetastreamRevision.Value));
+                    metadata.MetastreamRevision.HasValue
+                        ? new StreamRevision(metadata.MetastreamRevision.Value)
+                        : StreamRevision.None,
+                    new StreamMetadata(truncateBefore: lastEvent.OriginalEventNumber + 1));
             }
         }
 
@@ -130,6 +142,45 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
             anyResolvedEvents.Should().BeFalse();
         }
 
+        public async Task AssertStreamHasSomeUnresolvedEvents(string id)
+        {
+            var retry = Policy
+                .HandleResult(false)
+                .WaitAndRetryAsync(3, count => TimeSpan.FromMilliseconds(500));
+
+            var anyUnresolvedEvents = await retry.ExecuteAsync(async () =>
+            {
+                try
+                {
+                    var connection = GetConnection();
+                    var result = connection.ReadStreamAsync(
+                        Direction.Forwards,
+                        id,
+                        revision: StreamPosition.Start,
+                        resolveLinkTos: true);
+                    var eventFound = false;
+
+                    await foreach (var x in result)
+                    {
+                        if (!x.IsResolved)
+                        {
+                            eventFound = true;
+                            break;
+                        }
+                    }
+
+                    return eventFound;
+                }
+                catch (StreamNotFoundException)
+                {
+                    return false;
+                }
+            });
+
+
+            anyUnresolvedEvents.Should().BeTrue();
+        }
+
         public Task SoftDeleteStream(string id)
             => GetConnection().SoftDeleteAsync(id, StreamState.Any);
 
@@ -147,18 +198,17 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
 
         public async Task<ResolvedEvent[]> ReadEventsFromStreamRaw(string id)
         {
-            var client = GetConnection();
-            var result = new List<ResolvedEvent>();
-            var readResults = client.ReadStreamAsync(Direction.Forwards, id, StreamPosition.Start);
+            var connection = GetConnection();
+            var readResults = connection.ReadStreamAsync(Direction.Forwards, id, StreamPosition.Start);
 
             return await readResults.ToArrayAsync();
         }
 
         internal async Task WriteEventsToStreamRaw(string currentStreamInUse, IEnumerable<MyEvent> myEvents)
         {
-            var conn = await SetupConnection();
+            var connection = GetConnection();
 
-            await conn.AppendToStreamAsync(currentStreamInUse, StreamState.Any,
+            await connection.AppendToStreamAsync(currentStreamInUse, StreamState.Any,
                 myEvents.Select(e =>
                 {
                     var serialized = JsonConvert.SerializeObject(e);
@@ -177,6 +227,7 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
             var client = new EventStoreClient(settings);
             var projectionsClient = new EventStoreProjectionManagementClient(settings);
             await projectionsClient.EnableAsync("$by_category");
+            await projectionsClient.EnableAsync("$by_event_type");
 
             await Task.Delay(TimeSpan.FromSeconds(3));
 
