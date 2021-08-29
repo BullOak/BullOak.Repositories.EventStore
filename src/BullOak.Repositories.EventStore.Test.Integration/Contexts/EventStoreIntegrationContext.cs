@@ -1,5 +1,4 @@
 ﻿using EventStore.Client;
-using EventStore.Client.Projections;
 
 namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
 {
@@ -14,6 +13,8 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
     using System.Threading.Tasks;
     using Events;
     using TechTalk.SpecFlow;
+    using Polly;
+    using FluentAssertions;
 
     internal class EventStoreIntegrationContext
     {
@@ -85,33 +86,129 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
             }
         }
 
+        public async Task TruncateStream(string id)
+        {
+            var connection = GetConnection();
+
+            var lastEventResult = connection.ReadStreamAsync(Direction.Backwards, id, StreamPosition.End, 1);
+            ResolvedEvent lastEvent = default;
+            await foreach (var e in lastEventResult)
+            {
+                lastEvent = e;
+                break;
+            }
+
+            if (lastEvent.OriginalEventNumber >= 0)
+            {
+                var metadata = await connection.GetStreamMetadataAsync(id);
+
+                await connection.SetStreamMetadataAsync(
+                    id,
+                    metadata.MetastreamRevision.HasValue
+                        ? new StreamRevision(metadata.MetastreamRevision.Value)
+                        : StreamRevision.None,
+                    new StreamMetadata(truncateBefore: lastEvent.OriginalEventNumber + 1));
+            }
+        }
+
+        public async Task AssertStreamHasNoResolvedEvents(string id)
+        {
+            var retry = Policy
+                .HandleResult(true)
+                .WaitAndRetryAsync(3, count => TimeSpan.FromMilliseconds(500));
+
+            var anyResolvedEvents = await retry.ExecuteAsync(async () =>
+            {
+                var connection = GetConnection();
+                var result = connection.ReadStreamAsync(
+                    Direction.Forwards,
+                    id,
+                    revision: StreamPosition.Start,
+                    resolveLinkTos: true);
+                var eventFound = false;
+
+                await foreach (var x in result)
+                {
+                    if (x.IsResolved)
+                    {
+                        eventFound = true;
+                        break;
+                    }
+                }
+                return eventFound;
+            });
+
+
+            anyResolvedEvents.Should().BeFalse();
+        }
+
+        public async Task AssertStreamHasSomeUnresolvedEvents(string id)
+        {
+            var retry = Policy
+                .HandleResult(false)
+                .WaitAndRetryAsync(3, count => TimeSpan.FromMilliseconds(500));
+
+            var anyUnresolvedEvents = await retry.ExecuteAsync(async () =>
+            {
+                try
+                {
+                    var connection = GetConnection();
+                    var result = connection.ReadStreamAsync(
+                        Direction.Forwards,
+                        id,
+                        revision: StreamPosition.Start,
+                        resolveLinkTos: true);
+                    var eventFound = false;
+
+                    await foreach (var x in result)
+                    {
+                        if (!x.IsResolved)
+                        {
+                            eventFound = true;
+                            break;
+                        }
+                    }
+
+                    return eventFound;
+                }
+                catch (StreamNotFoundException)
+                {
+                    return false;
+                }
+            });
+
+
+            anyUnresolvedEvents.Should().BeTrue();
+        }
+
         public Task SoftDeleteStream(string id)
-            => repository.SoftDelete(id);
+            => GetConnection().SoftDeleteAsync(id, StreamState.Any);
 
         public Task HardDeleteStream(string id)
             => GetConnection().TombstoneAsync(id, StreamState.Any);
 
-        public Task SoftDeleteByEvent(string id)
+        public Task SoftDeleteStreamFromRepository(string id)
+            => repository.SoftDelete(id);
+        public Task SoftDeleteFromRepositoryBySoftDeleteEvent(string id)
             => repository.SoftDeleteByEvent(id);
 
-        public Task SoftDeleteByEvent<TSoftDeleteEvent>(string id, Func<TSoftDeleteEvent> createSoftDeleteEvent)
+        public Task SoftDeleteFromRepositoryBySoftDeleteEvent<TSoftDeleteEvent>(string id, Func<TSoftDeleteEvent> createSoftDeleteEvent)
             where TSoftDeleteEvent : EntitySoftDeleted
             => repository.SoftDeleteByEvent(id, createSoftDeleteEvent);
 
         public async Task<ResolvedEvent[]> ReadEventsFromStreamRaw(string id)
         {
-            var client = GetConnection();
-            var result = new List<ResolvedEvent>();
-            var readResults = client.ReadStreamAsync(Direction.Forwards, id, StreamPosition.Start);
+            var connection = GetConnection();
+            var readResults = connection.ReadStreamAsync(Direction.Forwards, id, StreamPosition.Start);
 
             return await readResults.ToArrayAsync();
         }
 
         internal async Task WriteEventsToStreamRaw(string currentStreamInUse, IEnumerable<MyEvent> myEvents)
         {
-            var conn = await SetupConnection();
+            var connection = GetConnection();
 
-            await conn.AppendToStreamAsync(currentStreamInUse, StreamState.Any,
+            await connection.AppendToStreamAsync(currentStreamInUse, StreamState.Any,
                 myEvents.Select(e =>
                 {
                     var serialized = JsonConvert.SerializeObject(e);
@@ -130,6 +227,7 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
             var client = new EventStoreClient(settings);
             var projectionsClient = new EventStoreProjectionManagementClient(settings);
             await projectionsClient.EnableAsync("$by_category");
+            await projectionsClient.EnableAsync("$by_event_type");
 
             await Task.Delay(TimeSpan.FromSeconds(3));
 

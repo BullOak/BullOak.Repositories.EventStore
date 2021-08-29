@@ -2,15 +2,14 @@ name: Build ON push
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [master, main]
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Run ESDB image
-        run: docker run -d --name esdbnode -it -p 2113:2113 -p 1113:1113 eventstore/eventstore:latest --insecure --run-projections=All
+        run: docker run -d --name esdbnode -it -p 2113:2113 -p 1113:1113 eventstore/eventstore:latest --insecure --run-projections=All --enable-atom-pub-over-http
       - name: Checkout
         uses: actions/checkout@v2
       - name: Setup .NET
@@ -28,4 +27,3 @@ jobs:
       - name: Test
         run: dotnet test --no-build --verbosity minimal
         working-directory: ./src
-
