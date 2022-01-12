@@ -43,8 +43,7 @@ namespace BullOak.Repositories.EventStore
         public async Task<IEnumerable<ReadModel<TState>>> ReadAllEntitiesFromCategory(string categoryName,
             Func<IAmAStoredEvent, bool> loadEventPredicate = null)
         {
-            var streamsData = await reader.ReadFrom($"$ce-{categoryName}", direction: Direction.Forwards,
-                predicate: loadEventPredicate);
+            var streamsData = await reader.ReadFrom($"$ce-{categoryName}", direction: Direction.Forwards, predicate: loadEventPredicate);
 
             var eventsByStream = await streamsData.Events.GroupBy(x => x.StreamId)
                 .SelectAwait(async group =>

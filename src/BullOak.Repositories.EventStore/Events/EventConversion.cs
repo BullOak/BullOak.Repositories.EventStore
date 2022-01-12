@@ -10,7 +10,7 @@ namespace BullOak.Repositories.EventStore.Events
     using System;
     using System.Linq;
 
-    internal static class EventConversion
+    public static class EventConversion
     {
         public static StoredEvent ToStoredEvent(this EventRecord resolvedEvent, ICreateStateInstances stateFactory)
             => ToStoredEvent(

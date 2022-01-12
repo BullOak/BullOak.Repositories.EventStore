@@ -1,6 +1,4 @@
-﻿using EventStore.Client;
-
-namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
+﻿namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
 {
     using Config;
     using Components;
@@ -12,7 +10,8 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
     using System.Reflection;
     using System.Threading.Tasks;
     using Events;
-    using global::EventStore.ClientAPI;
+    using ClientV5 =  global::EventStore.ClientAPI;
+    using ClientV20 =  global::EventStore.Client;
     using Streams;
     using TechTalk.SpecFlow;
 
@@ -24,8 +23,9 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
         private static IStoreEventsToStream writer;
         private static IHoldAllConfiguration configuration;
 
-        private static string protocol = "tcp";
-        private static IEventStoreConnection conn;
+        private static string protocol = "grpc";
+        private static ClientV5.IEventStoreConnection connV5;
+        private static ClientV20.EventStoreClient connV20;
 
         public TestDateTimeProvider DateTimeProvider { get; }
 
@@ -95,74 +95,113 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
 
         public async Task AppendEventsToCurrentStream(string id, IMyEvent[] events)
         {
-            using (var session = await StartSession(id))
-            {
-                session.AddEvents(events);
-                await session.SaveChanges();
-            }
+            using var session = await StartSession(id);
+            session.AddEvents(events);
+            await session.SaveChanges();
         }
 
         public Task SoftDeleteStream(string id)
             => repository.SoftDelete(id);
 
         public Task HardDeleteStream(string id)
-            => conn.DeleteStreamAsync(id, -1, true);
+            => protocol switch
+            {
+                "tcp" => connV5.DeleteStreamAsync(id, -1, true),
+                "grpc" => connV20.TombstoneAsync(id, ClientV20.StreamState.Any),
+                _ => throw new ArgumentOutOfRangeException(nameof(protocol))
+            };
 
-        public async Task<ResolvedEvent[]> ReadEventsFromStreamRaw(string id)
+        public Task<StoredEvent[]> ReadEventsFromStreamRaw(string id)
+            => protocol switch
+            {
+                "tcp" => TcpReadEventsFromStreamRaw(id),
+                "grpc" => GrpcReadEventsFromStreamRaw(id),
+                _ => throw new ArgumentOutOfRangeException(nameof(protocol))
+            };
+
+        private async Task<StoredEvent[]> GrpcReadEventsFromStreamRaw(string id)
         {
-            var result = new List<ResolvedEvent>();
-            StreamEventsSlice currentSlice;
-            long nextSliceStart = StreamPosition.Start;
+            var readResults = connV20.ReadStreamAsync(ClientV20.Direction.Forwards, id, ClientV20.StreamPosition.Start);
+            return await readResults
+                .Where(e => e.Event != null)
+                .Select(e => e.Event.ToStoredEvent(configuration.StateFactory))
+                .ToArrayAsync();
+        }
+
+        private async Task<StoredEvent[]> TcpReadEventsFromStreamRaw(string id)
+        {
+            var result = new List<ClientV5.ResolvedEvent>();
+            ClientV5.StreamEventsSlice currentSlice;
+            long nextSliceStart = ClientV5.StreamPosition.Start;
             do
             {
-                currentSlice = await conn.ReadStreamEventsForwardAsync(id, nextSliceStart, 100, false);
+                currentSlice = await connV5.ReadStreamEventsForwardAsync(id, nextSliceStart, 100, false);
                 nextSliceStart = currentSlice.NextEventNumber;
                 result.AddRange(currentSlice.Events);
             } while (!currentSlice.IsEndOfStream);
 
-            return result.ToArray();
+            return result
+                .Where(e => e.Event != null)
+                .Select((e, _) => e.Event.ToStoredEvent(configuration.StateFactory))
+                .TakeWhile(e => e.DeserializedEvent is not EntitySoftDeleted)
+                .ToArray();
         }
 
-        internal async Task WriteEventsToStreamRaw(string currentStreamInUse, IEnumerable<MyEvent> myEvents)
+        internal Task WriteEventsToStreamRaw(string currentStreamInUse, IEnumerable<MyEvent> myEvents)
+            => protocol switch
+            {
+                "tcp" => TcpWriteEventsToStreamRaw(currentStreamInUse, myEvents),
+                "grpc" => GrpcWriteEventsToStreamRaw(currentStreamInUse, myEvents),
+                _ => throw new ArgumentOutOfRangeException(nameof(protocol))
+            };
+
+        private async Task GrpcWriteEventsToStreamRaw(string currentStreamInUse, IEnumerable<MyEvent> myEvents)
         {
-            await conn.AppendToStreamAsync(currentStreamInUse, ExpectedVersion.Any,
+            await connV20.AppendToStreamAsync(currentStreamInUse, ClientV20.StreamState.Any,
                 myEvents.Select(e =>
                 {
                     var serialized = JsonConvert.SerializeObject(e);
-                    byte[] bytes = System.Text.Encoding.UTF8.GetBytes(serialized);
-                    return new EventData(Guid.NewGuid(),
-                        e.GetType().AssemblyQualifiedName,
-                        true,
-                        bytes,
-                        null);
+                    var bytes = System.Text.Encoding.UTF8.GetBytes(serialized);
+                    return new ClientV20.EventData(ClientV20.Uuid.NewUuid(), e.GetType().AssemblyQualifiedName, bytes, null);
                 }));
         }
 
-        private static async Task<EventStoreClient> ConfigureEventStoreGrpc()
+        private async Task TcpWriteEventsToStreamRaw(string currentStreamInUse, IEnumerable<MyEvent> myEvents)
         {
-            var settings = EventStoreClientSettings
+            await connV5.AppendToStreamAsync(currentStreamInUse, ClientV5.ExpectedVersion.Any,
+                myEvents.Select(e =>
+                {
+                    var serialized = JsonConvert.SerializeObject(e);
+                    var bytes = System.Text.Encoding.UTF8.GetBytes(serialized);
+                    return new ClientV5.EventData(Guid.NewGuid(), e.GetType().AssemblyQualifiedName, true, bytes, null);
+                }));
+        }
+
+        private static async Task<ClientV20.EventStoreClient> ConfigureEventStoreGrpc()
+        {
+            var settings = ClientV20.EventStoreClientSettings
                 .Create("esdb://localhost:2114?tls=false");
-            var client = new EventStoreClient(settings);
-            var projectionsClient = new EventStoreProjectionManagementClient(settings);
+            var client = new ClientV20.EventStoreClient(settings);
+            var projectionsClient = new ClientV20.EventStoreProjectionManagementClient(settings);
             await projectionsClient.EnableAsync("$by_category");
 
             await Task.Delay(TimeSpan.FromSeconds(3));
-
+            connV20 = client;
             return client;
         }
 
-        private static async Task<IEventStoreConnection> ConfigureEventStoreTcp()
+        private static async Task<ClientV5.IEventStoreConnection> ConfigureEventStoreTcp()
         {
             var connectionString =
                 "ConnectTo=tcp://admin:changeit@localhost:1113;HeartBeatTimeout=500;UseSslConnection=false;";
-            var builder = ConnectionSettings.Create()
+            var builder = ClientV5.ConnectionSettings.Create()
                 .KeepReconnecting()
                 .KeepRetrying();
 
-            var connection = EventStoreConnection.Create(connectionString, builder);
+            var connection = ClientV5.EventStoreConnection.Create(connectionString, builder);
 
             await connection.ConnectAsync();
-            conn = connection;
+            connV5 = connection;
             return connection;
         }
     }
