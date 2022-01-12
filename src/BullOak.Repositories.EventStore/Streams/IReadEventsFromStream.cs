@@ -8,7 +8,7 @@ namespace BullOak.Repositories.EventStore.Streams
     using System;
     using System.Threading.Tasks;
 
-    internal interface IReadEventsFromStream
+    public interface IReadEventsFromStream
     {
         Task<StreamReadResults> ReadFrom(string streamId,
             Func<IAmAStoredEvent, bool> predicate = null,

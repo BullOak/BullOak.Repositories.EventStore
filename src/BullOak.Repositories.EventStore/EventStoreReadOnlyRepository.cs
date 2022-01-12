@@ -6,6 +6,7 @@ namespace BullOak.Repositories.EventStore
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
     using Streams;
@@ -14,30 +15,28 @@ namespace BullOak.Repositories.EventStore
     public class EventStoreReadOnlyRepository<TId, TState> : IReadQueryModels<TId, TState>
     {
         private readonly IHoldAllConfiguration configs;
-        private readonly EventReader reader;
+        private readonly IReadEventsFromStream reader;
 
-        public EventStoreReadOnlyRepository(IHoldAllConfiguration configs, EventStoreClient esClient)
+        public EventStoreReadOnlyRepository(IHoldAllConfiguration configs, IReadEventsFromStream reader)
         {
-            new EventStoreClient(EventStoreClientSettings.Create("esdb://localhost:2113?tls=false"));
             this.configs = configs ?? throw new ArgumentNullException(nameof(configs));
-
-            reader = new EventReader(esClient, configs);
+            this.reader = reader;
         }
 
         public async Task<ReadModel<TState>> ReadFrom(TId id)
         {
             var streamData = await reader.ReadFrom(id.ToString());
-            var events = await streamData.events.Reverse().Select(x=> x.ToItemWithType()).ToArrayAsync();
+            var events = await streamData.Events.Reverse().Select(x=> x.ToItemWithType()).ToArrayAsync();
             var rehydratedState = configs.StateRehydrator.RehydrateFrom<TState>(events);
 
             //TODO: REPLACE WHEN BO CHANGES TO LONG!!
-            return new ReadModel<TState>(rehydratedState, (int)streamData.streamPosition.ToInt64());
+            return new ReadModel<TState>(rehydratedState, (int)streamData.StoredEventPosition.ToInt64());
         }
 
         public async Task<TState> ReadFrom(TId id, Func<IAmAStoredEvent, bool> loadEventPredicate)
         {
             var streamData = await reader.ReadFrom(id.ToString(), loadEventPredicate);
-            var events = await streamData.events.Select(x=> x.ToItemWithType()).ToArrayAsync();
+            var events = await streamData.Events.Select(x=> x.ToItemWithType()).ToArrayAsync();
             return configs.StateRehydrator.RehydrateFrom<TState>(events);
         }
 
@@ -47,7 +46,7 @@ namespace BullOak.Repositories.EventStore
             var streamsData = await reader.ReadFrom($"$ce-{categoryName}", direction: Direction.Forwards,
                 predicate: loadEventPredicate);
 
-            var eventsByStream = await streamsData.events.GroupBy(x => x.StreamId)
+            var eventsByStream = await streamsData.Events.GroupBy(x => x.StreamId)
                 .SelectAwait(async group =>
                 {
                     var events = await group.ToArrayAsync();

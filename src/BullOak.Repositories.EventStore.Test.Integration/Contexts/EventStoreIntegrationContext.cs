@@ -1,5 +1,4 @@
 ﻿using EventStore.Client;
-using EventStore.Client.Projections;
 
 namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
 {
@@ -13,44 +12,62 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
     using System.Reflection;
     using System.Threading.Tasks;
     using Events;
+    using global::EventStore.ClientAPI;
+    using Streams;
     using TechTalk.SpecFlow;
 
     internal class EventStoreIntegrationContext
     {
         private readonly EventStoreRepository<string, IHoldHigherOrder> repository;
         public readonly EventStoreReadOnlyRepository<string, IHoldHigherOrder> readOnlyRepository;
-        private static EventStoreClient client;
+        private static IReadEventsFromStream reader;
+        private static IStoreEventsToStream writer;
+        private static IHoldAllConfiguration configuration;
+
+        private static string protocol = "tcp";
+        private static IEventStoreConnection conn;
 
         public TestDateTimeProvider DateTimeProvider { get; }
 
         public EventStoreIntegrationContext(PassThroughValidator validator)
         {
-            var configuration = Configuration.Begin()
-               .WithDefaultCollection()
-               .WithDefaultStateFactory()
-               .NeverUseThreadSafe()
-               .WithNoEventPublisher()
-               .WithAnyAppliersFrom(Assembly.GetExecutingAssembly())
-               .AndNoMoreAppliers()
-               .WithNoUpconverters()
-               .Build();
-
             DateTimeProvider = new TestDateTimeProvider();
 
-            repository = new EventStoreRepository<string, IHoldHigherOrder>(validator, configuration, GetConnection(), DateTimeProvider);
-            readOnlyRepository = new EventStoreReadOnlyRepository<string, IHoldHigherOrder>(configuration, GetConnection());
-        }
-
-        private static EventStoreClient GetConnection()
-        {
-            return client;
+            repository = new EventStoreRepository<string, IHoldHigherOrder>(validator, configuration, reader, writer, DateTimeProvider);
+            readOnlyRepository = new EventStoreReadOnlyRepository<string, IHoldHigherOrder>(configuration, reader);
         }
 
         [BeforeTestRun]
         public static async Task SetupNode()
         {
-            client ??= await SetupConnection();
+            configuration = Configuration.Begin()
+                .WithDefaultCollection()
+                .WithDefaultStateFactory()
+                .NeverUseThreadSafe()
+                .WithNoEventPublisher()
+                .WithAnyAppliersFrom(Assembly.GetExecutingAssembly())
+                .AndNoMoreAppliers()
+                .WithNoUpconverters()
+                .Build();
+            reader = await ConfigureReader();
+            writer = await ConfigureWriter();
         }
+
+        static async Task<IReadEventsFromStream> ConfigureReader()
+            => protocol switch
+            {
+                "tcp" => new TcpEventReader(await ConfigureEventStoreTcp(), configuration),
+                "grpc" => new GrpcEventReader(await ConfigureEventStoreGrpc(), configuration),
+                _ => throw new ArgumentOutOfRangeException(nameof(protocol))
+            };
+
+        static async Task<IStoreEventsToStream> ConfigureWriter()
+            => protocol switch
+            {
+                "tcp" => new TcpEventWriter(await ConfigureEventStoreTcp()),
+                "grpc" => new GrpcEventWriter(await ConfigureEventStoreGrpc()),
+                _ => throw new ArgumentOutOfRangeException(nameof(protocol))
+            };
 
         [AfterTestRun]
         public static void TeardownNode()
@@ -89,44 +106,42 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
             => repository.SoftDelete(id);
 
         public Task HardDeleteStream(string id)
-            => GetConnection().TombstoneAsync(id, StreamState.Any);
-
-        public Task SoftDeleteByEvent(string id)
-            => repository.SoftDeleteByEvent(id);
-
-        public Task SoftDeleteByEvent<TSoftDeleteEvent>(string id, Func<TSoftDeleteEvent> createSoftDeleteEvent)
-            where TSoftDeleteEvent : EntitySoftDeleted
-            => repository.SoftDeleteByEvent(id, createSoftDeleteEvent);
+            => conn.DeleteStreamAsync(id, -1, true);
 
         public async Task<ResolvedEvent[]> ReadEventsFromStreamRaw(string id)
         {
-            var client = GetConnection();
             var result = new List<ResolvedEvent>();
-            var readResults = client.ReadStreamAsync(Direction.Forwards, id, StreamPosition.Start);
+            StreamEventsSlice currentSlice;
+            long nextSliceStart = StreamPosition.Start;
+            do
+            {
+                currentSlice = await conn.ReadStreamEventsForwardAsync(id, nextSliceStart, 100, false);
+                nextSliceStart = currentSlice.NextEventNumber;
+                result.AddRange(currentSlice.Events);
+            } while (!currentSlice.IsEndOfStream);
 
-            return await readResults.ToArrayAsync();
+            return result.ToArray();
         }
 
         internal async Task WriteEventsToStreamRaw(string currentStreamInUse, IEnumerable<MyEvent> myEvents)
         {
-            var conn = await SetupConnection();
-
-            await conn.AppendToStreamAsync(currentStreamInUse, StreamState.Any,
+            await conn.AppendToStreamAsync(currentStreamInUse, ExpectedVersion.Any,
                 myEvents.Select(e =>
                 {
                     var serialized = JsonConvert.SerializeObject(e);
                     byte[] bytes = System.Text.Encoding.UTF8.GetBytes(serialized);
-                    return new EventData(Uuid.NewUuid(),
+                    return new EventData(Guid.NewGuid(),
                         e.GetType().AssemblyQualifiedName,
+                        true,
                         bytes,
                         null);
                 }));
         }
 
-        private static async Task<EventStoreClient> SetupConnection()
+        private static async Task<EventStoreClient> ConfigureEventStoreGrpc()
         {
             var settings = EventStoreClientSettings
-                .Create("esdb://localhost:2113?tls=false");
+                .Create("esdb://localhost:2114?tls=false");
             var client = new EventStoreClient(settings);
             var projectionsClient = new EventStoreProjectionManagementClient(settings);
             await projectionsClient.EnableAsync("$by_category");
@@ -134,6 +149,21 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Contexts
             await Task.Delay(TimeSpan.FromSeconds(3));
 
             return client;
+        }
+
+        private static async Task<IEventStoreConnection> ConfigureEventStoreTcp()
+        {
+            var connectionString =
+                "ConnectTo=tcp://admin:changeit@localhost:1113;HeartBeatTimeout=500;UseSslConnection=false;";
+            var builder = ConnectionSettings.Create()
+                .KeepReconnecting()
+                .KeepRetrying();
+
+            var connection = EventStoreConnection.Create(connectionString, builder);
+
+            await connection.ConnectAsync();
+            conn = connection;
+            return connection;
         }
     }
 }

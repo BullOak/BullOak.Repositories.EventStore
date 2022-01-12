@@ -17,35 +17,41 @@ namespace BullOak.Repositories.EventStore
 
         private readonly IDateTimeProvider dateTimeProvider;
 
-        private readonly EventStoreClient client;
         private readonly string streamName;
         private bool isInDisposedState = false;
-        private readonly EventReader eventReader;
+
+        private readonly IReadEventsFromStream eventReader;
+        private readonly IStoreEventsToStream eventWriter;
         private static readonly IValidateState<TState> defaultValidator = new AlwaysPassValidator<TState>();
 
         private bool streamExists;
 
-        public EventStoreSession(IHoldAllConfiguration configuration,
-            EventStoreClient eventStoreClient,
+        public EventStoreSession
+        (
+            IHoldAllConfiguration configuration,
+            IReadEventsFromStream eventReader,
+            IStoreEventsToStream eventWriter,
             string streamName,
-            IDateTimeProvider dateTimeProvider = null)
-            : this(defaultValidator, configuration, eventStoreClient, streamName, dateTimeProvider)
+            IDateTimeProvider dateTimeProvider = null
+        ) : this(defaultValidator, configuration, eventReader, eventWriter, streamName, dateTimeProvider)
         {
         }
 
-        public EventStoreSession(IValidateState<TState> stateValidator,
+        public EventStoreSession
+        (
+            IValidateState<TState> stateValidator,
             IHoldAllConfiguration configuration,
-            EventStoreClient eventStoreClientclient,
+            IReadEventsFromStream eventReader,
+            IStoreEventsToStream eventWriter,
             string streamName,
-            IDateTimeProvider dateTimeProvider = null)
-            : base(stateValidator, configuration)
+            IDateTimeProvider dateTimeProvider = null
+        ) : base(stateValidator, configuration)
         {
-            this.client =
-                eventStoreClientclient ?? throw new ArgumentNullException(nameof(eventStoreClientclient));
+            this.eventReader = eventReader ?? throw new ArgumentNullException(nameof(eventReader));
+            this.eventWriter = eventWriter ?? throw new ArgumentNullException(nameof(eventWriter));
+
             this.streamName = streamName ?? throw new ArgumentNullException(nameof(streamName));
             this.dateTimeProvider = dateTimeProvider ?? new SystemDateTimeProvider();
-
-            this.eventReader = new EventReader(client, configuration);
         }
 
         public async Task Initialize(Func<IAmAStoredEvent, bool> loadEventPredicate = null)
@@ -54,11 +60,11 @@ namespace BullOak.Repositories.EventStore
             //TODO: user credentials
             var data = await eventReader.ReadFrom(streamName, loadEventPredicate);
 
-            streamExists = data.streamExists;
+            streamExists = data.StreamExists;
 
-            var events = await data.events.Reverse().ToArrayAsync();
+            var events = await data.Events.Reverse().ToArrayAsync();
 
-            LoadFromEvents(events.Select(x=> x.ToItemWithType()).ToArray(), data.streamPosition.ToInt64());
+            LoadFromEvents(events.Select(x => x.ToItemWithType()).ToArray(), data.StoredEventPosition.ToInt64());
         }
 
         private void CheckDisposedState()
@@ -72,7 +78,11 @@ namespace BullOak.Repositories.EventStore
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing) { ConsiderSessionDisposed(); }
+            if (disposing)
+            {
+                ConsiderSessionDisposed();
+            }
+
             base.Dispose(disposing);
         }
 
@@ -96,32 +106,32 @@ namespace BullOak.Repositories.EventStore
             checked
             {
                 CheckDisposedState();
-                IWriteResult writeResult;
+                int nextExpectedRevision;
 
                 if (!streamExists)
                 {
-                    writeResult = await client.AppendToStreamAsync(
-                            streamName,
-                            StreamState.NoStream,
-                            eventsToAdd.Select(eventObject => eventObject.CreateEventData(dateTimeProvider)),
-                            options => options.ThrowOnAppendFailure = false)
-                        .ConfigureAwait(false);
+                    nextExpectedRevision = await eventWriter.Add
+                    (
+                        streamName,
+                        eventsToAdd,
+                        dateTimeProvider,
+                        cancellationToken ?? default
+                    );
                 }
                 else
                 {
-                    writeResult = await client.AppendToStreamAsync(
-                            streamName,
-                            StreamRevision.FromInt64(ConcurrencyId),
-                            eventsToAdd.Select(eventObject => eventObject.CreateEventData(dateTimeProvider)),
-                            options => options.ThrowOnAppendFailure = false)
-                        .ConfigureAwait(false);
+                    nextExpectedRevision = await eventWriter.AppendTo
+                    (
+                        streamName,
+                        ConcurrencyId,
+                        eventsToAdd,
+                        dateTimeProvider,
+                        cancellationToken ?? default
+                    );
                 }
 
-                if (writeResult is WrongExpectedVersionResult)
-                    throw new ConcurrencyException(streamName, null);
-
                 ConsiderSessionDisposed();
-                return (int)writeResult.NextExpectedStreamRevision.ToInt64();
+                return nextExpectedRevision;
             }
         }
     }
