@@ -40,9 +40,9 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Specification
         public static void FeatureSetup()
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
-            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Specification", "StateRetrievalSpecs", "\tIn order to implement complex logic without further state storage\n\tAs a develope" +
-                    "r using this library\n\tI want the current state to be updated immediately when I " +
-                    "add new events even if I don\'t save the session", ProgrammingLanguage.CSharp, ((string[])(null)));
+            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Specification", "StateRetrievalSpecs", "\tIn order to implement complex logic without further state storage\r\n\tAs a develop" +
+                    "er using this library\r\n\tI want the current state to be updated immediately when " +
+                    "I add new events even if I don\'t save the session", ProgrammingLanguage.CSharp, ((string[])(null)));
             testRunner.OnFeatureStart(featureInfo);
         }
         

@@ -33,7 +33,7 @@ namespace BullOak.Repositories.EventStore.Streams
             IAsyncEnumerable<StoredEvent> storedEvents;
             if (direction == Direction.Backwards)
             {
-                var readResult = await connection.ReadStreamEventsBackwardAsync(streamId, StreamPosition.End, pageSize, false);
+                var readResult = await connection.ReadStreamEventsBackwardAsync(streamId, StreamPosition.End, pageSize, true);
 
                 if (!StreamExists(readResult))
                     return new StreamReadResults(EmptyReadResult, false, StoredEventPosition.FromInt64(-1));
@@ -49,7 +49,7 @@ namespace BullOak.Repositories.EventStore.Streams
             }
             else
             {
-                var readResult = await connection.ReadStreamEventsForwardAsync(streamId, StreamPosition.Start, pageSize, false);
+                var readResult = await connection.ReadStreamEventsForwardAsync(streamId, StreamPosition.Start, pageSize, true);
 
                 if (!StreamExists(readResult))
                     return new StreamReadResults(EmptyReadResult, false, StoredEventPosition.FromInt64(-1));
