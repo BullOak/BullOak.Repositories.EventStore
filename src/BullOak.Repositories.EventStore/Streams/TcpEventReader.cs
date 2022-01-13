@@ -1,8 +1,4 @@
-﻿using System.Text.Json;
-using EventStore.Client;
-using System.Threading;
-
-namespace BullOak.Repositories.EventStore.Streams
+﻿namespace BullOak.Repositories.EventStore.Streams
 {
     using Events;
     using StateEmit;
@@ -11,6 +7,8 @@ namespace BullOak.Repositories.EventStore.Streams
     using System.Linq;
     using System.Threading.Tasks;
     using global::EventStore.ClientAPI;
+    using System.Threading;
+    using global::EventStore.ClientAPI.Exceptions;
 
     public class TcpEventReader : IReadEventsFromStream
     {
@@ -26,12 +24,12 @@ namespace BullOak.Repositories.EventStore.Streams
             this.pageSize = pageSize;
         }
 
-        public async Task<StreamReadResults> ReadFrom(string streamId, Func<IAmAStoredEvent, bool> predicate = null, Direction direction = Direction.Backwards, CancellationToken cancellationToken = default)
+        public async Task<StreamReadResults> ReadFrom(string streamId, Func<IAmAStoredEvent, bool> predicate = null, StreamReadDirection direction = StreamReadDirection.Backwards, CancellationToken cancellationToken = default)
         {
             predicate ??= _ => true;
 
             IAsyncEnumerable<StoredEvent> storedEvents;
-            if (direction == Direction.Backwards)
+            if (direction == StreamReadDirection.Backwards)
             {
                 var readResult = await connection.ReadStreamEventsBackwardAsync(streamId, StreamPosition.End, pageSize, true);
 

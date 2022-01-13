@@ -1,7 +1,4 @@
-﻿using EventStore.Client;
-using System.Threading;
-
-namespace BullOak.Repositories.EventStore.Streams
+﻿namespace BullOak.Repositories.EventStore.Streams
 {
     using Events;
     using StateEmit;
@@ -9,6 +6,8 @@ namespace BullOak.Repositories.EventStore.Streams
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using global::EventStore.Client;
+    using System.Threading;
 
     public class GrpcEventReader : IReadEventsFromStream
     {
@@ -22,12 +21,12 @@ namespace BullOak.Repositories.EventStore.Streams
             this.client = client ?? throw new ArgumentNullException(nameof(client));
         }
 
-        public async Task<StreamReadResults> ReadFrom(string streamId, Func<IAmAStoredEvent, bool> predicate = null, Direction direction = Direction.Backwards, CancellationToken cancellationToken = default)
+        public async Task<StreamReadResults> ReadFrom(string streamId, Func<IAmAStoredEvent, bool> predicate = null, StreamReadDirection direction = StreamReadDirection.Backwards, CancellationToken cancellationToken = default)
         {
             var readResult = client.ReadStreamAsync(
-                direction,
+                direction == StreamReadDirection.Backwards ? Direction.Backwards : Direction.Forwards,
                 streamId,
-                direction == Direction.Backwards ? StreamPosition.End : StreamPosition.Start,
+                direction == StreamReadDirection.Backwards ? StreamPosition.End : StreamPosition.Start,
                 resolveLinkTos: true,
                 configureOperationOptions: options => options.TimeoutAfter = TimeSpan.FromSeconds(30),
                 cancellationToken: cancellationToken);
@@ -57,7 +56,7 @@ namespace BullOak.Repositories.EventStore.Streams
                 resolveLinkTos: false).FirstAsync(cancellationToken)).OriginalEventNumber;
 
             IAsyncEnumerable<StoredEvent> storedEvents;
-            if (direction == Direction.Backwards)
+            if (direction == StreamReadDirection.Backwards)
             {
                 storedEvents = readResult
                     // Trust me, resharper is wrong in this one. Event can be null

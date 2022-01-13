@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using BullOak.Repositories.EventStore.Events;
-using EventStore.Client;
 
 namespace BullOak.Repositories.EventStore.Streams
 {
@@ -12,7 +11,7 @@ namespace BullOak.Repositories.EventStore.Streams
     {
         Task<StreamReadResults> ReadFrom(string streamId,
             Func<IAmAStoredEvent, bool> predicate = null,
-            Direction direction = Direction.Backwards,
+            StreamReadDirection direction = StreamReadDirection.Backwards,
             CancellationToken cancellationToken = default);
     }
 }

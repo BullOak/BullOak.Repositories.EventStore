@@ -1,14 +1,13 @@
-﻿using System.Collections.Generic;
-using EventStore.Client;
-using EventStore.ClientAPI;
-
-namespace BullOak.Repositories.EventStore.Events
+﻿namespace BullOak.Repositories.EventStore.Events
 {
     using Metadata;
     using Newtonsoft.Json;
     using StateEmit;
     using System;
     using System.Linq;
+    using System.Collections.Generic;
+    using global::EventStore.Client;
+    using global::EventStore.ClientAPI;
 
     public static class EventConversion
     {
