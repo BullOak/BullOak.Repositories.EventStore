@@ -40,9 +40,9 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Specification
         public static void FeatureSetup()
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
-            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Specification", "StateRetrievalSpecs", "\tIn order to implement complex logic without further state storage\n\tAs a develope" +
-                    "r using this library\n\tI want the current state to be updated immediately when I " +
-                    "add new events even if I don\'t save the session", ProgrammingLanguage.CSharp, ((string[])(null)));
+            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Specification", "StateRetrievalSpecs", "\tIn order to implement complex logic without further state storage\r\n\tAs a develop" +
+                    "er using this library\r\n\tI want the current state to be updated immediately when " +
+                    "I add new events even if I don\'t save the session", ProgrammingLanguage.CSharp, ((string[])(null)));
             testRunner.OnFeatureStart(featureInfo);
         }
         
@@ -82,21 +82,24 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Specification
             this.TestTearDown();
         }
         
-        [Xunit.SkippableTheoryAttribute(DisplayName="When I add new events in the stream I want the state to be updated immediately")]
+        [Xunit.SkippableTheoryAttribute(DisplayName="When I add new events in the stream I want the state to be updated immediately us" +
+            "ing TCP")]
         [Xunit.TraitAttribute("FeatureTitle", "StateRetrievalSpecs")]
-        [Xunit.TraitAttribute("Description", "When I add new events in the stream I want the state to be updated immediately")]
+        [Xunit.TraitAttribute("Description", "When I add new events in the stream I want the state to be updated immediately us" +
+            "ing TCP")]
         [Xunit.InlineDataAttribute("0", "3", "2", new string[0])]
         [Xunit.InlineDataAttribute("2", "3", "2", new string[0])]
         [Xunit.InlineDataAttribute("7", "3", "6", new string[0])]
         [Xunit.InlineDataAttribute("0", "10000", "9999", new string[0])]
-        public virtual void WhenIAddNewEventsInTheStreamIWantTheStateToBeUpdatedImmediately(string eventCount, string addedEvents, string highOrder, string[] exampleTags)
+        public virtual void WhenIAddNewEventsInTheStreamIWantTheStateToBeUpdatedImmediatelyUsingTCP(string eventCount, string addedEvents, string highOrder, string[] exampleTags)
         {
             string[] tagsOfScenario = exampleTags;
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             argumentsOfScenario.Add("eventCount", eventCount);
             argumentsOfScenario.Add("addedEvents", addedEvents);
             argumentsOfScenario.Add("highOrder", highOrder);
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("When I add new events in the stream I want the state to be updated immediately", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("When I add new events in the stream I want the state to be updated immediately us" +
+                    "ing TCP", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
 #line 11
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -118,12 +121,69 @@ this.ScenarioInitialize(scenarioInfo);
             {
                 this.ScenarioStart();
 #line 12
- testRunner.Given(string.Format("an existing stream with {0} events", eventCount), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+    testRunner.Given("the tcp protocol is being used", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
 #line 13
- testRunner.When(string.Format("I add {0} events in the session without saving it", addedEvents), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+ testRunner.And(string.Format("an existing stream with {0} events", eventCount), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
 #line hidden
 #line 14
+ testRunner.When(string.Format("I add {0} events in the session without saving it", addedEvents), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line hidden
+#line 15
+ testRunner.Then(string.Format("HighOrder property should be {0}", highOrder), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [Xunit.SkippableTheoryAttribute(DisplayName="When I add new events in the stream I want the state to be updated immediately us" +
+            "ing GRPC")]
+        [Xunit.TraitAttribute("FeatureTitle", "StateRetrievalSpecs")]
+        [Xunit.TraitAttribute("Description", "When I add new events in the stream I want the state to be updated immediately us" +
+            "ing GRPC")]
+        [Xunit.InlineDataAttribute("0", "3", "2", new string[0])]
+        [Xunit.InlineDataAttribute("2", "3", "2", new string[0])]
+        [Xunit.InlineDataAttribute("7", "3", "6", new string[0])]
+        [Xunit.InlineDataAttribute("0", "10000", "9999", new string[0])]
+        public virtual void WhenIAddNewEventsInTheStreamIWantTheStateToBeUpdatedImmediatelyUsingGRPC(string eventCount, string addedEvents, string highOrder, string[] exampleTags)
+        {
+            string[] tagsOfScenario = exampleTags;
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            argumentsOfScenario.Add("eventCount", eventCount);
+            argumentsOfScenario.Add("addedEvents", addedEvents);
+            argumentsOfScenario.Add("highOrder", highOrder);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("When I add new events in the stream I want the state to be updated immediately us" +
+                    "ing GRPC", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
+#line 23
+this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            bool isScenarioIgnored = default(bool);
+            bool isFeatureIgnored = default(bool);
+            if ((tagsOfScenario != null))
+            {
+                isScenarioIgnored = tagsOfScenario.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((this._featureTags != null))
+            {
+                isFeatureIgnored = this._featureTags.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((isScenarioIgnored || isFeatureIgnored))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 24
+    testRunner.Given("the grpc protocol is being used", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+#line 25
+ testRunner.And(string.Format("an existing stream with {0} events", eventCount), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
+#line hidden
+#line 26
+ testRunner.When(string.Format("I add {0} events in the session without saving it", addedEvents), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line hidden
+#line 27
  testRunner.Then(string.Format("HighOrder property should be {0}", highOrder), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }

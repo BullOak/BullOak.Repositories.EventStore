@@ -8,8 +8,21 @@
 #  so that we can branch on conditions of current state without polluting the stateless, functional domain
 #  class that implements the domain logic
 
-Scenario Outline: When I add new events in the stream I want the state to be updated immediately
-	Given an existing stream with <eventCount> events
+Scenario Outline: When I add new events in the stream I want the state to be updated immediately using TCP
+    Given the tcp protocol is being used
+	* an existing stream with <eventCount> events
+	When I add <addedEvents> events in the session without saving it
+	Then HighOrder property should be <highOrder>
+Examples:
+	| eventCount | addedEvents | highOrder |
+	| 0          | 3           | 2         |
+	| 2          | 3           | 2         |
+	| 7          | 3           | 6         |
+	| 0          | 10000       | 9999      |
+
+Scenario Outline: When I add new events in the stream I want the state to be updated immediately using GRPC
+    Given the grpc protocol is being used
+	* an existing stream with <eventCount> events
 	When I add <addedEvents> events in the session without saving it
 	Then HighOrder property should be <highOrder>
 Examples:
