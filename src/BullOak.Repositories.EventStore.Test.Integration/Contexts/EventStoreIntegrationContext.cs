@@ -180,7 +180,7 @@
         private static async Task<ClientV20.EventStoreClient> ConfigureEventStoreGrpc()
         {
             var settings = ClientV20.EventStoreClientSettings
-                .Create("esdb://localhost:2114?tls=false");
+                .Create("esdb://localhost:2113?tls=false");
             var client = new ClientV20.EventStoreClient(settings);
             var projectionsClient = new ClientV20.EventStoreProjectionManagementClient(settings);
             await projectionsClient.EnableAsync("$by_category");
