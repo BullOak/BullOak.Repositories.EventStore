@@ -81,13 +81,16 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Specification
             this.TestTearDown();
         }
         
-        [Xunit.SkippableFactAttribute(DisplayName="Reconstitute state from one event stored using interface")]
+        [Xunit.SkippableTheoryAttribute(DisplayName="Reconstitute state from one event stored using interface")]
         [Xunit.TraitAttribute("FeatureTitle", "ReadModelSpecs")]
         [Xunit.TraitAttribute("Description", "Reconstitute state from one event stored using interface")]
-        public virtual void ReconstituteStateFromOneEventStoredUsingInterface()
+        [Xunit.InlineDataAttribute("tcp", new string[0])]
+        [Xunit.InlineDataAttribute("grpc", new string[0])]
+        public virtual void ReconstituteStateFromOneEventStoredUsingInterface(string protocol, string[] exampleTags)
         {
-            string[] tagsOfScenario = ((string[])(null));
+            string[] tagsOfScenario = exampleTags;
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            argumentsOfScenario.Add("protocol", protocol);
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Reconstitute state from one event stored using interface", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
 #line 6
 this.ScenarioInitialize(scenarioInfo);
@@ -110,39 +113,45 @@ this.ScenarioInitialize(scenarioInfo);
             {
                 this.ScenarioStart();
 #line 7
- testRunner.Given("a new stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+    testRunner.Given(string.Format("the {0} protocol is being used", protocol), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
 #line 8
- testRunner.And("3 new events", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+ testRunner.And("a new stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
 #line hidden
 #line 9
- testRunner.And("I try to save the new events in the stream through their interface", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+ testRunner.And("3 new events", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
 #line hidden
 #line 10
- testRunner.When("I load my entity through the read-only repository", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+ testRunner.And("I try to save the new events in the stream through their interface", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
 #line hidden
 #line 11
- testRunner.Then("the load process should succeed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+ testRunner.When("I load my entity through the read-only repository", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
 #line 12
- testRunner.And("HighOrder property should be 2", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+ testRunner.Then("the load process should succeed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
 #line 13
- testRunner.And("have a concurrency id of 2", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+ testRunner.And("HighOrder property should be 2", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
+#line hidden
+#line 14
+ testRunner.And("have a concurrency id of 2", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
 #line hidden
             }
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableFactAttribute(DisplayName="Load entity as at a point in time")]
+        [Xunit.SkippableTheoryAttribute(DisplayName="Load entity as at a point in time")]
         [Xunit.TraitAttribute("FeatureTitle", "ReadModelSpecs")]
         [Xunit.TraitAttribute("Description", "Load entity as at a point in time")]
-        public virtual void LoadEntityAsAtAPointInTime()
+        [Xunit.InlineDataAttribute("tcp", new string[0])]
+        [Xunit.InlineDataAttribute("grpc", new string[0])]
+        public virtual void LoadEntityAsAtAPointInTime(string protocol, string[] exampleTags)
         {
-            string[] tagsOfScenario = ((string[])(null));
+            string[] tagsOfScenario = exampleTags;
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            argumentsOfScenario.Add("protocol", protocol);
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Load entity as at a point in time", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
-#line 15
+#line 21
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -162,8 +171,11 @@ this.ScenarioInitialize(scenarioInfo);
             else
             {
                 this.ScenarioStart();
-#line 16
- testRunner.Given("a new stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 22
+    testRunner.Given(string.Format("the {0} protocol is being used", protocol), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+#line 23
+ testRunner.And("a new stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
 #line hidden
                 TechTalk.SpecFlow.Table table1 = new TechTalk.SpecFlow.Table(new string[] {
                             "Timestamp"});
@@ -173,34 +185,37 @@ this.ScenarioInitialize(scenarioInfo);
                             "2020-09-20 11:10:00"});
                 table1.AddRow(new string[] {
                             "2020-09-23 11:10:00"});
-#line 17
- testRunner.And("the following events with the following timestamps", ((string)(null)), table1, "And ");
+#line 24
+ testRunner.And("the following events with the following timestamps", ((string)(null)), table1, "* ");
 #line hidden
-#line 22
- testRunner.And("I try to save the new events in the stream through their interface", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 29
+ testRunner.And("I try to save the new events in the stream through their interface", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
 #line hidden
-#line 23
+#line 30
  testRunner.When("I load my entity through the read-only repository as of \'2020-09-22 11:10:00\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 24
+#line 31
  testRunner.Then("the load process should succeed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
-#line 25
- testRunner.And("HighOrder property should be 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 32
+ testRunner.And("HighOrder property should be 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
 #line hidden
             }
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableFactAttribute(DisplayName="Reconstitute streams with one event type based on category")]
+        [Xunit.SkippableTheoryAttribute(DisplayName="Reconstitute streams with one event type based on category")]
         [Xunit.TraitAttribute("FeatureTitle", "ReadModelSpecs")]
         [Xunit.TraitAttribute("Description", "Reconstitute streams with one event type based on category")]
-        public virtual void ReconstituteStreamsWithOneEventTypeBasedOnCategory()
+        [Xunit.InlineDataAttribute("tcp", new string[0])]
+        [Xunit.InlineDataAttribute("grpc", new string[0])]
+        public virtual void ReconstituteStreamsWithOneEventTypeBasedOnCategory(string protocol, string[] exampleTags)
         {
-            string[] tagsOfScenario = ((string[])(null));
+            string[] tagsOfScenario = exampleTags;
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            argumentsOfScenario.Add("protocol", protocol);
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Reconstitute streams with one event type based on category", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
-#line 27
+#line 39
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -220,8 +235,11 @@ this.ScenarioInitialize(scenarioInfo);
             else
             {
                 this.ScenarioStart();
-#line 28
- testRunner.Given("a new stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 40
+    testRunner.Given(string.Format("the {0} protocol is being used", protocol), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+#line 41
+ testRunner.And("a new stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
 #line hidden
                 TechTalk.SpecFlow.Table table2 = new TechTalk.SpecFlow.Table(new string[] {
                             "Timestamp"});
@@ -231,37 +249,40 @@ this.ScenarioInitialize(scenarioInfo);
                             "2020-09-20 11:10:00"});
                 table2.AddRow(new string[] {
                             "2020-09-23 11:10:00"});
-#line 29
- testRunner.And("the following events with the following timestamps", ((string)(null)), table2, "And ");
+#line 42
+ testRunner.And("the following events with the following timestamps", ((string)(null)), table2, "* ");
 #line hidden
-#line 34
- testRunner.And("I try to save the new events in the stream through their interface", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 47
+ testRunner.And("I try to save the new events in the stream through their interface", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
 #line hidden
-#line 35
- testRunner.And("after waiting for 15 seconds for categories to be processed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 48
+ testRunner.And("after waiting for 15 seconds for categories to be processed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
 #line hidden
-#line 36
+#line 49
  testRunner.When("I load all my entities for the streams category", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 37
+#line 50
  testRunner.Then("the load process should succeed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
-#line 38
-    testRunner.And("HighOrder property should be 2", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 51
+    testRunner.And("HighOrder property should be 2", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
 #line hidden
             }
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableFactAttribute(DisplayName="Reconstitute streams with one event type based on category up to a given date")]
+        [Xunit.SkippableTheoryAttribute(DisplayName="Reconstitute streams with one event type based on category up to a given date")]
         [Xunit.TraitAttribute("FeatureTitle", "ReadModelSpecs")]
         [Xunit.TraitAttribute("Description", "Reconstitute streams with one event type based on category up to a given date")]
-        public virtual void ReconstituteStreamsWithOneEventTypeBasedOnCategoryUpToAGivenDate()
+        [Xunit.InlineDataAttribute("tcp", new string[0])]
+        [Xunit.InlineDataAttribute("grpc", new string[0])]
+        public virtual void ReconstituteStreamsWithOneEventTypeBasedOnCategoryUpToAGivenDate(string protocol, string[] exampleTags)
         {
-            string[] tagsOfScenario = ((string[])(null));
+            string[] tagsOfScenario = exampleTags;
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            argumentsOfScenario.Add("protocol", protocol);
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Reconstitute streams with one event type based on category up to a given date", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
-#line 40
+#line 58
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -281,11 +302,14 @@ this.ScenarioInitialize(scenarioInfo);
             else
             {
                 this.ScenarioStart();
-#line 41
- testRunner.Given("a new stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 59
+    testRunner.Given(string.Format("the {0} protocol is being used", protocol), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 42
-    testRunner.And("another new stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 60
+    testRunner.And("a new stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
+#line hidden
+#line 61
+    testRunner.And("another new stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
 #line hidden
                 TechTalk.SpecFlow.Table table3 = new TechTalk.SpecFlow.Table(new string[] {
                             "Timestamp"});
@@ -295,8 +319,8 @@ this.ScenarioInitialize(scenarioInfo);
                             "2020-09-20 11:10:00"});
                 table3.AddRow(new string[] {
                             "2020-09-23 11:10:00"});
-#line 43
- testRunner.And("the following events with timestamps for stream 1", ((string)(null)), table3, "And ");
+#line 62
+ testRunner.And("the following events with timestamps for stream 1", ((string)(null)), table3, "* ");
 #line hidden
                 TechTalk.SpecFlow.Table table4 = new TechTalk.SpecFlow.Table(new string[] {
                             "Timestamp"});
@@ -310,40 +334,43 @@ this.ScenarioInitialize(scenarioInfo);
                             "2020-09-20 12:20:00"});
                 table4.AddRow(new string[] {
                             "2020-09-23 11:10:00"});
-#line 48
-    testRunner.And("the following events with timestamps for stream 2", ((string)(null)), table4, "And ");
+#line 67
+    testRunner.And("the following events with timestamps for stream 2", ((string)(null)), table4, "* ");
 #line hidden
-#line 55
- testRunner.And("I try to save the new events in the stream through their interface", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 74
+ testRunner.And("I try to save the new events in the stream through their interface", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
 #line hidden
-#line 56
- testRunner.And("after waiting for 15 seconds for categories to be processed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 75
+ testRunner.And("after waiting for 15 seconds for categories to be processed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
 #line hidden
-#line 57
+#line 76
  testRunner.When("I load all my entities as of \'2020-09-22 11:10:00\' for the streams category", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 58
+#line 77
  testRunner.Then("the load process should succeed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
-#line 59
-    testRunner.And("HighOrder property for stream 1 should be 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 78
+    testRunner.And("HighOrder property for stream 1 should be 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
 #line hidden
-#line 60
-    testRunner.And("HighOrder property for stream 2 should be 3", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 79
+    testRunner.And("HighOrder property for stream 2 should be 3", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
 #line hidden
             }
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableFactAttribute(DisplayName="Reconstitute state based on category with two event types up to a given date")]
+        [Xunit.SkippableTheoryAttribute(DisplayName="Reconstitute state based on category with two event types up to a given date")]
         [Xunit.TraitAttribute("FeatureTitle", "ReadModelSpecs")]
         [Xunit.TraitAttribute("Description", "Reconstitute state based on category with two event types up to a given date")]
-        public virtual void ReconstituteStateBasedOnCategoryWithTwoEventTypesUpToAGivenDate()
+        [Xunit.InlineDataAttribute("tcp", new string[0])]
+        [Xunit.InlineDataAttribute("grpc", new string[0])]
+        public virtual void ReconstituteStateBasedOnCategoryWithTwoEventTypesUpToAGivenDate(string protocol, string[] exampleTags)
         {
-            string[] tagsOfScenario = ((string[])(null));
+            string[] tagsOfScenario = exampleTags;
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            argumentsOfScenario.Add("protocol", protocol);
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Reconstitute state based on category with two event types up to a given date", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
-#line 62
+#line 86
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -363,33 +390,36 @@ this.ScenarioInitialize(scenarioInfo);
             else
             {
                 this.ScenarioStart();
-#line 63
- testRunner.Given("a new stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 87
+    testRunner.Given(string.Format("the {0} protocol is being used", protocol), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+#line 88
+ testRunner.And("a new stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
 #line hidden
                 TechTalk.SpecFlow.Table table5 = new TechTalk.SpecFlow.Table(new string[] {
                             "Timestamp"});
                 table5.AddRow(new string[] {
                             "2020-09-10 11:10:00"});
-#line 64
- testRunner.And("the following events with the following timestamps", ((string)(null)), table5, "And ");
+#line 89
+ testRunner.And("the following events with the following timestamps", ((string)(null)), table5, "* ");
 #line hidden
-#line 67
- testRunner.And("I try to save the new events in the stream through their interface", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 92
+ testRunner.And("I try to save the new events in the stream through their interface", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
 #line hidden
-#line 68
-    testRunner.And("I update the state of visible to be enabled as of \'2020-09-22 11:10:00\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 93
+    testRunner.And("I update the state of visible to be enabled as of \'2020-09-22 11:10:00\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
 #line hidden
-#line 69
- testRunner.And("after waiting for 15 seconds for categories to be processed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 94
+ testRunner.And("after waiting for 15 seconds for categories to be processed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
 #line hidden
-#line 70
+#line 95
  testRunner.When("I load all my entities as of \'2020-09-20 11:10:00\' for the streams category", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 71
+#line 96
  testRunner.Then("the load process should succeed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
-#line 72
-    testRunner.And("the visibilty should be disabled", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 97
+    testRunner.And("the visibilty should be disabled", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
 #line hidden
             }
             this.ScenarioCleanup();

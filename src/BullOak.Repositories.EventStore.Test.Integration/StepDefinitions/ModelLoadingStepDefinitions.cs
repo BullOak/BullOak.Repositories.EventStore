@@ -71,7 +71,7 @@
 
             testDataContext.RecordedException = await Record.ExceptionAsync(async () =>
             {
-                var readModel = await eventStoreContainer.readOnlyRepository.ReadFrom(testDataContext.CurrentStreamId.ToString());
+                var readModel = await eventStoreContainer.ReadOnlyRepository.ReadFrom(testDataContext.CurrentStreamId.ToString());
                 testDataContext.LatestLoadedState = readModel.state;
                 testDataContext.LastConcurrencyId = readModel.concurrencyId;
             });
@@ -86,7 +86,7 @@
 
             testDataContext.RecordedException = await Record.ExceptionAsync(async () =>
             {
-                var state = await eventStoreContainer.readOnlyRepository.ReadFrom(testDataContext.CurrentStreamId.ToString(),
+                var state = await eventStoreContainer.ReadOnlyRepository.ReadFrom(testDataContext.CurrentStreamId.ToString(),
                     e =>
                     {
                         if (e.Metadata?.Properties == null || !e.Metadata.Properties.TryGetValue(MetadataProperties.Timestamp,
