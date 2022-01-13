@@ -236,6 +236,8 @@
             var connection = ClientV5.EventStoreConnection.Create(connectionString, builder);
 
             await connection.ConnectAsync();
+
+            await Task.Delay(TimeSpan.FromSeconds(3));
             connV5 = connection;
             return connection;
         }
