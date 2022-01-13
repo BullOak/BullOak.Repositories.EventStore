@@ -13,7 +13,6 @@
   <ItemGroup>
     <PackageReference Include="EventStore.Client.Grpc.ProjectionManagement" Version="21.2.0" />
     <PackageReference Include="EventStore.Client.Grpc.Streams" Version="21.2.0" />
-<!--    <PackageReference Include="Grpc.Net.Client" Version="2.41.0" />-->
     <PackageReference Include="FluentAssertions" Version="6.3.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
@@ -45,13 +44,6 @@
     <Content Include="EventStoreServer\EventStore.ClusterNode.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="Specification\StateRetreivalSpecs.feature.cs" />
-    <Compile Remove="Specification\SaveEventStream.feature.cs" />
-    <Compile Remove="Specification\ReconstituteState.feature.cs" />
-    <Compile Remove="Specification\ReadModelSpecs.feature.cs" />
   </ItemGroup>
 
 </Project>
