@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run Tcp ESDB image
-        run: docker run -d --name tcp_esdbnode -it -p 2113:2113 -p 1113:1113 eventstore/eventstore:release-5.0.11 --insecure --run-projections=All
+        run: docker run -d --name tcp_esdbnode -it -p 2113:2113 -p 1113:1113 eventstore/eventstore:release-5.0.11 --run-projections=All
       - name: Run Grpc ESDB image
         run: docker run -d --name grpc_esdbnode -it -p 2114:2113 -p 1114:1113 eventstore/eventstore:21.10.1-bionic --insecure --run-projections=All
       - uses: actions/checkout@v2
