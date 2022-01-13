@@ -231,8 +231,7 @@
             var connectionString =
                 "ConnectTo=tcp://admin:changeit@localhost:1113;HeartBeatTimeout=500;UseSslConnection=false;";
             var builder = ClientV5.ConnectionSettings.Create()
-                                  .KeepReconnecting()
-                                  .KeepRetrying();
+                .KeepReconnecting();
 
             var connection = ClientV5.EventStoreConnection.Create(connectionString, builder);
 
