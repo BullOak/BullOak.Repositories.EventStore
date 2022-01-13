@@ -23,7 +23,7 @@
         private static IStoreEventsToStream writer;
         private static IHoldAllConfiguration configuration;
 
-        private static string protocol = "tcp";
+        private static string protocol = "grpc";
         private static ClientV5.IEventStoreConnection connV5;
         private static ClientV20.EventStoreClient connV20;
 
