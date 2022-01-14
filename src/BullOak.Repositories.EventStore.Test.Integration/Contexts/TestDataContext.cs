@@ -4,6 +4,7 @@
     using Session;
     using System;
     using System.Collections.Generic;
+    using Streams;
 
     internal class TestDataContext
     {
@@ -15,6 +16,8 @@
 
         public Exception RecordedException { get; internal set; }
         public IHoldHigherOrder LatestLoadedState { get; internal set; }
+
+        public StreamReadResults LatestStreamReadResults { get; internal set; }
         public Dictionary<string, IManageSessionOf<IHoldHigherOrder>> NamedSessions { get; internal set; } =
             new Dictionary<string, IManageSessionOf<IHoldHigherOrder>>();
         public Dictionary<string, List<Exception>> NamedSessionsExceptions { get; internal set; } =

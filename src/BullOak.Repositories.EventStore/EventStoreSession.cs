@@ -1,10 +1,7 @@
-﻿using BullOak.Repositories.EventStore.Events;
-using BullOak.Repositories.Exceptions;
-using EventStore.Client;
-
-namespace BullOak.Repositories.EventStore
+﻿namespace BullOak.Repositories.EventStore
 {
-    using BullOak.Repositories.Session;
+    using Session;
+    using Events;
     using System;
     using System.Linq;
     using System.Threading;
@@ -99,7 +96,8 @@ namespace BullOak.Repositories.EventStore
         /// <param name="snapshot"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected override async Task<int> SaveChanges(ItemWithType[] eventsToAdd,
+        protected override async Task<int> SaveChanges(
+            ItemWithType[] eventsToAdd,
             TState snapshot,
             CancellationToken? cancellationToken)
         {

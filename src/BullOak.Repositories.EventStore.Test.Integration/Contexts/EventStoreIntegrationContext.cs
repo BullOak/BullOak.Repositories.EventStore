@@ -19,8 +19,8 @@
         private readonly PassThroughValidator validator;
         private static IHoldAllConfiguration configuration;
 
-        private IStoreEventsToStream writer;
-        private IReadEventsFromStream reader;
+        public IStoreEventsToStream EventWriter { get; private set; }
+        public IReadEventsFromStream EventReader { get; private set; }
 
         private EventStoreRepository<string, IHoldHigherOrder> repository;
         private EventStoreRepository<string, IHoldHigherOrder> Repository
@@ -43,18 +43,18 @@
                 return readOnlyRepository;
             }
         }
-        public async Task BuildRepositories(string protocol = "tcp")
+        public async Task BuildRepositories(Protocol chosenProtocol = Protocol.Tcp)
         {
-            this.protocol = protocol;
+            protocol = chosenProtocol;
 
-            reader = await ConfigureReader(protocol);
-            writer = await ConfigureWriter(protocol);
+            EventReader = await ConfigureReader();
+            EventWriter = await ConfigureWriter();
 
-            repository = new EventStoreRepository<string, IHoldHigherOrder>(validator, configuration, reader, writer, DateTimeProvider);
-            readOnlyRepository = new EventStoreReadOnlyRepository<string, IHoldHigherOrder>(configuration, reader);
+            repository = new EventStoreRepository<string, IHoldHigherOrder>(validator, configuration, EventReader, EventWriter, DateTimeProvider);
+            readOnlyRepository = new EventStoreReadOnlyRepository<string, IHoldHigherOrder>(configuration, EventReader);
         }
 
-        private string protocol = "tcp";
+        private Protocol protocol;
         private ClientV5.IEventStoreConnection connV5;
         private ClientV20.EventStoreClient connV20;
 
@@ -81,19 +81,19 @@
                 .Build();
         }
 
-        async Task<IReadEventsFromStream> ConfigureReader(string protocol)
+        async Task<IReadEventsFromStream> ConfigureReader()
             => protocol switch
             {
-                "tcp" => new TcpEventReader(await ConfigureEventStoreTcp(), configuration),
-                "grpc" => new GrpcEventReader(await ConfigureEventStoreGrpc(), configuration),
+                Protocol.Tcp => new TcpEventReader(await ConfigureEventStoreTcp(), configuration),
+                Protocol.Grpc => new GrpcEventReader(await ConfigureEventStoreGrpc(), configuration),
                 _ => throw new ArgumentOutOfRangeException(nameof(protocol))
             };
 
-        async Task<IStoreEventsToStream> ConfigureWriter(string protocol)
+        async Task<IStoreEventsToStream> ConfigureWriter()
             => protocol switch
             {
-                "tcp" => new TcpEventWriter(await ConfigureEventStoreTcp()),
-                "grpc" => new GrpcEventWriter(await ConfigureEventStoreGrpc()),
+                Protocol.Tcp => new TcpEventWriter(await ConfigureEventStoreTcp()),
+                Protocol.Grpc => new GrpcEventWriter(await ConfigureEventStoreGrpc()),
                 _ => throw new ArgumentOutOfRangeException(nameof(protocol))
             };
 
@@ -136,16 +136,16 @@
         public Task HardDeleteStream(string id)
             => protocol switch
             {
-                "tcp" => connV5.DeleteStreamAsync(id, -1, true),
-                "grpc" => connV20.TombstoneAsync(id, ClientV20.StreamState.Any),
+                Protocol.Tcp => connV5.DeleteStreamAsync(id, -1, true),
+                Protocol.Grpc => connV20.TombstoneAsync(id, ClientV20.StreamState.Any),
                 _ => throw new ArgumentOutOfRangeException(nameof(protocol))
             };
 
         public Task<StoredEvent[]> ReadEventsFromStreamRaw(string id)
             => protocol switch
             {
-                "tcp" => TcpReadEventsFromStreamRaw(id),
-                "grpc" => GrpcReadEventsFromStreamRaw(id),
+                Protocol.Tcp => TcpReadEventsFromStreamRaw(id),
+                Protocol.Grpc => GrpcReadEventsFromStreamRaw(id),
                 _ => throw new ArgumentOutOfRangeException(nameof(protocol))
             };
 
@@ -180,8 +180,8 @@
         internal Task WriteEventsToStreamRaw(string currentStreamInUse, IEnumerable<MyEvent> myEvents)
             => protocol switch
             {
-                "tcp" => TcpWriteEventsToStreamRaw(currentStreamInUse, myEvents),
-                "grpc" => GrpcWriteEventsToStreamRaw(currentStreamInUse, myEvents),
+                Protocol.Tcp => TcpWriteEventsToStreamRaw(currentStreamInUse, myEvents),
+                Protocol.Grpc => GrpcWriteEventsToStreamRaw(currentStreamInUse, myEvents),
                 _ => throw new ArgumentOutOfRangeException(nameof(protocol))
             };
 
