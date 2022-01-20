@@ -18,10 +18,8 @@
         public IHoldHigherOrder LatestLoadedState { get; internal set; }
 
         public StreamReadResults LatestStreamReadResults { get; internal set; }
-        public Dictionary<string, IManageSessionOf<IHoldHigherOrder>> NamedSessions { get; internal set; } =
-            new Dictionary<string, IManageSessionOf<IHoldHigherOrder>>();
-        public Dictionary<string, List<Exception>> NamedSessionsExceptions { get; internal set; } =
-            new Dictionary<string, List<Exception>>();
+        public Dictionary<string, IManageSessionOf<IHoldHigherOrder>> NamedSessions { get; } = new();
+        public Dictionary<string, List<Exception>> NamedSessionsExceptions { get; } = new();
 
         public int LastConcurrencyId { get; set; }
 

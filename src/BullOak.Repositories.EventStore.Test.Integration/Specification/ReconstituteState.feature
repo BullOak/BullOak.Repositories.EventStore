@@ -3,26 +3,14 @@
 	As a developer using this library
 	I want to be able to get correctly reconstituted states from my event stream
 
-Scenario Outline: Load stored entity with from existing events using TCP
-    Given the tcp protocol is being used
-	* a new stream
-	* <eventsCount> new events
-	When I try to save the new events in the stream
-	* I load my entity
-	Then HighOrder property should be <expectedState>
-
-	Examples:
-		| eventsCount | expectedState |
-		| 2           | 1             |
-		| 5           | 4             |
-		| 10000       | 9999          |
-
-Scenario Outline: Load stored entity with from existing events using GRPC
+Background:
     Given the grpc protocol is being used
-	* a new stream
-	* <eventsCount> new events
+
+Scenario Outline: Load stored entity with from existing events
+    Given a new stream
+	And <eventsCount> new events
 	When I try to save the new events in the stream
-	* I load my entity
+	And I load my entity
 	Then HighOrder property should be <expectedState>
 
 	Examples:
@@ -30,75 +18,46 @@ Scenario Outline: Load stored entity with from existing events using GRPC
 		| 2           | 1             |
 		| 5           | 4             |
 		| 10000       | 9999          |
+
 
 Scenario Outline: Reconstitute state from one event stored using interface
-    Given the <protocol> protocol is being used
-	* a new stream
-	* 3 new events
-	* I try to save the new events in the stream through their interface
+	Given a new stream
+	And 3 new events
+	And I try to save the new events in the stream through their interface
 	When I load my entity
 	Then the load process should succeed
-	* HighOrder property should be 2
-
-Examples:
-| protocol |
-| tcp      |
-| grpc     |
+	And HighOrder property should be 2
 
 Scenario Outline: Reconstitute state up to a given date
-    Given the <protocol> protocol is being used
-	* a new stream
-	* the following events with the following timestamps
+    Given a new stream
+	And the following events with the following timestamps
 		| Timestamp           |
 		| 2020-09-10 11:10:00 |
 		| 2020-09-20 11:10:00 |
 		| 2020-09-23 11:10:00 |
-	* I try to save the new events in the stream through their interface
+	And I try to save the new events in the stream through their interface
 	When I load my entity as of '2020-09-22 11:10:00'
 	Then the load process should succeed
-	* HighOrder property should be 1
-
-Examples:
-| protocol |
-| tcp      |
-| grpc     |
+	And HighOrder property should be 1
 
 Scenario Outline: Reconstitute state from empty stream should succeed and return default state
-    Given the <protocol> protocol is being used
-	* a new stream
+    Given a new stream
 	When I load my entity
 	Then the load process should succeed
-	* HighOrder property should be 0
-
-Examples:
-| protocol |
-| tcp      |
-| grpc     |
+	And HighOrder property should be 0
 
 Scenario Outline: Reconstitute state after a soft delete should succeed and return default state
-    Given the <protocol> protocol is being used
-	* a new stream
-	* 3 new events
-	*  I soft-delete the stream
+    Given a new stream
+	And 3 new events
+	And  I soft-delete the stream
 	When I load my entity
 	Then the load process should succeed
-	* HighOrder property should be 0
-
-Examples:
-| protocol |
-| tcp      |
-| grpc     |
+	And HighOrder property should be 0
 
 Scenario Outline: Reconstitute state after a hard delete should succeed and return default state
-    Given the <protocol> protocol is being used
-	* a new stream
-	* 3 new events
-	*  I hard-delete the stream
+	Given a new stream
+	And 3 new events
+	And  I hard-delete the stream
 	When I load my entity
 	Then the load process should succeed
-	* HighOrder property should be 0
-
-Examples:
-| protocol |
-| tcp      |
-| grpc     |
+	And HighOrder property should be 0

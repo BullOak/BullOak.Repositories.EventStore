@@ -76,24 +76,33 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Specification
             testRunner.CollectScenarioErrors();
         }
         
+        public virtual void FeatureBackground()
+        {
+#line 6
+#line hidden
+#line 7
+    testRunner.Given("the grpc protocol is being used", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+        }
+        
         void System.IDisposable.Dispose()
         {
             this.TestTearDown();
         }
         
-        [Xunit.SkippableTheoryAttribute(DisplayName="Save events in a new stream using TCP")]
+        [Xunit.SkippableTheoryAttribute(DisplayName="Save events in a new stream")]
         [Xunit.TraitAttribute("FeatureTitle", "SaveEventsStream")]
-        [Xunit.TraitAttribute("Description", "Save events in a new stream using TCP")]
+        [Xunit.TraitAttribute("Description", "Save events in a new stream")]
         [Xunit.InlineDataAttribute("1", new string[0])]
         [Xunit.InlineDataAttribute("30", new string[0])]
         [Xunit.InlineDataAttribute("10000", new string[0])]
-        public virtual void SaveEventsInANewStreamUsingTCP(string eventsCount, string[] exampleTags)
+        public virtual void SaveEventsInANewStream(string eventsCount, string[] exampleTags)
         {
             string[] tagsOfScenario = exampleTags;
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             argumentsOfScenario.Add("eventsCount", eventsCount);
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Save events in a new stream using TCP", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
-#line 6
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Save events in a new stream", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
+#line 9
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -113,94 +122,37 @@ this.ScenarioInitialize(scenarioInfo);
             else
             {
                 this.ScenarioStart();
-#line 7
-    testRunner.Given("the tcp protocol is being used", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line hidden
-#line 8
- testRunner.And("a new stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
-#line hidden
-#line 9
- testRunner.And(string.Format("{0} new events", eventsCount), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
+#line 6
+this.FeatureBackground();
 #line hidden
 #line 10
- testRunner.When("I try to save the new events in the stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+ testRunner.Given("a new stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
 #line 11
- testRunner.Then("the save process should succeed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+ testRunner.And(string.Format("{0} new events", eventsCount), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
 #line 12
- testRunner.And(string.Format("there should be {0} events in the stream", eventsCount), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
-#line hidden
-            }
-            this.ScenarioCleanup();
-        }
-        
-        [Xunit.SkippableTheoryAttribute(DisplayName="Save events in a new stream using GRPC")]
-        [Xunit.TraitAttribute("FeatureTitle", "SaveEventsStream")]
-        [Xunit.TraitAttribute("Description", "Save events in a new stream using GRPC")]
-        [Xunit.InlineDataAttribute("1", new string[0])]
-        [Xunit.InlineDataAttribute("30", new string[0])]
-        [Xunit.InlineDataAttribute("10000", new string[0])]
-        public virtual void SaveEventsInANewStreamUsingGRPC(string eventsCount, string[] exampleTags)
-        {
-            string[] tagsOfScenario = exampleTags;
-            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            argumentsOfScenario.Add("eventsCount", eventsCount);
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Save events in a new stream using GRPC", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
-#line 19
-this.ScenarioInitialize(scenarioInfo);
-#line hidden
-            bool isScenarioIgnored = default(bool);
-            bool isFeatureIgnored = default(bool);
-            if ((tagsOfScenario != null))
-            {
-                isScenarioIgnored = tagsOfScenario.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
-            }
-            if ((this._featureTags != null))
-            {
-                isFeatureIgnored = this._featureTags.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
-            }
-            if ((isScenarioIgnored || isFeatureIgnored))
-            {
-                testRunner.SkipScenario();
-            }
-            else
-            {
-                this.ScenarioStart();
-#line 20
-    testRunner.Given("the grpc protocol is being used", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line hidden
-#line 21
- testRunner.And("a new stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
-#line hidden
-#line 22
- testRunner.And(string.Format("{0} new events", eventsCount), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
-#line hidden
-#line 23
  testRunner.When("I try to save the new events in the stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 24
+#line 13
  testRunner.Then("the save process should succeed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
-#line 25
- testRunner.And(string.Format("there should be {0} events in the stream", eventsCount), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
+#line 14
+ testRunner.And(string.Format("there should be {0} events in the stream", eventsCount), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             }
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableTheoryAttribute(DisplayName="Save one event using interface")]
+        [Xunit.SkippableFactAttribute(DisplayName="Save one event using interface")]
         [Xunit.TraitAttribute("FeatureTitle", "SaveEventsStream")]
         [Xunit.TraitAttribute("Description", "Save one event using interface")]
-        [Xunit.InlineDataAttribute("tcp", new string[0])]
-        [Xunit.InlineDataAttribute("grpc", new string[0])]
-        public virtual void SaveOneEventUsingInterface(string protocol, string[] exampleTags)
+        public virtual void SaveOneEventUsingInterface()
         {
-            string[] tagsOfScenario = exampleTags;
+            string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            argumentsOfScenario.Add("protocol", protocol);
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Save one event using interface", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
-#line 32
+#line 21
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -220,37 +172,34 @@ this.ScenarioInitialize(scenarioInfo);
             else
             {
                 this.ScenarioStart();
-#line 33
-    testRunner.Given(string.Format("the {0} protocol is being used", protocol), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 6
+this.FeatureBackground();
 #line hidden
-#line 34
- testRunner.And("a new stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
+#line 22
+    testRunner.Given("a new stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 35
+#line 23
  testRunner.And("1 new event", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 36
+#line 24
  testRunner.When("I try to save the new events in the stream through their interface", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 37
+#line 25
  testRunner.Then("the save process should succeed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableTheoryAttribute(DisplayName="Save additional events in an existing stream")]
+        [Xunit.SkippableFactAttribute(DisplayName="Save additional events in an existing stream")]
         [Xunit.TraitAttribute("FeatureTitle", "SaveEventsStream")]
         [Xunit.TraitAttribute("Description", "Save additional events in an existing stream")]
-        [Xunit.InlineDataAttribute("tcp", new string[0])]
-        [Xunit.InlineDataAttribute("grpc", new string[0])]
-        public virtual void SaveAdditionalEventsInAnExistingStream(string protocol, string[] exampleTags)
+        public virtual void SaveAdditionalEventsInAnExistingStream()
         {
-            string[] tagsOfScenario = exampleTags;
+            string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            argumentsOfScenario.Add("protocol", protocol);
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Save additional events in an existing stream", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
-#line 43
+#line 27
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -270,39 +219,157 @@ this.ScenarioInitialize(scenarioInfo);
             else
             {
                 this.ScenarioStart();
-#line 44
-    testRunner.Given(string.Format("the {0} protocol is being used", protocol), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 6
+this.FeatureBackground();
 #line hidden
-#line 45
- testRunner.And("an existing stream with 10 events", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
+#line 28
+    testRunner.Given("an existing stream with 10 events", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 46
- testRunner.And("10 new events", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
+#line 29
+ testRunner.And("10 new events", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 47
+#line 30
  testRunner.When("I try to save the new events in the stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 48
+#line 31
  testRunner.Then("the save process should succeed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
-#line 49
- testRunner.And("there should be 20 events in the stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
+#line 32
+ testRunner.And("there should be 20 events in the stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             }
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableTheoryAttribute(DisplayName="Concurrent write should fail for outdated session")]
+        [Xunit.SkippableFactAttribute(DisplayName="Concurrent write should fail for outdated session")]
         [Xunit.TraitAttribute("FeatureTitle", "SaveEventsStream")]
         [Xunit.TraitAttribute("Description", "Concurrent write should fail for outdated session")]
-        [Xunit.InlineDataAttribute("tcp", new string[0])]
-        [Xunit.InlineDataAttribute("grpc", new string[0])]
-        public virtual void ConcurrentWriteShouldFailForOutdatedSession(string protocol, string[] exampleTags)
+        public virtual void ConcurrentWriteShouldFailForOutdatedSession()
         {
-            string[] tagsOfScenario = exampleTags;
+            string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            argumentsOfScenario.Add("protocol", protocol);
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Concurrent write should fail for outdated session", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
+#line 34
+this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            bool isScenarioIgnored = default(bool);
+            bool isFeatureIgnored = default(bool);
+            if ((tagsOfScenario != null))
+            {
+                isScenarioIgnored = tagsOfScenario.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((this._featureTags != null))
+            {
+                isFeatureIgnored = this._featureTags.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((isScenarioIgnored || isFeatureIgnored))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 6
+this.FeatureBackground();
+#line hidden
+#line 35
+    testRunner.Given("an existing stream with 10 events", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+#line 36
+ testRunner.And("session \'Session1\' is open", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 37
+ testRunner.And("session \'Session2\' is open", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 38
+ testRunner.And("10 new events are added by \'Session1\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 39
+ testRunner.And("10 new events are added by \'Session2\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 40
+ testRunner.When("I try to save \'Session1\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line hidden
+#line 41
+ testRunner.And("I try to save \'Session2\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 42
+ testRunner.Then("the save process should succeed for \'Session1\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+#line 43
+ testRunner.And("the save process should fail for \'Session2\' with ConcurrencyException", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 44
+ testRunner.And("there should be 20 events in the stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [Xunit.SkippableFactAttribute(DisplayName="Saving already saved session should throw meaningful usage advice exception")]
+        [Xunit.TraitAttribute("FeatureTitle", "SaveEventsStream")]
+        [Xunit.TraitAttribute("Description", "Saving already saved session should throw meaningful usage advice exception")]
+        public virtual void SavingAlreadySavedSessionShouldThrowMeaningfulUsageAdviceException()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Saving already saved session should throw meaningful usage advice exception", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
+#line 46
+this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            bool isScenarioIgnored = default(bool);
+            bool isFeatureIgnored = default(bool);
+            if ((tagsOfScenario != null))
+            {
+                isScenarioIgnored = tagsOfScenario.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((this._featureTags != null))
+            {
+                isFeatureIgnored = this._featureTags.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((isScenarioIgnored || isFeatureIgnored))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 6
+this.FeatureBackground();
+#line hidden
+#line 47
+    testRunner.Given("an existing stream with 10 events", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+#line 48
+ testRunner.And("session \'Session1\' is open", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 49
+ testRunner.And("10 new events are added by \'Session1\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 50
+ testRunner.When("I try to save \'Session1\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line hidden
+#line 51
+ testRunner.And("I try to save \'Session1\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 52
+ testRunner.Then("the save process should fail for \'Session1\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+#line 53
+ testRunner.And("there should be 20 events in the stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [Xunit.SkippableFactAttribute(DisplayName="Write after a hard deleted stream should fail")]
+        [Xunit.TraitAttribute("FeatureTitle", "SaveEventsStream")]
+        [Xunit.TraitAttribute("Description", "Write after a hard deleted stream should fail")]
+        public virtual void WriteAfterAHardDeletedStreamShouldFail()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Write after a hard deleted stream should fail", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
 #line 55
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -323,170 +390,40 @@ this.ScenarioInitialize(scenarioInfo);
             else
             {
                 this.ScenarioStart();
+#line 6
+this.FeatureBackground();
+#line hidden
 #line 56
-    testRunner.Given(string.Format("the {0} protocol is being used", protocol), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+    testRunner.Given("a new stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
 #line 57
- testRunner.And("an existing stream with 10 events", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
+ testRunner.And("3 new events", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
 #line 58
- testRunner.And("session \'Session1\' is open", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
+ testRunner.And("I hard-delete the stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
 #line 59
- testRunner.And("session \'Session2\' is open", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
+ testRunner.And("10 new events", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
 #line 60
- testRunner.And("10 new events are added by \'Session1\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
+ testRunner.When("I try to save the new events in the stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
 #line 61
- testRunner.And("10 new events are added by \'Session2\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
-#line hidden
-#line 62
- testRunner.When("I try to save \'Session1\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line hidden
-#line 63
- testRunner.And("I try to save \'Session2\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
-#line hidden
-#line 64
- testRunner.Then("the save process should succeed for \'Session1\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
-#line hidden
-#line 65
- testRunner.And("the save process should fail for \'Session2\' with ConcurrencyException", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
-#line hidden
-#line 66
- testRunner.And("there should be 20 events in the stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
-#line hidden
-            }
-            this.ScenarioCleanup();
-        }
-        
-        [Xunit.SkippableTheoryAttribute(DisplayName="Saving already saved session should throw meaningful usage advice exception")]
-        [Xunit.TraitAttribute("FeatureTitle", "SaveEventsStream")]
-        [Xunit.TraitAttribute("Description", "Saving already saved session should throw meaningful usage advice exception")]
-        [Xunit.InlineDataAttribute("tcp", new string[0])]
-        [Xunit.InlineDataAttribute("grpc", new string[0])]
-        public virtual void SavingAlreadySavedSessionShouldThrowMeaningfulUsageAdviceException(string protocol, string[] exampleTags)
-        {
-            string[] tagsOfScenario = exampleTags;
-            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            argumentsOfScenario.Add("protocol", protocol);
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Saving already saved session should throw meaningful usage advice exception", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
-#line 72
-this.ScenarioInitialize(scenarioInfo);
-#line hidden
-            bool isScenarioIgnored = default(bool);
-            bool isFeatureIgnored = default(bool);
-            if ((tagsOfScenario != null))
-            {
-                isScenarioIgnored = tagsOfScenario.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
-            }
-            if ((this._featureTags != null))
-            {
-                isFeatureIgnored = this._featureTags.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
-            }
-            if ((isScenarioIgnored || isFeatureIgnored))
-            {
-                testRunner.SkipScenario();
-            }
-            else
-            {
-                this.ScenarioStart();
-#line 73
-    testRunner.Given(string.Format("the {0} protocol is being used", protocol), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line hidden
-#line 74
- testRunner.And("an existing stream with 10 events", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
-#line hidden
-#line 75
- testRunner.And("session \'Session1\' is open", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
-#line hidden
-#line 76
- testRunner.And("10 new events are added by \'Session1\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
-#line hidden
-#line 77
- testRunner.When("I try to save \'Session1\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line hidden
-#line 78
- testRunner.And("I try to save \'Session1\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
-#line hidden
-#line 79
- testRunner.Then("the save process should fail for \'Session1\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
-#line hidden
-#line 80
- testRunner.And("there should be 20 events in the stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
-#line hidden
-            }
-            this.ScenarioCleanup();
-        }
-        
-        [Xunit.SkippableTheoryAttribute(DisplayName="Write after a hard deleted stream should fail")]
-        [Xunit.TraitAttribute("FeatureTitle", "SaveEventsStream")]
-        [Xunit.TraitAttribute("Description", "Write after a hard deleted stream should fail")]
-        [Xunit.InlineDataAttribute("tcp", new string[0])]
-        [Xunit.InlineDataAttribute("grpc", new string[0])]
-        public virtual void WriteAfterAHardDeletedStreamShouldFail(string protocol, string[] exampleTags)
-        {
-            string[] tagsOfScenario = exampleTags;
-            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            argumentsOfScenario.Add("protocol", protocol);
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Write after a hard deleted stream should fail", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
-#line 86
-this.ScenarioInitialize(scenarioInfo);
-#line hidden
-            bool isScenarioIgnored = default(bool);
-            bool isFeatureIgnored = default(bool);
-            if ((tagsOfScenario != null))
-            {
-                isScenarioIgnored = tagsOfScenario.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
-            }
-            if ((this._featureTags != null))
-            {
-                isFeatureIgnored = this._featureTags.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
-            }
-            if ((isScenarioIgnored || isFeatureIgnored))
-            {
-                testRunner.SkipScenario();
-            }
-            else
-            {
-                this.ScenarioStart();
-#line 87
-    testRunner.Given(string.Format("the {0} protocol is being used", protocol), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line hidden
-#line 88
- testRunner.And("a new stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
-#line hidden
-#line 89
- testRunner.And("3 new events", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
-#line hidden
-#line 90
- testRunner.And("I hard-delete the stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
-#line hidden
-#line 91
- testRunner.And("10 new events", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
-#line hidden
-#line 92
- testRunner.When("I try to save the new events in the stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line hidden
-#line 93
  testRunner.Then("the save process should fail", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableTheoryAttribute(DisplayName="Write after a soft deleted stream should succeed")]
+        [Xunit.SkippableFactAttribute(DisplayName="Write after a soft deleted stream should succeed")]
         [Xunit.TraitAttribute("FeatureTitle", "SaveEventsStream")]
         [Xunit.TraitAttribute("Description", "Write after a soft deleted stream should succeed")]
-        [Xunit.InlineDataAttribute("tcp", new string[0])]
-        [Xunit.InlineDataAttribute("grpc", new string[0])]
-        public virtual void WriteAfterASoftDeletedStreamShouldSucceed(string protocol, string[] exampleTags)
+        public virtual void WriteAfterASoftDeletedStreamShouldSucceed()
         {
-            string[] tagsOfScenario = exampleTags;
+            string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            argumentsOfScenario.Add("protocol", protocol);
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Write after a soft deleted stream should succeed", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
-#line 99
+#line 63
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -506,49 +443,46 @@ this.ScenarioInitialize(scenarioInfo);
             else
             {
                 this.ScenarioStart();
-#line 100
-    testRunner.Given(string.Format("the {0} protocol is being used", protocol), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 6
+this.FeatureBackground();
 #line hidden
-#line 101
- testRunner.And("a new stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
+#line 64
+    testRunner.Given("a new stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 102
- testRunner.And("3 new events", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
+#line 65
+ testRunner.And("3 new events", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 103
- testRunner.And("I soft-delete the stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
+#line 66
+ testRunner.And("I soft-delete the stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 104
- testRunner.And("10 new events", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
+#line 67
+ testRunner.And("10 new events", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 105
+#line 68
  testRunner.When("I try to save the new events in the stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 106
- testRunner.And("I load my entity", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
+#line 69
+ testRunner.And("I load my entity", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 107
+#line 70
  testRunner.Then("the load process should succeed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
-#line 108
- testRunner.And("HighOrder property should be 9", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
+#line 71
+ testRunner.And("HighOrder property should be 9", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             }
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableTheoryAttribute(DisplayName="When invariants fail no events are saved")]
+        [Xunit.SkippableFactAttribute(DisplayName="When invariants fail no events are saved")]
         [Xunit.TraitAttribute("FeatureTitle", "SaveEventsStream")]
         [Xunit.TraitAttribute("Description", "When invariants fail no events are saved")]
-        [Xunit.InlineDataAttribute("tcp", new string[0])]
-        [Xunit.InlineDataAttribute("grpc", new string[0])]
-        public virtual void WhenInvariantsFailNoEventsAreSaved(string protocol, string[] exampleTags)
+        public virtual void WhenInvariantsFailNoEventsAreSaved()
         {
-            string[] tagsOfScenario = exampleTags;
+            string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            argumentsOfScenario.Add("protocol", protocol);
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("When invariants fail no events are saved", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
-#line 114
+#line 73
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -568,41 +502,41 @@ this.ScenarioInitialize(scenarioInfo);
             else
             {
                 this.ScenarioStart();
-#line 115
-    testRunner.Given(string.Format("the {0} protocol is being used", protocol), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 6
+this.FeatureBackground();
 #line hidden
-#line 116
- testRunner.And("an always-fail invariant checker", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
+#line 74
+ testRunner.Given("an always-fail invariant checker", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 117
- testRunner.And("an existing stream with 3 events", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
+#line 75
+ testRunner.And("an existing stream with 3 events", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 118
- testRunner.And("5 new events", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
+#line 76
+ testRunner.And("5 new events", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 119
+#line 77
  testRunner.When("I try to save the new events in the stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 120
- testRunner.And("I load my entity ignoring any errors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
+#line 78
+ testRunner.And("I load my entity ignoring any errors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 121
+#line 79
  testRunner.Then("the save process should fail", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
-#line 122
- testRunner.And("HighOrder property should be 2", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
+#line 80
+ testRunner.And("HighOrder property should be 2", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             }
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableTheoryAttribute(DisplayName="When invariants pass events are saved normally using TCP")]
+        [Xunit.SkippableTheoryAttribute(DisplayName="When invariants pass events are saved normally")]
         [Xunit.TraitAttribute("FeatureTitle", "SaveEventsStream")]
-        [Xunit.TraitAttribute("Description", "When invariants pass events are saved normally using TCP")]
+        [Xunit.TraitAttribute("Description", "When invariants pass events are saved normally")]
         [Xunit.InlineDataAttribute("3", "10", "5", "fail", "2", new string[0])]
         [Xunit.InlineDataAttribute("10", "20", "20", "succeed", "19", new string[0])]
         [Xunit.InlineDataAttribute("1", "5", "20", "succeed", "4", new string[0])]
-        public virtual void WhenInvariantsPassEventsAreSavedNormallyUsingTCP(string existingCount, string newEventsCount, string maxHighOrder, string outcome, string expectedHighOrder, string[] exampleTags)
+        public virtual void WhenInvariantsPassEventsAreSavedNormally(string existingCount, string newEventsCount, string maxHighOrder, string outcome, string expectedHighOrder, string[] exampleTags)
         {
             string[] tagsOfScenario = exampleTags;
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
@@ -611,8 +545,8 @@ this.ScenarioInitialize(scenarioInfo);
             argumentsOfScenario.Add("maxHighOrder", maxHighOrder);
             argumentsOfScenario.Add("outcome", outcome);
             argumentsOfScenario.Add("expectedHighOrder", expectedHighOrder);
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("When invariants pass events are saved normally using TCP", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
-#line 128
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("When invariants pass events are saved normally", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
+#line 82
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -632,93 +566,29 @@ this.ScenarioInitialize(scenarioInfo);
             else
             {
                 this.ScenarioStart();
-#line 129
-    testRunner.Given("the tcp protocol is being used", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 6
+this.FeatureBackground();
 #line hidden
-#line 130
- testRunner.And(string.Format("an invariant checker that allows a maximum higher order of {0}", maxHighOrder), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
+#line 83
+    testRunner.Given(string.Format("an invariant checker that allows a maximum higher order of {0}", maxHighOrder), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 131
- testRunner.And(string.Format("an existing stream with {0} events", existingCount), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
+#line 84
+ testRunner.And(string.Format("an existing stream with {0} events", existingCount), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 132
- testRunner.And(string.Format("{0} new events", newEventsCount), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
+#line 85
+ testRunner.And(string.Format("{0} new events", newEventsCount), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 133
+#line 86
  testRunner.When("I try to save the new events in the stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 134
-    testRunner.And("I load my entity ignoring any errors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
+#line 87
+    testRunner.And("I load my entity ignoring any errors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 135
+#line 88
  testRunner.Then(string.Format("the save process should {0}", outcome), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
-#line 136
- testRunner.And(string.Format("HighOrder property should be {0}", expectedHighOrder), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
-#line hidden
-            }
-            this.ScenarioCleanup();
-        }
-        
-        [Xunit.SkippableTheoryAttribute(DisplayName="When invariants pass events are saved normally using GRPC")]
-        [Xunit.TraitAttribute("FeatureTitle", "SaveEventsStream")]
-        [Xunit.TraitAttribute("Description", "When invariants pass events are saved normally using GRPC")]
-        [Xunit.InlineDataAttribute("3", "10", "5", "fail", "2", new string[0])]
-        [Xunit.InlineDataAttribute("10", "20", "20", "succeed", "19", new string[0])]
-        [Xunit.InlineDataAttribute("1", "5", "20", "succeed", "4", new string[0])]
-        public virtual void WhenInvariantsPassEventsAreSavedNormallyUsingGRPC(string existingCount, string newEventsCount, string maxHighOrder, string outcome, string expectedHighOrder, string[] exampleTags)
-        {
-            string[] tagsOfScenario = exampleTags;
-            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            argumentsOfScenario.Add("existingCount", existingCount);
-            argumentsOfScenario.Add("newEventsCount", newEventsCount);
-            argumentsOfScenario.Add("maxHighOrder", maxHighOrder);
-            argumentsOfScenario.Add("outcome", outcome);
-            argumentsOfScenario.Add("expectedHighOrder", expectedHighOrder);
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("When invariants pass events are saved normally using GRPC", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
-#line 144
-this.ScenarioInitialize(scenarioInfo);
-#line hidden
-            bool isScenarioIgnored = default(bool);
-            bool isFeatureIgnored = default(bool);
-            if ((tagsOfScenario != null))
-            {
-                isScenarioIgnored = tagsOfScenario.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
-            }
-            if ((this._featureTags != null))
-            {
-                isFeatureIgnored = this._featureTags.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
-            }
-            if ((isScenarioIgnored || isFeatureIgnored))
-            {
-                testRunner.SkipScenario();
-            }
-            else
-            {
-                this.ScenarioStart();
-#line 145
-    testRunner.Given("the grpc protocol is being used", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line hidden
-#line 146
- testRunner.And(string.Format("an invariant checker that allows a maximum higher order of {0}", maxHighOrder), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
-#line hidden
-#line 147
- testRunner.And(string.Format("an existing stream with {0} events", existingCount), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
-#line hidden
-#line 148
- testRunner.And(string.Format("{0} new events", newEventsCount), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
-#line hidden
-#line 149
- testRunner.When("I try to save the new events in the stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line hidden
-#line 150
- testRunner.And("I load my entity ignoring any errors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
-#line hidden
-#line 151
- testRunner.Then(string.Format("the save process should {0}", outcome), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
-#line hidden
-#line 152
- testRunner.And(string.Format("HighOrder property should be {0}", expectedHighOrder), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "* ");
+#line 89
+ testRunner.And(string.Format("HighOrder property should be {0}", expectedHighOrder), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             }
             this.ScenarioCleanup();
