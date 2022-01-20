@@ -44,12 +44,14 @@ jobs:
     needs: [parse-version]
     runs-on: ubuntu-latest
     steps:
-      - name: Run ESDB image
-        run: docker run -d --name esdbnode -it -p 2113:2113 -p 1113:1113 eventstore/eventstore:latest --insecure --run-projections=All
+      - name: Run Tcp ESDB image
+        run: docker run -d --name tcp_esdbnode -it -p 2113:2113 -p 1113:1113 eventstore/eventstore:release-5.0.11 --runprojections all --startstandardprojections
+      - name: Run Grpc ESDB image
+        run: docker run -d --name grpc_esdbnode -it -p 2114:2113 -p 1114:1113 eventstore/eventstore:21.10.1-bionic --insecure --runprojections all --startstandardprojections
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 5.0.x
+          dotnet-version: 6.0.x
       - name: Pull code
         uses: actions/checkout@v2
       - name: Restore dependencies
