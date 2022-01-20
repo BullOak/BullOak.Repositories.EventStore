@@ -34,7 +34,7 @@
         private static StoredEvent ToStoredEvent(string streamId, long eventNumber, ReadOnlyMemory<byte> data, ReadOnlyMemory<byte> meta,
             string eventType, ICreateStateInstances stateFactory)
         {
-            var serializedEvent = System.Text.Encoding.UTF8.GetString(data.ToArray());
+            var serializedEvent = System.Text.Encoding.UTF8.GetString(data.Span);
 
             var (metadata, type) = ReadTypeFromMetadata(eventType, meta);
 
@@ -70,7 +70,7 @@
                 return (new EventMetadata_V2(eventType, new Dictionary<string, string>()), type);
             }
 
-            metadata = MetadataSerializer.DeserializeMetadata(meta.ToArray());
+            metadata = MetadataSerializer.DeserializeMetadata(meta);
             type = AppDomain.CurrentDomain.GetAssemblies()
                 .Select(x => x.GetType(metadata.metadata.EventTypeFQN))
                 .FirstOrDefault(x => x != null);
