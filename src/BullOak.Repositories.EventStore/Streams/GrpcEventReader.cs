@@ -1,34 +1,32 @@
-﻿using System.Text.Json;
-using EventStore.Client;
-using System.Threading;
-
-namespace BullOak.Repositories.EventStore.Streams
+﻿namespace BullOak.Repositories.EventStore.Streams
 {
     using Events;
-    using Metadata;
     using StateEmit;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using global::EventStore.Client;
+    using System.Threading;
 
-    internal class EventReader : IReadEventsFromStream
+    public class GrpcEventReader : IReadEventsFromStream
     {
         private readonly ICreateStateInstances stateFactory;
         private readonly EventStoreClient client;
-        private static readonly IAsyncEnumerable<StoredEvent> emptyReadResult = new StoredEvent[0].ToAsyncEnumerable();
+        private static readonly IAsyncEnumerable<StoredEvent> EmptyReadResult = Array.Empty<StoredEvent>().ToAsyncEnumerable();
 
-        public EventReader(EventStoreClient client, IHoldAllConfiguration configuration)
+        public GrpcEventReader(EventStoreClient client, IHoldAllConfiguration configuration)
         {
             stateFactory = configuration?.StateFactory ?? throw new ArgumentNullException(nameof(configuration));
             this.client = client ?? throw new ArgumentNullException(nameof(client));
         }
 
-        public async Task<StreamReadResults> ReadFrom(string streamId, Func<IAmAStoredEvent, bool> predicate = null, Direction direction = Direction.Backwards, CancellationToken cancellationToken = default)
+        public async Task<StreamReadResults> ReadFrom(string streamId, Func<IAmAStoredEvent, bool> predicate = null, StreamReadDirection direction = StreamReadDirection.Backwards, CancellationToken cancellationToken = default)
         {
-            var readResult = client.ReadStreamAsync(direction,
+            var readResult = client.ReadStreamAsync(
+                direction == StreamReadDirection.Backwards ? Direction.Backwards : Direction.Forwards,
                 streamId,
-                direction == Direction.Backwards ? StreamPosition.End : StreamPosition.Start,
+                direction == StreamReadDirection.Backwards ? StreamPosition.End : StreamPosition.Start,
                 resolveLinkTos: true,
                 configureOperationOptions: options => options.TimeoutAfter = TimeSpan.FromSeconds(30),
                 cancellationToken: cancellationToken);
@@ -48,23 +46,23 @@ namespace BullOak.Repositories.EventStore.Streams
             }
 
             if (!streamExists)
-                return new StreamReadResults(emptyReadResult, false, StreamPosition.FromInt64(-1));
+                return new StreamReadResults(EmptyReadResult, false, StoredEventPosition.FromInt64(-1));
 
             predicate ??= _ => true;
 
             var lastIndex = (await client.ReadStreamAsync(Direction.Backwards, streamId,
-                revision: StreamPosition.End,
-                maxCount: 1,
+                StreamPosition.End,
+                1,
                 resolveLinkTos: false).FirstAsync(cancellationToken)).OriginalEventNumber;
 
             IAsyncEnumerable<StoredEvent> storedEvents;
-            if (direction == Direction.Backwards)
+            if (direction == StreamReadDirection.Backwards)
             {
                 storedEvents = readResult
                     // Trust me, resharper is wrong in this one. Event can be null
                     // ReSharper disable once ConditionIsAlwaysTrueOrFalse
                     .Where(e => e.Event != null)
-                    .Select((e, _) => e.Event.ToStoredEvent(stateFactory))
+                    .Select(e => e.Event.ToStoredEvent(stateFactory))
                     .TakeWhile(e => e.DeserializedEvent is not EntitySoftDeleted)
                     .Where(e => predicate(e));
             }
@@ -74,12 +72,11 @@ namespace BullOak.Repositories.EventStore.Streams
                     // Trust me, resharper is wrong in this one. Event can be null
                     // ReSharper disable once ConditionIsAlwaysTrueOrFalse
                     .Where(e => e.Event != null)
-                    .Select((e, c) => e.Event.ToStoredEvent(stateFactory))
+                    .Select(e => e.Event.ToStoredEvent(stateFactory))
                     .Where(e => predicate(e));
             }
 
-
-            return new StreamReadResults(storedEvents, true, lastIndex);
+            return new StreamReadResults(storedEvents, true, StoredEventPosition.FromInt64(lastIndex.ToInt64()));
         }
     }
 }

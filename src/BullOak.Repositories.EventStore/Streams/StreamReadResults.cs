@@ -1,22 +1,20 @@
-﻿using BullOak.Repositories.EventStore.Events;
-using EventStore.Client;
-
-namespace BullOak.Repositories.EventStore.Streams
+﻿namespace BullOak.Repositories.EventStore.Streams
 {
     using System;
     using System.Collections.Generic;
+    using Events;
 
-    internal struct StreamReadResults
+    public struct StreamReadResults
     {
-        public readonly IAsyncEnumerable<StoredEvent> events;
-        public readonly bool streamExists;
-        public readonly StreamPosition streamPosition;
+        public readonly IAsyncEnumerable<StoredEvent> Events;
+        public readonly bool StreamExists;
+        public readonly StoredEventPosition StoredEventPosition;
 
-        public StreamReadResults(IAsyncEnumerable<StoredEvent> events, bool streamExists, StreamPosition streamPosition)
+        public StreamReadResults(IAsyncEnumerable<StoredEvent> events, bool streamExists, StoredEventPosition storedEventPosition)
         {
-            this.events = events ?? throw new ArgumentNullException(nameof(events));
-            this.streamExists = streamExists;
-            this.streamPosition = streamPosition;
+            Events = events ?? throw new ArgumentNullException(nameof(events));
+            StreamExists = streamExists;
+            StoredEventPosition = storedEventPosition;
         }
     }
 }

@@ -1,23 +1,42 @@
-﻿using System.Collections.Generic;
-using EventStore.Client;
-
-namespace BullOak.Repositories.EventStore.Events
+﻿namespace BullOak.Repositories.EventStore.Events
 {
     using Metadata;
     using Newtonsoft.Json;
     using StateEmit;
     using System;
     using System.Linq;
+    using System.Collections.Generic;
+    using global::EventStore.Client;
+    using global::EventStore.ClientAPI;
 
-    internal static class EventConversion
+    public static class EventConversion
     {
-        public static StoredEvent ToStoredEvent(this EventRecord resolvedEvent,
-            ICreateStateInstances stateFactory)
+        public static StoredEvent ToStoredEvent(this EventRecord resolvedEvent, ICreateStateInstances stateFactory)
+            => ToStoredEvent(
+                resolvedEvent.EventStreamId,
+                resolvedEvent.EventNumber.ToInt64(),
+                resolvedEvent.Data,
+                resolvedEvent.Metadata,
+                resolvedEvent.EventType,
+                stateFactory
+            );
+
+        public static StoredEvent ToStoredEvent(this RecordedEvent resolvedEvent, ICreateStateInstances stateFactory)
+            => ToStoredEvent(
+                resolvedEvent.EventStreamId,
+                resolvedEvent.EventNumber,
+                resolvedEvent.Data,
+                resolvedEvent.Metadata,
+                resolvedEvent.EventType,
+                stateFactory
+            );
+
+        private static StoredEvent ToStoredEvent(string streamId, long eventNumber, ReadOnlyMemory<byte> data, ReadOnlyMemory<byte> meta,
+            string eventType, ICreateStateInstances stateFactory)
         {
-            var serializedEvent = System.Text.Encoding.UTF8
-                .GetString(resolvedEvent.Data.Span);
-            
-            var (metadata, type) = ReadTypeFromMetadata(resolvedEvent);
+            var serializedEvent = System.Text.Encoding.UTF8.GetString(data.Span);
+
+            var (metadata, type) = ReadTypeFromMetadata(eventType, meta);
 
             object @event;
 
@@ -37,30 +56,29 @@ namespace BullOak.Repositories.EventStore.Events
             else
                 @event = JsonConvert.DeserializeObject(serializedEvent, type);
 
-            return new StoredEvent(@event, type, resolvedEvent.EventStreamId, metadata,
-                resolvedEvent.EventNumber.ToInt64());
+            return new StoredEvent(@event, type, streamId, metadata, Convert.ToInt64(eventNumber));
         }
 
-        public static ItemWithType ToItemWithType(this StoredEvent se)
-            => new ItemWithType(se.DeserializedEvent, se.EventType);
-
-        private static (IHoldMetadata metadata, Type type) ReadTypeFromMetadata(EventRecord resolvedEvent)
+        private static (IHoldMetadata metadata, Type type) ReadTypeFromMetadata(string eventType, ReadOnlyMemory<byte> meta)
         {
             Type type;
             (IHoldMetadata metadata, int version) metadata;
 
-            if (resolvedEvent.Metadata.IsEmpty)
+            if (meta.Length == 0)
             {
-                type = Type.GetType(resolvedEvent.EventType);
-                return (new EventMetadata_V2(resolvedEvent.EventType, new Dictionary<string, string>()), type);
+                type = Type.GetType(eventType);
+                return (new EventMetadata_V2(eventType, new Dictionary<string, string>()), type);
             }
 
-            metadata = MetadataSerializer.DeserializeMetadata(resolvedEvent.Metadata.ToArray());
+            metadata = MetadataSerializer.DeserializeMetadata(meta);
             type = AppDomain.CurrentDomain.GetAssemblies()
                 .Select(x => x.GetType(metadata.metadata.EventTypeFQN))
                 .FirstOrDefault(x => x != null);
 
             return (metadata.metadata, type);
         }
+
+        public static ItemWithType ToItemWithType(this StoredEvent se)
+            => new(se.DeserializedEvent, se.EventType);
     }
 }

@@ -3,6 +3,9 @@
 	As a developer using this library
 	I want the current state to be updated immediately when I add new events even if I don't save the session
 
+Background:
+    Given the grpc protocol is being used
+
 # The behaviour defined here is actually desirable. If we do not save events, obviously we do not want them
 #  to exist when we again reconstitute the state, but we do want the added events to instantly update the state
 #  so that we can branch on conditions of current state without polluting the stateless, functional domain

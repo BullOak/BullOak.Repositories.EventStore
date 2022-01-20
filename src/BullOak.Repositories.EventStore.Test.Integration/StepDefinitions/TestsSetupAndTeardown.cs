@@ -6,17 +6,20 @@ namespace BullOak.Repositories.EventStore.Test.Integration.StepDefinitions
     using Contexts;
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Threading.Tasks;
     using TechTalk.SpecFlow;
 
     [Binding]
-    public sealed class TestsSetupAndTeardown
+    internal sealed class TestsSetupAndTeardown
     {
         private readonly IObjectContainer objectContainer;
+        private readonly EventStoreIntegrationContext context;
 
-        public TestsSetupAndTeardown(IObjectContainer objectContainer)
+        public TestsSetupAndTeardown(IObjectContainer objectContainer, EventStoreIntegrationContext context)
         {
             this.objectContainer = objectContainer ?? throw new ArgumentNullException(nameof(objectContainer));
+            this.context = context;
         }
 
         [BeforeScenario]
@@ -26,15 +29,27 @@ namespace BullOak.Repositories.EventStore.Test.Integration.StepDefinitions
         }
 
         [BeforeTestRun]
-        public static Task SetupEventStoreNode()
+        public static void SetupEventStoreNode()
         {
-            return EventStoreIntegrationContext.SetupNode();
+            EventStoreIntegrationContext.SetupNode();
         }
 
         [AfterTestRun]
         public static void TeardownNode()
         {
             EventStoreIntegrationContext.TeardownNode();
+        }
+
+        [Given(@"the (tcp|grpc) protocol is being used")]
+        public Task GivenProtocolIsBeingUsed(string protocol)
+        {
+            var chosenProtocol = Enum.Parse<Protocol>(ToCamelCase(protocol));
+            return context.BuildRepositories(chosenProtocol);
+        }
+
+        private static string ToCamelCase(string text)
+        {
+            return CultureInfo.CurrentCulture.TextInfo.ToTitleCase(text);
         }
     }
 }

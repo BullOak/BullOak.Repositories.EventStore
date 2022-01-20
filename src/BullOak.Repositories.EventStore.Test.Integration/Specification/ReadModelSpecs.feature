@@ -3,8 +3,11 @@
 	As a user of this library
 	I want to be able to load entities from readonly repositories
 
-Scenario: Reconstitute state from one event stored using interface
-	Given a new stream
+Background:
+    Given the grpc protocol is being used
+
+Scenario Outline: Reconstitute state from one event stored using interface
+    Given a new stream
 	And 3 new events
 	And I try to save the new events in the stream through their interface
 	When I load my entity through the read-only repository
@@ -12,8 +15,8 @@ Scenario: Reconstitute state from one event stored using interface
 	And HighOrder property should be 2
 	And have a concurrency id of 2
 
-Scenario: Load entity as at a point in time
-	Given a new stream
+Scenario Outline: Load entity as at a point in time
+    Given a new stream
 	And the following events with the following timestamps
 		| Timestamp           |
 		| 2020-09-10 11:10:00 |
@@ -24,8 +27,8 @@ Scenario: Load entity as at a point in time
 	Then the load process should succeed
 	And HighOrder property should be 1
 
-Scenario: Reconstitute streams with one event type based on category
-	Given a new stream
+Scenario Outline: Reconstitute streams with one event type based on category
+    Given a new stream
 	And the following events with the following timestamps
 		| Timestamp           |
 		| 2020-09-10 11:10:00 |
@@ -37,8 +40,8 @@ Scenario: Reconstitute streams with one event type based on category
 	Then the load process should succeed
     And HighOrder property should be 2
 
-Scenario: Reconstitute streams with one event type based on category up to a given date
-	Given a new stream
+Scenario Outline: Reconstitute streams with one event type based on category up to a given date
+    Given a new stream
     And another new stream
 	And the following events with timestamps for stream 1
 		| Timestamp           |
@@ -59,7 +62,7 @@ Scenario: Reconstitute streams with one event type based on category up to a giv
     And HighOrder property for stream 1 should be 1
     And HighOrder property for stream 2 should be 3
 
-Scenario: Reconstitute state based on category with two event types up to a given date
+Scenario Outline: Reconstitute state based on category with two event types up to a given date
 	Given a new stream
 	And the following events with the following timestamps
 		| Timestamp           |
@@ -70,3 +73,4 @@ Scenario: Reconstitute state based on category with two event types up to a give
 	When I load all my entities as of '2020-09-20 11:10:00' for the streams category
 	Then the load process should succeed
     And the visibilty should be disabled
+

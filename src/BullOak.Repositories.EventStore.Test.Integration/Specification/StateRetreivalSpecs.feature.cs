@@ -40,9 +40,9 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Specification
         public static void FeatureSetup()
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
-            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Specification", "StateRetrievalSpecs", "\tIn order to implement complex logic without further state storage\r\n\tAs a develop" +
-                    "er using this library\r\n\tI want the current state to be updated immediately when " +
-                    "I add new events even if I don\'t save the session", ProgrammingLanguage.CSharp, ((string[])(null)));
+            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Specification", "StateRetrievalSpecs", "\tIn order to implement complex logic without further state storage\n\tAs a develope" +
+                    "r using this library\n\tI want the current state to be updated immediately when I " +
+                    "add new events even if I don\'t save the session", ProgrammingLanguage.CSharp, ((string[])(null)));
             testRunner.OnFeatureStart(featureInfo);
         }
         
@@ -77,6 +77,15 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Specification
             testRunner.CollectScenarioErrors();
         }
         
+        public virtual void FeatureBackground()
+        {
+#line 6
+#line hidden
+#line 7
+    testRunner.Given("the grpc protocol is being used", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+        }
+        
         void System.IDisposable.Dispose()
         {
             this.TestTearDown();
@@ -97,7 +106,7 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Specification
             argumentsOfScenario.Add("addedEvents", addedEvents);
             argumentsOfScenario.Add("highOrder", highOrder);
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("When I add new events in the stream I want the state to be updated immediately", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
-#line 11
+#line 14
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -117,13 +126,16 @@ this.ScenarioInitialize(scenarioInfo);
             else
             {
                 this.ScenarioStart();
-#line 12
+#line 6
+this.FeatureBackground();
+#line hidden
+#line 15
  testRunner.Given(string.Format("an existing stream with {0} events", eventCount), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 13
+#line 16
  testRunner.When(string.Format("I add {0} events in the session without saving it", addedEvents), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 14
+#line 17
  testRunner.Then(string.Format("HighOrder property should be {0}", highOrder), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }

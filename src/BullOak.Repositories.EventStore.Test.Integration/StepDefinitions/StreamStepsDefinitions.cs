@@ -8,6 +8,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using Events;
     using Polly;
     using Polly.Retry;
     using TechTalk.SpecFlow;
@@ -103,19 +104,17 @@
             {
                 testDataContext.RecordedException = await Record.ExceptionAsync(async () =>
                 {
-                    using (var session = await eventStoreContainer.StartSession(testDataContext.CurrentStreamId))
+                    using var session = await eventStoreContainer.StartSession(testDataContext.CurrentStreamId);
+                    foreach (var @event in testDataContext.LastGeneratedEvents)
                     {
-                        foreach (var @event in testDataContext.LastGeneratedEvents)
+                        session.AddEvent<IMyEvent>(m =>
                         {
-                            session.AddEvent<IMyEvent>(m =>
-                            {
-                                m.Id = @event.Id;
-                                m.Value = @event.Value;
-                            });
-                        }
-
-                        await session.SaveChanges();
+                            m.Id = @event.Id;
+                            m.Value = @event.Value;
+                        });
                     }
+
+                    await session.SaveChanges();
                 });
             }
         }
@@ -147,16 +146,6 @@
         [Given(@"I hard-delete the stream")]
         public Task GivenIHard_DeleteTheStream()
             => eventStoreContainer.HardDeleteStream(testDataContexts.First().CurrentStreamId);
-
-        [Given(@"I soft-delete-by-event the stream")]
-        [When(@"I soft-delete-by-event the stream")]
-        public Task GivenI_Soft_Delete_by_EventTheStream()
-            => eventStoreContainer.SoftDeleteByEvent(testDataContexts.First().CurrentStreamId);
-
-        [Given(@"I soft-delete-by-custom-event the stream")]
-        [When(@"I soft-delete-by-custom-event the stream")]
-        public Task GivenI_Soft_Delete_by_Custom_EventTheStream()
-            => eventStoreContainer.SoftDeleteByEvent(testDataContexts.First().CurrentStreamId, () => new MyEntitySoftDeleted());
 
         [Then(@"the load process should succeed")]
         [Then(@"the save process should succeed")]
@@ -309,6 +298,37 @@
 
                 States = readModels;
             });
+        }
+
+        [Given(@"I try to save the new events in the stream through IStoreEventsToStream interface")]
+        public async Task GivenITryToSaveTheNewEventsInTheStreamThroughIStoreEventsToStreamInterface()
+        {
+            foreach (var testDataContext in testDataContexts)
+            {
+                testDataContext.RecordedException = await Record.ExceptionAsync(async () =>
+                {
+                    var events = testDataContext.LastGeneratedEvents
+                        .Select(evt => new ItemWithType(evt))
+                        .ToArray();
+                    await eventStoreContainer.EventWriter.Add(
+                        testDataContext.CurrentStreamId, events, eventStoreContainer.DateTimeProvider);
+                });
+            }
+        }
+
+        [Then(@"events returned should be (.*)")]
+        public async Task ThenEventsReturnedShouldBe(int expected)
+        {
+            var context = testDataContexts.First();
+            var actual = await context.LatestStreamReadResults.Events.ToListAsync();
+            actual.Should().HaveCount(expected);
+        }
+
+        [Then(@"stream position should be (.*)")]
+        public void ThenStreamPositionShouldBe(int expected)
+        {
+            var actual = testDataContexts.First().LatestStreamReadResults.StoredEventPosition;
+            actual.ToInt64().Should().Be(expected);
         }
     }
 }
