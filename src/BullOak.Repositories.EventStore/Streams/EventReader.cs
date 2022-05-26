@@ -12,12 +12,13 @@
     internal class EventReader : IReadEventsFromStream
     {
         private readonly ICreateStateInstances stateFactory;
-        private readonly IEventStoreConnection eventStoreConnection;
+        private IEventStoreConnection ESConnection => esConnection.Connection;
+        private readonly IKeepESConnectionAlive esConnection;
 
-        public EventReader(IEventStoreConnection connection, IHoldAllConfiguration configuration)
+        public EventReader(IKeepESConnectionAlive esConnection, IHoldAllConfiguration configuration)
         {
+            this.esConnection = esConnection ?? throw new ArgumentNullException(nameof(esConnection));
             stateFactory = configuration?.StateFactory ?? throw new ArgumentNullException(nameof(configuration));
-            eventStoreConnection = connection ?? throw new ArgumentNullException(nameof(connection));
         }
 
         public async Task<StreamReadResults> ReadFrom(IStreamReaderStrategy streamReaderStrategy, DateTime? appliesAt = null)
@@ -30,7 +31,7 @@
 
                 do
                 {
-                    var currentSlice = await streamReaderStrategy.GetCurrentSlice(eventStoreConnection, nextSliceStart, true);
+                    var currentSlice = await streamReaderStrategy.GetCurrentSlice(ESConnection, nextSliceStart, true);
 
                     if (currentSlice.Status == SliceReadStatus.StreamDeleted || currentSlice.Status == SliceReadStatus.StreamNotFound)
                     {

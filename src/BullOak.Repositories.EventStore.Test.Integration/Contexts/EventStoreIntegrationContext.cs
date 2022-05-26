@@ -39,8 +39,8 @@
 
             DateTimeProvider = new TestDateTimeProvider();
 
-            repository = new EventStoreRepository<string, IHoldHigherOrder>(validator, configuration, GetConnection(), DateTimeProvider);
-            readOnlyRepository = new EventStoreReadOnlyRepository<string, IHoldHigherOrder>(configuration, GetConnection());
+            repository = new EventStoreRepository<string, IHoldHigherOrder>(validator, configuration, () => SetupConnection(), DateTimeProvider);
+            readOnlyRepository = new EventStoreReadOnlyRepository<string, IHoldHigherOrder>(configuration, () => SetupConnection());
         }
 
         private static IEventStoreConnection GetConnection()

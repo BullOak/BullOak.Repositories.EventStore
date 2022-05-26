@@ -12,19 +12,30 @@
     public class EventStoreRepository<TId, TState> : IStartSessions<TId, TState>, IEventStoreStreamDeleter<TId>
     {
         private readonly IHoldAllConfiguration configs;
-        private readonly IEventStoreConnection connection;
+        private readonly IKeepESConnectionAlive esReconnector;
         private readonly IDateTimeProvider dateTimeProvider;
         private readonly IValidateState<TState> stateValidator;
 
+        private IEventStoreConnection ESConnection => esReconnector.Connection;
+
         private static AlwaysPassValidator<TState> defaultValidator = new AlwaysPassValidator<TState>();
 
-        public EventStoreRepository(IValidateState<TState> stateValidator, IHoldAllConfiguration configs, IEventStoreConnection connection, IDateTimeProvider dateTimeProvider = null)
+        public EventStoreRepository(IValidateState<TState> stateValidator, IHoldAllConfiguration configs, Func<Task<IEventStoreConnection>> esConnectionFactory, IDateTimeProvider dateTimeProvider = null)
         {
             this.stateValidator = stateValidator ?? throw new ArgumentNullException(nameof(stateValidator));
-            this.configs = configs ?? throw new ArgumentNullException(nameof(connection));
-            this.connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            this.configs = configs ?? throw new ArgumentNullException(nameof(configs));
+            this.esReconnector = new EventStoreConnectionReconnector(esConnectionFactory ?? throw new ArgumentNullException(nameof(esConnectionFactory)));
             this.dateTimeProvider = dateTimeProvider ?? new SystemDateTimeProvider();
         }
+
+        public EventStoreRepository(IHoldAllConfiguration configs,
+            Func<Task<IEventStoreConnection>> esConnectionFactory)
+            : this(defaultValidator, configs, esConnectionFactory)
+        { }
+
+        public EventStoreRepository(IValidateState<TState> stateValidator, IHoldAllConfiguration configs, IEventStoreConnection connection, IDateTimeProvider dateTimeProvider = null)
+            : this(stateValidator, configs, () => Task.FromResult(connection), dateTimeProvider)
+        { }
 
         public EventStoreRepository(IHoldAllConfiguration configs,
             IEventStoreConnection connection)
@@ -36,7 +47,7 @@
             if (throwIfNotExists && !(await Contains(id)))
                 throw new StreamNotFoundException(id.ToString());
 
-            var session = new EventStoreSession<TState>(stateValidator, configs, connection, id.ToString(), dateTimeProvider);
+            var session = new EventStoreSession<TState>(stateValidator, configs, esReconnector, id.ToString(), dateTimeProvider);
             await session.Initialize(appliesAt);
 
             return session;
@@ -90,7 +101,7 @@
         {
             var id = selector.ToString();
             var expectedVersion = await GetLastEventNumber(id);
-            await connection.DeleteStreamAsync(id, expectedVersion);
+            await ESConnection.DeleteStreamAsync(id, expectedVersion);
         }
 
         public Task SoftDeleteByEvent(TId selector)
@@ -110,7 +121,7 @@
             var id = selector.ToString();
 
             var expectedVersion = await GetLastEventNumber(id);
-            var writeResult = await connection.ConditionalAppendToStreamAsync(
+            var writeResult = await ESConnection.ConditionalAppendToStreamAsync(
                     id,
                     expectedVersion,
                     new[] { softDeleteEvent })
@@ -126,6 +137,6 @@
         }
 
         private Task<StreamEventsSlice> GetLastEvent(string id)
-            => connection.ReadStreamEventsBackwardAsync(id, StreamPosition.End, 1, false);
+            => ESConnection.ReadStreamEventsBackwardAsync(id, StreamPosition.End, 1, false);
     }
 }

@@ -12,12 +12,20 @@
         private readonly IHoldAllConfiguration configs;
         private readonly EventReader reader;
 
-        public EventStoreReadOnlyRepository(IHoldAllConfiguration configs, IEventStoreConnection connection)
+        public EventStoreReadOnlyRepository(IHoldAllConfiguration configs, IKeepESConnectionAlive esConnection)
         {
-            this.configs = configs ?? throw new ArgumentNullException(nameof(connection));
+            this.configs = configs ?? throw new ArgumentNullException(nameof(esConnection));
 
-            reader = new EventReader(connection, configs);
+            reader = new EventReader(esConnection, configs);
         }
+
+        public EventStoreReadOnlyRepository(IHoldAllConfiguration configs, Func<Task<IEventStoreConnection>> connectionFactory)
+            : this(configs, new EventStoreConnectionReconnector(connectionFactory))
+        { }
+
+        public EventStoreReadOnlyRepository(IHoldAllConfiguration configs, IEventStoreConnection connection)
+            : this(configs, () => Task.FromResult(connection))
+        { }
 
         public async Task<ReadModel<TState>> ReadFrom(TId id)
         {

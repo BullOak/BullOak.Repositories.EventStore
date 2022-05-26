@@ -13,34 +13,40 @@
         private static readonly Task<int> done = Task.FromResult(0);
 
         private readonly IDateTimeProvider dateTimeProvider;
-
-        private readonly IEventStoreConnection eventStoreConnection;
+        private readonly IKeepESConnectionAlive esConnection;
         private readonly string streamName;
         private bool isInDisposedState = false;
         private readonly EventReader eventReader;
         private static readonly IValidateState<TState> defaultValidator = new AlwaysPassValidator<TState>();
 
+        private IEventStoreConnection ESConnection => esConnection.Connection;
+
         public EventStoreSession(IHoldAllConfiguration configuration,
-            IEventStoreConnection eventStoreConnection,
+            IKeepESConnectionAlive esConnection,
             string streamName,
             IDateTimeProvider dateTimeProvider = null)
-            : this(defaultValidator, configuration, eventStoreConnection, streamName, dateTimeProvider)
-        {
-        }
+            : this(defaultValidator, configuration, esConnection, streamName, dateTimeProvider)
+        { }
+
+        public EventStoreSession(IHoldAllConfiguration configuration,
+            IEventStoreConnection connection,
+            string streamName,
+            IDateTimeProvider dateTimeProvider = null)
+            : this(defaultValidator, configuration, new EventStoreConnectionContainer(connection), streamName, dateTimeProvider)
+        { }
 
         public EventStoreSession(IValidateState<TState> stateValidator,
             IHoldAllConfiguration configuration,
-            IEventStoreConnection eventStoreConnection,
+            IKeepESConnectionAlive esConnection,
             string streamName,
             IDateTimeProvider dateTimeProvider = null)
             : base(stateValidator, configuration)
         {
-            this.eventStoreConnection =
-                eventStoreConnection ?? throw new ArgumentNullException(nameof(eventStoreConnection));
             this.streamName = streamName ?? throw new ArgumentNullException(nameof(streamName));
             this.dateTimeProvider = dateTimeProvider ?? new SystemDateTimeProvider();
+            this.esConnection = esConnection ?? throw new ArgumentNullException(nameof(esConnection));
 
-            this.eventReader = new EventReader(eventStoreConnection, configuration);
+            this.eventReader = new EventReader(esConnection, configuration);
         }
 
         public async Task Initialize(DateTime? appliesAt = null)
@@ -88,7 +94,7 @@
                 CheckDisposedState();
                 ConditionalWriteResult writeResult;
 
-                writeResult = await eventStoreConnection.ConditionalAppendToStreamAsync(
+                writeResult = await ESConnection.ConditionalAppendToStreamAsync(
                         streamName,
                         this.ConcurrencyId,
                         eventsToAdd.Select(eventObject => eventObject.CreateEventData(dateTimeProvider)))
