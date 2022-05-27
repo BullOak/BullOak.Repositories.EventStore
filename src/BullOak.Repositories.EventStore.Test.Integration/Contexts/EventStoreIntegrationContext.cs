@@ -58,6 +58,11 @@
 
             if (connection == null)
                 connection = await SetupConnection();
+
+            var clientSettings = global::EventStore.Client.EventStoreClientSettings.Create("esdb+discover://localhost:2113?tls=false");
+            clientSettings.DefaultCredentials = new global::EventStore.Client.UserCredentials("admin", "changeit");
+            var manager = new global::EventStore.Client.EventStoreProjectionManagementClient(clientSettings);
+            await manager.EnableAsync("$by_category");
         }
 
         [AfterTestRun]
@@ -117,7 +122,7 @@
 
         internal async Task WriteEventsToStreamRaw(string currentStreamInUse, IEnumerable<MyEvent> myEvents)
         {
-            var conn = await SetupConnection(false);
+            var conn = await SetupConnection();
 
             await conn.AppendToStreamAsync(currentStreamInUse, ExpectedVersion.Any,
                 myEvents.Select(e =>
@@ -136,9 +141,9 @@
         {
             var settings = ConnectionSettings
                 .Create()
-                .KeepReconnecting()
+                .LimitReconnectionsTo(50)
                 .FailOnNoServerResponse()
-                .KeepRetrying()
+                .LimitRetriesForOperationTo(5)
                 .UseConsoleLogger();
 
             if (withDefaultUser)

@@ -20,8 +20,7 @@
         private readonly EventGenerator eventGenerator;
         private readonly IList<TestDataContext> testDataContexts;
         private List<ReadModel<IHoldHigherOrder>> States;
-        private readonly string sharedCategoryName = RandomString(15);
-        private static readonly Random random = new Random();
+        private readonly string sharedCategoryName = Guid.NewGuid().ToString("N");
         private readonly AsyncRetryPolicy retry = Policy.Handle<ReadModelConsistencyException>().WaitAndRetryAsync(25, count => TimeSpan.FromMilliseconds(200));
 
         public SaveEventsStreamSteps(
@@ -279,13 +278,6 @@
             testDataContext.ResetStream(sharedCategoryName);
 
             testDataContexts.Add(testDataContext);
-        }
-
-        private static string RandomString(int length)
-        {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            return new string(Enumerable.Repeat(chars, length)
-                .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
         private async Task LoadAllEntities(DateTime? dateTime)
