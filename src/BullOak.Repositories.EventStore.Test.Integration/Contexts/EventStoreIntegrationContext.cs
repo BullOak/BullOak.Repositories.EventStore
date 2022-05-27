@@ -94,8 +94,8 @@
         public Task SoftDeleteStream(string id)
             => repository.SoftDelete(id);
 
-        public Task HardDeleteStream(string id)
-            => GetConnection().DeleteStreamAsync(id, -1, true);
+        public Task HardDeleteStream(string id, int lastVersion)
+             => GetConnection().DeleteStreamAsync(id, lastVersion, true);
 
         public Task SoftDeleteByEvent(string id)
             => repository.SoftDeleteByEvent(id);

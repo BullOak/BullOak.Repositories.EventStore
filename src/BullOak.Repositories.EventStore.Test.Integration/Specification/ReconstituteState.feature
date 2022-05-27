@@ -43,32 +43,28 @@ Scenario: Reconstitute state from empty stream should succeed and return default
 	And HighOrder property should be 0
 
 Scenario: Reconstitute state after a soft delete should succeed and return default state
-	Given a new stream
-	And 3 new events
+	Given an existing stream with 3 events
 	And  I soft-delete the stream
 	When I load my entity
 	Then the load process should succeed
 	And HighOrder property should be 0
 
 Scenario: Reconstitute state after a hard delete should succeed and return default state
-	Given a new stream
-	And 3 new events
+	Given an existing stream with 3 events
 	And  I hard-delete the stream
 	When I load my entity
 	Then the load process should succeed
 	And HighOrder property should be 0
 
 Scenario: Reconstitute state after a soft delete by event should succeed and return default state
-	Given a new stream
-	And 3 new events
+	Given an existing stream with 3 events
 	And I soft-delete-by-event the stream
 	When I load my entity
 	Then the load process should succeed
 	And HighOrder property should be 0
 
 Scenario: Reconstitute state after a soft delete by custom event should succeed and return default state
-	Given a new stream
-	And 3 new events
+	Given an existing stream with 3 events
 	And I soft-delete-by-custom-event the stream
 	When I load my entity
 	Then the load process should succeed

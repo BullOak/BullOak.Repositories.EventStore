@@ -41,9 +41,14 @@
         public Task GivenAnExistingStreamWithEvents(int count)
         {
             AddStream();
+
+            var testDataContext = testDataContexts.First();
+            var newEvents = eventGenerator.GenerateEvents(count);
+            testDataContext.LastGeneratedEvents.Clear();
+            testDataContext.LastGeneratedEvents.AddRange(newEvents);
             return eventStoreContainer.WriteEventsToStreamRaw(
-                testDataContexts.First().CurrentStreamId,
-                eventGenerator.GenerateEvents(count));
+                testDataContext.CurrentStreamId,
+                newEvents);
         }
 
         [Given(@"(.*) new events?")]
@@ -145,7 +150,7 @@
 
         [Given(@"I hard-delete the stream")]
         public Task GivenIHard_DeleteTheStream()
-            => eventStoreContainer.HardDeleteStream(testDataContexts.First().CurrentStreamId);
+            => eventStoreContainer.HardDeleteStream(testDataContexts.First().CurrentStreamId, testDataContexts.First().LastGeneratedEvents.Count() - 1);
 
         [Given(@"I soft-delete-by-event the stream")]
         [When(@"I soft-delete-by-event the stream")]
