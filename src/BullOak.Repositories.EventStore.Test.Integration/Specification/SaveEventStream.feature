@@ -58,9 +58,8 @@ Scenario: Write after a hard deleted stream should fail
 	Then the save process should fail
 
 Scenario: Write after a soft deleted stream should succeed
-	Given a new stream
-	And 3 new events
-	And  I soft-delete the stream
+	Given an existing stream with 3 events
+	And I soft-delete the stream
 	And 10 new events
 	When I try to save the new events in the stream
 	And I load my entity
