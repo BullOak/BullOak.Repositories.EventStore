@@ -50,8 +50,7 @@ Scenario: Saving already saved session should throw meaningful usage advice exce
 	And there should be 20 events in the stream
 
 Scenario: Write after a hard deleted stream should fail
-	Given a new stream
-	And 3 new events
+	Given an existing stream with 3 events
 	And  I hard-delete the stream
 	And 10 new events
 	When I try to save the new events in the stream
