@@ -8,9 +8,12 @@
     using System.Collections.Generic;
     using global::EventStore.Client;
     using global::EventStore.ClientAPI;
+    using System.Collections.Concurrent;
 
     public static class EventConversion
     {
+        private static ConcurrentDictionary<string, Type> TypeRegistry { get; } = new ConcurrentDictionary<string, Type>();
+
         public static StoredEvent ToStoredEvent(this EventRecord resolvedEvent, ICreateStateInstances stateFactory)
             => ToStoredEvent(
                 resolvedEvent.EventStreamId,
@@ -31,18 +34,19 @@
                 stateFactory
             );
 
-        private static StoredEvent ToStoredEvent(string streamId, long eventNumber, ReadOnlyMemory<byte> data, ReadOnlyMemory<byte> meta,
-            string eventType, ICreateStateInstances stateFactory)
+        public static StoredEvent ToStoredEvent(string streamId, long eventNumber, ReadOnlyMemory<byte> data, ReadOnlyMemory<byte> meta,
+            string eventTypeName, ICreateStateInstances stateFactory)
         {
             var serializedEvent = System.Text.Encoding.UTF8.GetString(data.Span);
 
-            var (metadata, type) = ReadTypeFromMetadata(eventType, meta);
+            var metadata = LoadMetadata(eventTypeName, meta);
+            var eventType = LoadType(metadata);
 
             object @event;
 
-            if (type.IsInterface)
+            if (eventType.IsInterface)
             {
-                @event = stateFactory.GetState(type);
+                @event = stateFactory.GetState(eventType);
                 var switchable = @event as ICanSwitchBackAndToReadOnly;
 
                 if (switchable != null)
@@ -54,28 +58,31 @@
                     switchable.CanEdit = false;
             }
             else
-                @event = JsonConvert.DeserializeObject(serializedEvent, type);
+                @event = JsonConvert.DeserializeObject(serializedEvent, eventType);
 
-            return new StoredEvent(@event, type, streamId, metadata, Convert.ToInt64(eventNumber));
+            return new StoredEvent(@event, eventType, streamId, metadata, Convert.ToInt64(eventNumber));
         }
 
-        private static (IHoldMetadata metadata, Type type) ReadTypeFromMetadata(string eventType, ReadOnlyMemory<byte> meta)
+        private static IHoldMetadata LoadMetadata(string eventType, ReadOnlyMemory<byte> meta)
+            => meta.Length == 0 ?
+                new EventMetadata_V2(eventType, new Dictionary<string, string>())
+                : MetadataSerializer.DeserializeMetadata(meta).metadata;
+
+        private static Type LoadType(IHoldMetadata metadata)
+            => TypeRegistry.GetOrAdd(metadata.EventTypeFQN, LoadTypeByName);
+
+        private static Type LoadTypeByName(string typeFQN)
         {
-            Type type;
-            (IHoldMetadata metadata, int version) metadata;
-
-            if (meta.Length == 0)
-            {
-                type = Type.GetType(eventType);
-                return (new EventMetadata_V2(eventType, new Dictionary<string, string>()), type);
-            }
-
-            metadata = MetadataSerializer.DeserializeMetadata(meta);
-            type = AppDomain.CurrentDomain.GetAssemblies()
-                .Select(x => x.GetType(metadata.metadata.EventTypeFQN))
+            //Try to find it from the loaded assemblies. This is needed for emitted types
+            var type = AppDomain.CurrentDomain.GetAssemblies()
+                .Select(x => x.GetType(typeFQN))
                 .FirstOrDefault(x => x != null);
 
-            return (metadata.metadata, type);
+            //The above will fail for generic types as it's very basic. In this case just try to load it by name
+            if (type == null)
+                type = Type.GetType(typeFQN);
+
+            return type ?? throw new TypeNotFoundException(typeFQN);
         }
 
         public static ItemWithType ToItemWithType(this StoredEvent se)

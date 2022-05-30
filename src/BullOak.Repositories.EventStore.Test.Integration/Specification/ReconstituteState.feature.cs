@@ -40,9 +40,9 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Specification
         public static void FeatureSetup()
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
-            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Specification", "ReconstituteState", "\tIn order to apply business logic on stored entities\n\tAs a developer using this l" +
-                    "ibrary\n\tI want to be able to get correctly reconstituted states from my event st" +
-                    "ream", ProgrammingLanguage.CSharp, ((string[])(null)));
+            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Specification", "ReconstituteState", "\tIn order to apply business logic on stored entities\r\n\tAs a developer using this " +
+                    "library\r\n\tI want to be able to get correctly reconstituted states from my event " +
+                    "stream", ProgrammingLanguage.CSharp, ((string[])(null)));
             testRunner.OnFeatureStart(featureInfo);
         }
         

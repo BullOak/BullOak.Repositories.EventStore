@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30711.63
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32505.173
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BullOak.Repositories.EventStore", "BullOak.Repositories.EventStore\BullOak.Repositories.EventStore.csproj", "{4223C90A-73A2-4234-A240-10349B62C09C}"
 EndProject
@@ -11,7 +11,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{ACD302AF-8
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BullOak.Repositories.EventStore.Test.Unit", "BullOak.Repositories.EventStore.Test.Unit\BullOak.Repositories.EventStore.Test.Unit.csproj", "{E4A24EAC-FED4-4ECC-B5E0-C083E82C2792}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BullOak.Repositories.EventStore.ConsoleTestEventStoreClient", "BullOak.Repositories.EventStore.ConsoleTestEventStoreClient\BullOak.Repositories.EventStore.ConsoleTestEventStoreClient.csproj", "{896680DA-C076-403E-B117-3FEF57A919FE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BullOak.Repositories.EventStore.ConsoleTestEventStoreClient", "BullOak.Repositories.EventStore.ConsoleTestEventStoreClient\BullOak.Repositories.EventStore.ConsoleTestEventStoreClient.csproj", "{896680DA-C076-403E-B117-3FEF57A919FE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BullOak.Repositories.EventStore.TestingExtras", "BullOak.Repositories.EventStore.TestingExtras\BullOak.Repositories.EventStore.TestingExtras.csproj", "{C06585E1-718E-45D5-991D-E9B8ABD07FA9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,6 +37,10 @@ Global
 		{896680DA-C076-403E-B117-3FEF57A919FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{896680DA-C076-403E-B117-3FEF57A919FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{896680DA-C076-403E-B117-3FEF57A919FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C06585E1-718E-45D5-991D-E9B8ABD07FA9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C06585E1-718E-45D5-991D-E9B8ABD07FA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C06585E1-718E-45D5-991D-E9B8ABD07FA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C06585E1-718E-45D5-991D-E9B8ABD07FA9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -43,6 +49,7 @@ Global
 		{FC55EB9E-4CBB-4A0E-BBDF-1E022B7679C1} = {ACD302AF-8190-4A7B-8888-48D7ECCC4829}
 		{E4A24EAC-FED4-4ECC-B5E0-C083E82C2792} = {ACD302AF-8190-4A7B-8888-48D7ECCC4829}
 		{896680DA-C076-403E-B117-3FEF57A919FE} = {ACD302AF-8190-4A7B-8888-48D7ECCC4829}
+		{C06585E1-718E-45D5-991D-E9B8ABD07FA9} = {ACD302AF-8190-4A7B-8888-48D7ECCC4829}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9FEF1659-166B-4856-B77C-3ABF38899EEB}

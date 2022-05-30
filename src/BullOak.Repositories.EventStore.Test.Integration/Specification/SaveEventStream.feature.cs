@@ -40,8 +40,8 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Specification
         public static void FeatureSetup()
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
-            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Specification", "SaveEventsStream", "\tIn order to persist using an event stream\n\tAs a developer usint this new library" +
-                    "\n\tI want to be able to save events in a stream", ProgrammingLanguage.CSharp, ((string[])(null)));
+            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Specification", "SaveEventsStream", "\tIn order to persist using an event stream\r\n\tAs a developer usint this new librar" +
+                    "y\r\n\tI want to be able to save events in a stream", ProgrammingLanguage.CSharp, ((string[])(null)));
             testRunner.OnFeatureStart(featureInfo);
         }
         
