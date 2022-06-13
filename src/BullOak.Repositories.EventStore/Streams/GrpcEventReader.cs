@@ -53,6 +53,7 @@
             var lastIndex = (await client.ReadStreamAsync(Direction.Backwards, streamId,
                 StreamPosition.End,
                 1,
+                configureOperationOptions: options => options.TimeoutAfter = TimeSpan.FromSeconds(30),
                 resolveLinkTos: false).FirstAsync(cancellationToken)).OriginalEventNumber;
 
             IAsyncEnumerable<StoredEvent> storedEvents;
