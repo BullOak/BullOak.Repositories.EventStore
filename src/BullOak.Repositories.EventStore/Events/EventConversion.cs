@@ -9,9 +9,11 @@
     using global::EventStore.Client;
     using global::EventStore.ClientAPI;
     using System.Collections.Concurrent;
+    using System.Text.RegularExpressions;
 
     public static class EventConversion
     {
+        private static readonly Regex AssemblyVersionNumber = new Regex(@",\s*Version\s*=\s*\d+\.\d+\.\d+\.\d+");
         private static ConcurrentDictionary<string, Type> TypeRegistry { get; } = new ConcurrentDictionary<string, Type>();
 
         public static StoredEvent ToStoredEvent(this EventRecord resolvedEvent, ICreateStateInstances stateFactory)
@@ -81,6 +83,13 @@
             //The above will fail for generic types as it's very basic. In this case just try to load it by name
             if (type == null)
                 type = Type.GetType(typeFQN);
+
+            if (type == null && AssemblyVersionNumber.IsMatch(typeFQN))
+            {
+                typeFQN = AssemblyVersionNumber.Replace(typeFQN, "");
+
+                return LoadTypeByName(typeFQN);
+            }
 
             return type ?? throw new TypeNotFoundException(typeFQN);
         }

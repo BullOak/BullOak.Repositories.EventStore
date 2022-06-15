@@ -178,5 +178,40 @@ namespace BullOak.Repositories.EventStore.Test.Unit
 
             storedEvent.EventType.Should().NotBeNull();
         }
+
+        [Fact]
+        public void EventConversion_GenericPublicClassWithUnloadedGenericAttributeAndWrongAssemblyVersion_IgnoresAssemblyVersionAndIsDiscovered()
+        {
+            var fqn = "BullOak.Repositories.EventStore.Test.Unit.AGenericEvent`1[[BullOak.Repositories.EventStore.TestingExtras.SuperHiddenType, BullOak.Repositories.EventStore.TestingExtras, Version = 22.2.6643.0, Culture = neutral, PublicKeyToken = null]]";
+            var @event = new AGenericEvent<TheEvent>(); // Used for serialization purposes
+            var eventWithType = new ItemWithType(@event);
+            byte[] metadataBytes = MetadataSerializer.Serialize(new EventMetadata_V2(fqn, new Dictionary<string, string>()));
+            var eventBytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(@event));
+
+            var storedEvent = EventConversion.ToStoredEvent("streamId", 5, eventBytes, metadataBytes,
+                fqn,
+                InstanceCreatorStub.Instance);
+
+            storedEvent.EventType.Should().NotBeNull();
+        }
+
+        [Fact]
+        public void EventConversion_GenericPublicClassWithNonExistingGenericType_CompletesWithoutFindingEventType()
+        {
+            var fqn = "BullOak.Repositories.EventStore.Test.Unit.AGenericEvent`1[[BullOak.Repositories.EventStore.TestingExtras.NonExistingType, BullOak.Repositories.EventStore.TestingExtras, Version = 22.2.6643.0, Culture = neutral, PublicKeyToken = null]]";
+            var @event = new AGenericEvent<TheEvent>(); // Used for serialization purposes
+            var eventWithType = new ItemWithType(@event);
+            byte[] metadataBytes = MetadataSerializer.Serialize(new EventMetadata_V2(fqn, new Dictionary<string, string>()));
+            var eventBytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(@event));
+
+            StoredEvent storedEvent = null;
+            var exception = Record.Exception(() => storedEvent = EventConversion.ToStoredEvent("streamId", 5, eventBytes, metadataBytes,
+                fqn,
+                InstanceCreatorStub.Instance));
+
+            storedEvent.Should().BeNull();
+            exception.Should().BeOfType<TypeNotFoundException>();
+        }
+
     }
 }
