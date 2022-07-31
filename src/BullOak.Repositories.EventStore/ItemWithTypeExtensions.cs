@@ -22,8 +22,8 @@
 
         public static EsClientV20.EventData CreateV20EventData(this ItemWithType @event, IDateTimeProvider dateTimeProvider)
         {
-            var metadata = EventMetadata_V2.From(@event,
-                (MetadataProperties.Timestamp, dateTimeProvider.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")));
+            var metadata = EventMetadata_V2.From(@event);
+            metadata.TimeStamp = dateTimeProvider.UtcNow;
 
             var eventAsJson = JObject.FromObject(@event.instance);
             eventAsJson.Remove(CanEditJsonFieldName);
@@ -37,8 +37,8 @@
 
         public static EsClientV5.EventData CreateV5EventData(this ItemWithType @event, IDateTimeProvider dateTimeProvider)
         {
-            var metadata = EventMetadata_V2.From(@event,
-                (MetadataProperties.Timestamp, dateTimeProvider.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")));
+            var metadata = EventMetadata_V2.From(@event);
+            metadata.TimeStamp = dateTimeProvider.UtcNow;
 
             var eventAsJson = JObject.FromObject(@event.instance);
             eventAsJson.Remove(CanEditJsonFieldName);

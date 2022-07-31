@@ -67,13 +67,10 @@ namespace BullOak.Repositories.EventStore
 
         private bool GetBeforeDateEventPredicate(IAmAStoredEvent @event, DateTime appliesAt)
         {
-            if (@event.Metadata?.Properties == null
-                || !@event.Metadata.Properties.TryGetValue(MetadataProperties.Timestamp, out var eventTimestamp))
+            if(@event.Metadata?.TimeStamp == null)
                 return true;
 
-            if (!DateTime.TryParse(eventTimestamp, out var timestamp)) return true;
-
-            return timestamp <= appliesAt;
+            return @event.Metadata.TimeStamp <= appliesAt;
         }
 
         public async Task<bool> Contains(TId selector)

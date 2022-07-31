@@ -89,12 +89,9 @@
                 var state = await eventStoreContainer.ReadOnlyRepository.ReadFrom(testDataContext.CurrentStreamId,
                     e =>
                     {
-                        if (e.Metadata?.Properties == null || !e.Metadata.Properties.TryGetValue(MetadataProperties.Timestamp,
-                            out var eventTimestamp)) return true;
+                        if (e.Metadata == null) return true;
 
-                        if (!DateTime.TryParse(eventTimestamp, out var timestamp)) return true;
-
-                        return timestamp <= appliesAt;
+                        return e.Metadata.TimeStamp <= appliesAt;
                     });
                 testDataContext.LatestLoadedState = state;
             });

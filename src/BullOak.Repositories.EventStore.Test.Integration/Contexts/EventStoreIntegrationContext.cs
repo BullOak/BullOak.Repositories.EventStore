@@ -111,12 +111,9 @@
         {
             return await ReadOnlyRepository.ReadAllEntitiesFromCategory(categoryName, e =>
             {
-                if (!appliesAt.HasValue || e.Metadata?.Properties == null || !e.Metadata.Properties.TryGetValue(MetadataProperties.Timestamp,
-                    out var eventTimestamp)) return true;
+                if (!appliesAt.HasValue || e.Metadata?.Properties == null) return true;
 
-                if (!DateTime.TryParse(eventTimestamp, out var timestamp)) return true;
-
-                return timestamp <= appliesAt;
+                return e.Metadata.TimeStamp <= appliesAt;
             }).ConfigureAwait(false);
         }
 
