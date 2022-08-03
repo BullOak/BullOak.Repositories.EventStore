@@ -37,7 +37,7 @@ public class GrpcEventWriter : IStoreEventsToStream
 
     public async Task SoftDelete(string streamId)
     {
-        await client.SoftDeleteAsync(streamId, StreamState.Any);
+        await client.DeleteAsync(streamId, StreamState.Any);
     }
 
     public async Task SoftDeleteByEvent<T>(string streamId, IEnumerable<T> eventData)
