@@ -6,9 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EventStore.Client.Grpc.Operations" Version="21.2.0" />
-    <PackageReference Include="EventStore.Client.Grpc.ProjectionManagement" Version="21.2.0" />
-    <PackageReference Include="EventStore.Client.Grpc.Streams" Version="21.2.0" />
+    <PackageReference Include="EventStore.Client.Grpc.Operations" Version="23.0.0" />
+    <PackageReference Include="EventStore.Client.Grpc.ProjectionManagement" Version="23.0.0" />
+    <PackageReference Include="EventStore.Client.Grpc.Streams" Version="23.0.0" />
   </ItemGroup>
 
 </Project>

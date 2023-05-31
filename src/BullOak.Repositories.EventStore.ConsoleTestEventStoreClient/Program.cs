@@ -25,9 +25,9 @@ namespace BullOak.Repositories.EventStore.ConsoleTestEventStoreClient
             var projectionClient = new EventStoreProjectionManagementClient(settings);
             var operationsClient = new EventStoreOperationsClient(settings);
 
-            await client.SoftDeleteAsync("dokimi-1", StreamState.Any);
-            await client.SoftDeleteAsync("dokimi-2", StreamState.Any);
-            await client.SoftDeleteAsync("dokimi-3", StreamState.Any);
+            await client.DeleteAsync("dokimi-1", StreamState.Any);
+            await client.DeleteAsync("dokimi-2", StreamState.Any);
+            await client.DeleteAsync("dokimi-3", StreamState.Any);
 
 
             //await projectionClient.DisableAsync("$by_category");
@@ -84,8 +84,7 @@ namespace BullOak.Repositories.EventStore.ConsoleTestEventStoreClient
 
             var testResultNonExistent =
                 client.ReadStreamAsync(Direction.Backwards, Guid.NewGuid().ToString(), StreamPosition.End);
-            var testResult = client.ReadStreamAsync(Direction.Backwards, idForTombstoneTest, StreamPosition.End,
-                configureOperationOptions: o => { o.ThrowOnAppendFailure = false; });
+            var testResult = client.ReadStreamAsync(Direction.Backwards, idForTombstoneTest, StreamPosition.End);
             var testState = await testResultNonExistent.ReadState;
             testState = await testResult.ReadState;
         }

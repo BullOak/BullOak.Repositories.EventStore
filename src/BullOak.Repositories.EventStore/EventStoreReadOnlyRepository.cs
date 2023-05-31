@@ -25,9 +25,9 @@ namespace BullOak.Repositories.EventStore
 
         public async Task<ReadModel<TState>> ReadFrom(TId id)
         {
-            var streamData = await reader.ReadFrom(id.ToString());
-            var events = await streamData.Events.Reverse().Select(x=> x.ToItemWithType()).ToArrayAsync();
-            var rehydratedState = configs.StateRehydrator.RehydrateFrom<TState>(events);
+            var streamData = await reader.ReadFrom(id.ToString(), direction: StreamReadDirection.Forwards);
+            var events = streamData.Events.Select(x=> x.ToItemWithType());
+            var rehydratedState = await configs.StateRehydrator.RehydrateFrom<TState>(events);
 
             //TODO: REPLACE WHEN BO CHANGES TO LONG!!
             return new ReadModel<TState>(rehydratedState, (int)streamData.StoredEventPosition.ToInt64());
@@ -36,8 +36,8 @@ namespace BullOak.Repositories.EventStore
         public async Task<TState> ReadFrom(TId id, Func<IAmAStoredEvent, bool> loadEventPredicate)
         {
             var streamData = await reader.ReadFrom(id.ToString(), loadEventPredicate);
-            var events = await streamData.Events.Select(x=> x.ToItemWithType()).ToArrayAsync();
-            return configs.StateRehydrator.RehydrateFrom<TState>(events);
+            var events = streamData.Events.Select(x=> x.ToItemWithType());
+            return await configs.StateRehydrator.RehydrateFrom<TState>(events);
         }
 
         public async Task<IEnumerable<ReadModel<TState>>> ReadAllEntitiesFromCategory(string categoryName,
