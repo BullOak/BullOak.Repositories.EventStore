@@ -94,17 +94,18 @@ namespace BullOak.Repositories.EventStore.Test.Integration.Specification
         [Xunit.SkippableTheoryAttribute(DisplayName="When I add new events in the stream I want the state to be updated immediately")]
         [Xunit.TraitAttribute("FeatureTitle", "StateRetrievalSpecs")]
         [Xunit.TraitAttribute("Description", "When I add new events in the stream I want the state to be updated immediately")]
-        [Xunit.InlineDataAttribute("0", "3", "2", new string[0])]
-        [Xunit.InlineDataAttribute("2", "3", "2", new string[0])]
-        [Xunit.InlineDataAttribute("7", "3", "6", new string[0])]
-        [Xunit.InlineDataAttribute("0", "10000", "9999", new string[0])]
-        public void WhenIAddNewEventsInTheStreamIWantTheStateToBeUpdatedImmediately(string eventCount, string addedEvents, string highOrder, string[] exampleTags)
+        [Xunit.InlineDataAttribute("0", "3", "2", "2", new string[0])]
+        [Xunit.InlineDataAttribute("2", "3", "2", "2", new string[0])]
+        [Xunit.InlineDataAttribute("7", "5", "6", "4", new string[0])]
+        [Xunit.InlineDataAttribute("0", "10000", "9999", "9999", new string[0])]
+        public void WhenIAddNewEventsInTheStreamIWantTheStateToBeUpdatedImmediately(string eventCount, string addedEvents, string highOrder, string lastState, string[] exampleTags)
         {
             string[] tagsOfScenario = exampleTags;
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             argumentsOfScenario.Add("eventCount", eventCount);
             argumentsOfScenario.Add("addedEvents", addedEvents);
             argumentsOfScenario.Add("highOrder", highOrder);
+            argumentsOfScenario.Add("lastState", lastState);
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("When I add new events in the stream I want the state to be updated immediately", null, tagsOfScenario, argumentsOfScenario, featureTags);
 #line 14
 this.ScenarioInitialize(scenarioInfo);
@@ -127,6 +128,9 @@ this.FeatureBackground();
 #line hidden
 #line 17
  testRunner.Then(string.Format("HighOrder property should be {0}", highOrder), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+#line 18
+    testRunner.And(string.Format("LastState property should be {0}", lastState), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             }
             this.ScenarioCleanup();

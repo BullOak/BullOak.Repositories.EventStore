@@ -35,7 +35,8 @@ namespace BullOak.Repositories.EventStore
 
         public async Task<TState> ReadFrom(TId id, Func<IAmAStoredEvent, bool> loadEventPredicate)
         {
-            var streamData = await reader.ReadFrom(id.ToString(), loadEventPredicate);
+            var streamData = await reader.ReadFrom(id.ToString(), predicate: loadEventPredicate);
+
             var events = streamData.Events.Select(x=> x.ToItemWithType());
             return await configs.StateRehydrator.RehydrateFrom<TState>(events);
         }
@@ -43,20 +44,34 @@ namespace BullOak.Repositories.EventStore
         public async Task<IEnumerable<ReadModel<TState>>> ReadAllEntitiesFromCategory(string categoryName,
             Func<IAmAStoredEvent, bool> loadEventPredicate = null)
         {
-            var streamsData = await reader.ReadFrom($"$ce-{categoryName}", direction: StreamReadDirection.Forwards, predicate: loadEventPredicate);
+            var streamsData = await reader.ReadFrom($"$ce-{categoryName}", predicate: loadEventPredicate, StreamReadDirection.Forwards);
+            var states = new Dictionary<string, TState>();
+            var lastIndexSeen = new Dictionary<string, long>();
+            var stateType = typeof(TState);
 
-            var eventsByStream = await streamsData.Events.GroupBy(x => x.StreamId)
-                .SelectAwait(async group =>
-                {
-                    var events = await group.ToArrayAsync();
-                    var state = configs.StateRehydrator.RehydrateFrom<TState>(events.Select(x => x.ToItemWithType()));
+            await foreach(var @event in streamsData.Events)
+            {
+                var state = (TState)GetOrCreateFrom(@event, states);
 
-                    return (state, currentStreamVersion: events.Length > 0 ? (int) events.Last().PositionInStream : -1);
-                })
-                .Select(x => new ReadModel<TState>(x.state, x.currentStreamVersion))
-                .ToListAsync();
+                state = (TState)configs.EventApplier.ApplyEvent(stateType, state, @event.ToItemWithType());
 
-            return eventsByStream;
+                states[@event.StreamId] = state;
+                lastIndexSeen[@event.StreamId] = @event.PositionInStream;
+            }
+
+            return from key in states.Keys
+                   select new ReadModel<TState>(states[key], (int)lastIndexSeen[key]);
+        }
+
+        private object GetOrCreateFrom(StoredEvent @event, Dictionary<string, TState> states)
+        {
+            if (!states.TryGetValue(@event.StreamId, out TState state))
+            {
+                state = (TState)configs.StateFactory.GetState(typeof(TState));
+                states[@event.StreamId] = state;
+            }
+
+            return state;
         }
     }
 }

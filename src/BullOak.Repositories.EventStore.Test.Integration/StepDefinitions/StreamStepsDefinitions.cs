@@ -127,6 +127,7 @@
         public async Task WhenILoadAllMyEntities()
             => await LoadAllEntities(null);
 
+        [Given(@"I try to save the new events in the stream")]
         [When(@"I try to save the new events in the stream")]
         public async Task WhenITryToSaveTheNewEventsInTheStream()
         {
@@ -195,6 +196,13 @@
         {
             testDataContexts.First().LatestLoadedState.HigherOrder.Should().Be(highestOrderValue);
         }
+
+        [Then(@"LastState property should be (.*)")]
+        public void ThenLastStatePropertyShouldBe(int lastValue)
+        {
+            testDataContexts.First().LatestLoadedState.LastValue.Should().Be(lastValue);
+        }
+
 
         [When(@"I add (.*) events in the session without saving it")]
         public async Task WhenIAddEventsInTheSessionWithoutSavingIt(int eventCount)

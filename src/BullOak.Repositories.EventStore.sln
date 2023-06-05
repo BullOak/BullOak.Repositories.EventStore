@@ -13,7 +13,16 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BullOak.Repositories.EventS
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BullOak.Repositories.EventStore.ConsoleTestEventStoreClient", "BullOak.Repositories.EventStore.ConsoleTestEventStoreClient\BullOak.Repositories.EventStore.ConsoleTestEventStoreClient.csproj", "{896680DA-C076-403E-B117-3FEF57A919FE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BullOak.Repositories.EventStore.TestingExtras", "BullOak.Repositories.EventStore.TestingExtras\BullOak.Repositories.EventStore.TestingExtras.csproj", "{C06585E1-718E-45D5-991D-E9B8ABD07FA9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BullOak.Repositories.EventStore.TestingExtras", "BullOak.Repositories.EventStore.TestingExtras\BullOak.Repositories.EventStore.TestingExtras.csproj", "{C06585E1-718E-45D5-991D-E9B8ABD07FA9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C396DBC5-B973-4E0A-83A9-509801AFE85E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build scripts", "Build scripts", "{130AEC62-DF94-4C8B-90F3-89CEC4BBFD75}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\workflows\build-on-push.yml = ..\.github\workflows\build-on-push.yml
+		..\.github\workflows\build-pr.yml = ..\.github\workflows\build-pr.yml
+		..\.github\workflows\build-version-tag.yml = ..\.github\workflows\build-version-tag.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,6 +59,7 @@ Global
 		{E4A24EAC-FED4-4ECC-B5E0-C083E82C2792} = {ACD302AF-8190-4A7B-8888-48D7ECCC4829}
 		{896680DA-C076-403E-B117-3FEF57A919FE} = {ACD302AF-8190-4A7B-8888-48D7ECCC4829}
 		{C06585E1-718E-45D5-991D-E9B8ABD07FA9} = {ACD302AF-8190-4A7B-8888-48D7ECCC4829}
+		{130AEC62-DF94-4C8B-90F3-89CEC4BBFD75} = {C396DBC5-B973-4E0A-83A9-509801AFE85E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9FEF1659-166B-4856-B77C-3ABF38899EEB}

@@ -11,7 +11,7 @@ namespace BullOak.Repositories.EventStore.Streams
     {
         Task<StreamReadResults> ReadFrom(string streamId,
             Func<IAmAStoredEvent, bool> predicate = null,
-            StreamReadDirection direction = StreamReadDirection.Backwards,
+            StreamReadDirection direction = StreamReadDirection.Forwards,
             CancellationToken cancellationToken = default);
     }
 }

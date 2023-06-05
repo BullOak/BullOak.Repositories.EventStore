@@ -15,9 +15,10 @@ Scenario Outline: When I add new events in the stream I want the state to be upd
 	Given an existing stream with <eventCount> events
 	When I add <addedEvents> events in the session without saving it
 	Then HighOrder property should be <highOrder>
+    And LastState property should be <lastState>
 Examples:
-	| eventCount | addedEvents | highOrder |
-	| 0          | 3           | 2         |
-	| 2          | 3           | 2         |
-	| 7          | 3           | 6         |
-	| 0          | 10000       | 9999      |
+	| eventCount | addedEvents | highOrder | lastState |
+	| 0          | 3           | 2         | 2         |
+	| 2          | 3           | 2         | 2         |
+	| 7          | 5           | 6         | 4         |
+	| 0          | 10000       | 9999      | 9999      |

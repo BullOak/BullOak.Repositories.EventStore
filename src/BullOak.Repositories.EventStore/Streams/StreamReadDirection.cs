@@ -2,6 +2,6 @@ namespace BullOak.Repositories.EventStore.Streams;
 
 public enum StreamReadDirection
 {
-    Forwards,
-    Backwards
+    Forwards = 2,
+    Backwards = 4
 }

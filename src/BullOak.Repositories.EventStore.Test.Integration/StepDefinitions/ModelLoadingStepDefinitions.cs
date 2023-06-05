@@ -32,6 +32,26 @@
             }
         }
 
+        [When(@"I load my entity backwards")]
+        public async Task WhenILoadMyEntityBackwards()
+        {
+            var testDataContext = testDataContexts.First();
+            using (var session = await eventStoreContainer.StartSession(testDataContext.CurrentStreamId))
+            {
+                testDataContext.LatestLoadedState = session.GetCurrentState();
+            }
+        }
+
+        [When(@"I load my entity forwards")]
+        public async Task WhenILoadMyEntityForwards()
+        {
+            var testDataContext = testDataContexts.First();
+            using (var session = await eventStoreContainer.StartSession(testDataContext.CurrentStreamId))
+            {
+                testDataContext.LatestLoadedState = session.GetCurrentState();
+            }
+        }
+
         [When(@"I load my entity")]
         public async Task WhenILoadMyEntity()
         {

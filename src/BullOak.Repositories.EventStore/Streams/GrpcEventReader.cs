@@ -8,6 +8,7 @@
     using System.Threading.Tasks;
     using global::EventStore.Client;
     using System.Threading;
+    using static global::EventStore.Client.EventStoreClient;
 
     public class GrpcEventReader : IReadEventsFromStream
     {
@@ -21,8 +22,11 @@
             this.client = client ?? throw new ArgumentNullException(nameof(client));
         }
 
-        public async Task<StreamReadResults> ReadFrom(string streamId, Func<IAmAStoredEvent, bool> predicate = null, StreamReadDirection direction = StreamReadDirection.Backwards, CancellationToken cancellationToken = default)
+        public async Task<StreamReadResults> ReadFrom(string streamId, Func<IAmAStoredEvent, bool> predicate = null, StreamReadDirection direction = StreamReadDirection.Forwards, CancellationToken cancellationToken = default)
         {
+            if (predicate == null)
+                direction = StreamReadDirection.Forwards;
+
             var readResult = client.ReadStreamAsync(
                 direction == StreamReadDirection.Backwards ? Direction.Backwards : Direction.Forwards,
                 streamId,
@@ -31,21 +35,7 @@
                 deadline: TimeSpan.FromSeconds(30),
                 cancellationToken: cancellationToken);
 
-            bool streamExists = false;
-            try
-            {
-                var readState = await readResult.ReadState;
-                streamExists = readState == ReadState.Ok;
-            }
-#pragma warning disable 168
-            catch (StreamDeletedException ex)
-            // This happens when the stream is hard-deleted. We don't want to throw in that case
-#pragma warning restore 168
-            {
-                streamExists = false;
-            }
-
-            if (!streamExists)
+            if (!await StreamExists(readResult))
                 return new StreamReadResults(EmptyReadResult, false, StoredEventPosition.FromInt64(-1));
 
             predicate ??= _ => true;
@@ -78,6 +68,22 @@
             }
 
             return new StreamReadResults(storedEvents, true, StoredEventPosition.FromInt64(lastIndex.ToInt64()));
+        }
+
+        private async Task<bool> StreamExists(ReadStreamResult readResult)
+        {
+            try
+            {
+                var readState = await readResult.ReadState;
+                return readState == ReadState.Ok;
+            }
+#pragma warning disable 168
+            catch (StreamDeletedException ex)
+            // This happens when the stream is hard-deleted. We don't want to throw in that case
+#pragma warning restore 168
+            {
+                return false;
+            }
         }
     }
 }

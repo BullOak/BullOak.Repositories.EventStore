@@ -11,14 +11,30 @@ Scenario Outline: Load stored entity with from existing events
 	And <eventsCount> new events
 	When I try to save the new events in the stream
 	And I load my entity
-	Then HighOrder property should be <expectedState>
+	Then HighOrder property should be <expectedHighOrder>
+    And LastState property should be <expectedLastState>
 
 	Examples:
-		| eventsCount | expectedState |
-		| 2           | 1             |
-		| 5           | 4             |
-		| 10000       | 9999          |
+		| eventsCount | expectedHighOrder | expectedLastState |
+		| 2           | 1                 | 1                 |
+		| 5           | 4                 | 4                 |
+		| 10000       | 9999              | 9999              |
 
+Scenario Outline: Load stream backwards - sanity check
+    Given a new stream
+    And 4 new events
+    And I try to save the new events in the stream
+    When I load my entity backwards
+	Then the load process should succeed
+	And HighOrder property should be 3
+
+Scenario Outline: Load stream forwards - sanity check
+    Given a new stream
+    And 4 new events
+    And I try to save the new events in the stream
+    When I load my entity forwards
+	Then the load process should succeed
+	And HighOrder property should be 3
 
 Scenario Outline: Reconstitute state from one event stored using interface
 	Given a new stream

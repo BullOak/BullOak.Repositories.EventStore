@@ -24,8 +24,11 @@
             this.pageSize = pageSize;
         }
 
-        public async Task<StreamReadResults> ReadFrom(string streamId, Func<IAmAStoredEvent, bool> predicate = null, StreamReadDirection direction = StreamReadDirection.Backwards, CancellationToken cancellationToken = default)
+        public async Task<StreamReadResults> ReadFrom(string streamId, Func<IAmAStoredEvent, bool> predicate = null, StreamReadDirection direction = StreamReadDirection.Forwards, CancellationToken cancellationToken = default)
         {
+            if (predicate == null)
+                direction = StreamReadDirection.Forwards;
+
             predicate ??= _ => true;
 
             IAsyncEnumerable<StoredEvent> storedEvents;

@@ -15,6 +15,7 @@
         public IHoldHigherOrder Apply(IHoldHigherOrder state, IMyEvent @event)
         {
             state.HigherOrder = Math.Max(@event.Value, state.HigherOrder);
+            state.LastValue = @event.Value;
 
             return state;
         }
