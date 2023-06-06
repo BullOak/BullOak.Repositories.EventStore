@@ -12,7 +12,7 @@ jobs:
       - name: Run Tcp ESDB image
         run: docker run -d --name tcp_esdbnode -it -p 2113:2113 -p 1113:1113 eventstore/eventstore:release-5.0.11 --runprojections all --startstandardprojections
       - name: Run Grpc ESDB image
-        run: docker run -d --name grpc_esdbnode -it -p 2114:2113 -p 1114:1113 eventstore/eventstore:21.10.1-bionic --insecure --runprojections all --startstandardprojections
+        run: docker run -d --name grpc_esdbnode -it -p 2114:2113 -p 1114:1113 eventstore/eventstore:21.10.1-bionic --insecure --runprojections all --startstandardprojections --enable-atom-pub-over-http
       - uses: actions/checkout@v2
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
@@ -29,5 +29,9 @@ jobs:
       - name: Test
         run: dotnet test --no-build --verbosity minimal
         working-directory: ./src
-
-
+      - name: Stop Tcp ESDB image
+        if: always()
+        run: docker stop $(docker ps -a -q -f name=tcp_esdbnode) && docker rm $(docker ps -a -q -f name=tcp_esdbnode)
+      - name: Stop Grpc ESDB image
+        if: always()
+        run: docker stop $(docker ps -a -q -f name=grpc_esdbnode) && docker rm $(docker ps -a -q -f name=grpc_esdbnode)
