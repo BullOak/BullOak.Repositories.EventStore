@@ -65,6 +65,7 @@ Scenario Outline: Reconstitute state from empty stream should succeed and return
 Scenario Outline: Reconstitute state after a soft delete should succeed and return default state
     Given a new stream
 	And 3 new events
+	And I try to save the new events in the stream
 	And  I soft-delete the stream
 	When I load my entity
 	Then the load process should succeed

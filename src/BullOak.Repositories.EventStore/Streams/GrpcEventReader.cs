@@ -44,7 +44,7 @@
                 StreamPosition.End,
                 1,
                 deadline: TimeSpan.FromSeconds(30),
-                resolveLinkTos: false).FirstAsync(cancellationToken));
+                resolveLinkTos: true).FirstAsync(cancellationToken));
             var lastIndex = lastEvent.OriginalEventNumber;
 
             if(lastEvent.Event.ToStoredEvent(stateFactory).DeserializedEvent is EntitySoftDeleted)
