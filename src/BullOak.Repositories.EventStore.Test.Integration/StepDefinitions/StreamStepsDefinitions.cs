@@ -15,7 +15,7 @@
     using Xunit;
 
     [Binding]
-    internal class SaveEventsStreamSteps
+    internal class StreamStepsDefinitions
     {
         private readonly EventStoreIntegrationContext eventStoreContainer;
         private readonly EventGenerator eventGenerator;
@@ -25,7 +25,7 @@
         private static readonly Random random = new Random();
         private readonly AsyncRetryPolicy retry = Policy.Handle<ReadModelConsistencyException>().WaitAndRetryAsync(25, count => TimeSpan.FromMilliseconds(200));
 
-        public SaveEventsStreamSteps(
+        public StreamStepsDefinitions(
             EventStoreIntegrationContext eventStoreContainer,
             EventGenerator eventGenerator,
             IList<TestDataContext> testDataContexts)
@@ -337,6 +337,22 @@
         {
             var actual = testDataContexts.First().LatestStreamReadResults.StoredEventPosition;
             actual.ToInt64().Should().Be(expected);
+        }
+
+        [When(@"I try to open the new stream")]
+        public async Task WhenITryToOpenANewStream()
+        {
+            using (var session = await eventStoreContainer.StartSession(testDataContexts.First().CurrentStreamId))
+            {
+                testDataContexts.First().IsNewState = session.IsNewState;
+                testDataContexts.First().LatestLoadedState = session.GetCurrentState();
+            }
+        }
+
+        [Then(@"the session reports new state")]
+        public void ThenTheSessionReportsNewState()
+        {
+            testDataContexts.First().IsNewState.Should().BeTrue();
         }
     }
 }
