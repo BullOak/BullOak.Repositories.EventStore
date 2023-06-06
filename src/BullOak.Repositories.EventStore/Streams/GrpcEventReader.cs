@@ -44,12 +44,7 @@
                 StreamPosition.End,
                 1,
                 deadline: TimeSpan.FromSeconds(30),
-                // The reason there's a resolveTos:true here is because there's the soft-delete-by-custom-event feature in BO.
-                //because of this we read from this point onwards FOR SESSIONS. This is a big of a pickle tbh, because on one hand
-                //there is benefit in keeping the events prior to an actual soft deletes for a while longer (for undo purposes for one)
-                //but on the other hand lots of features (undo included) isn't supported out of the box now :|
-                //should I remove this feature until undo is supported? Or should I keep it in and the below (small) perf cost?
-                resolveLinkTos: true).FirstOrDefaultAsync(cancellationToken));
+                resolveLinkTos: false).FirstOrDefaultAsync(cancellationToken));
 
             if(lastEvent.Event == null || string.Equals(lastEvent.Event.EventType, DefaultSoftDeleteEvent.Type.FullName, StringComparison.Ordinal))
                 return new StreamReadResults(EmptyReadResult, false, StoredEventPosition.FromInt64(-1));
