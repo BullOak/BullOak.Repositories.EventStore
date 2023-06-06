@@ -293,16 +293,16 @@ this.FeatureBackground();
 #line 48
     testRunner.Given("a new stream", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-                TechTalk.SpecFlow.Table table6 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table7 = new TechTalk.SpecFlow.Table(new string[] {
                             "Timestamp"});
-                table6.AddRow(new string[] {
+                table7.AddRow(new string[] {
                             "2020-09-10 11:10:00"});
-                table6.AddRow(new string[] {
+                table7.AddRow(new string[] {
                             "2020-09-20 11:10:00"});
-                table6.AddRow(new string[] {
+                table7.AddRow(new string[] {
                             "2020-09-23 11:10:00"});
 #line 49
- testRunner.And("the following events with the following timestamps", ((string)(null)), table6, "And ");
+ testRunner.And("the following events with the following timestamps", ((string)(null)), table7, "And ");
 #line hidden
 #line 54
  testRunner.And("I try to save the new events in the stream through their interface", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");

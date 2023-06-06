@@ -36,15 +36,19 @@
                 cancellationToken: cancellationToken);
 
             if (!await StreamExists(readResult))
-                return new StreamReadResults(EmptyReadResult, false, StoredEventPosition.FromInt64(-1));
+                return new StreamReadResults(EmptyReadResult, true, StoredEventPosition.FromInt64(-1));
 
             predicate ??= _ => true;
 
-            var lastIndex = (await client.ReadStreamAsync(Direction.Backwards, streamId,
+            var lastEvent = (await client.ReadStreamAsync(Direction.Backwards, streamId,
                 StreamPosition.End,
                 1,
                 deadline: TimeSpan.FromSeconds(30),
-                resolveLinkTos: false).FirstAsync(cancellationToken)).OriginalEventNumber;
+                resolveLinkTos: false).FirstAsync(cancellationToken));
+            var lastIndex = lastEvent.OriginalEventNumber;
+
+            if(lastEvent.Event.ToStoredEvent(stateFactory).DeserializedEvent is EntitySoftDeleted)
+                return new StreamReadResults(EmptyReadResult, true, StoredEventPosition.FromInt64(-1));
 
             IAsyncEnumerable<StoredEvent> storedEvents;
             if (direction == StreamReadDirection.Backwards)
