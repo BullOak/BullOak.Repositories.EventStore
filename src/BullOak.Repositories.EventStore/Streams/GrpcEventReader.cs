@@ -44,11 +44,12 @@
                 StreamPosition.End,
                 1,
                 deadline: TimeSpan.FromSeconds(30),
-                resolveLinkTos: false).FirstAsync(cancellationToken));
-            var lastIndex = lastEvent.OriginalEventNumber;
+                resolveLinkTos: true).FirstOrDefaultAsync(cancellationToken));
 
-            if(lastEvent.Event.ToStoredEvent(stateFactory).DeserializedEvent is EntitySoftDeleted)
+            if(lastEvent.Event == null || string.Equals(lastEvent.Event.EventType, DefaultSoftDeleteEvent.Type.FullName, StringComparison.Ordinal))
                 return new StreamReadResults(EmptyReadResult, false, StoredEventPosition.FromInt64(-1));
+
+            var lastIndex = lastEvent.OriginalEventNumber;
 
             IAsyncEnumerable<StoredEvent> storedEvents;
             if (direction == StreamReadDirection.Backwards)
