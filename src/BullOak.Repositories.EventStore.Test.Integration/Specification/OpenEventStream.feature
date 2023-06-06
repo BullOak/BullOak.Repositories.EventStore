@@ -10,3 +10,4 @@ Scenario: Open a stream that does not exist
     Given a new stream
 	When I try to open the new stream
 	Then the session reports new state
+	And the session state is intialized

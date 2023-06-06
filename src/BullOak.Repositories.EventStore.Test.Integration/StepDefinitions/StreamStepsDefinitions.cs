@@ -354,5 +354,11 @@
         {
             testDataContexts.First().IsNewState.Should().BeTrue();
         }
+
+        [Then(@"the session state is intialized")]
+        public void ThenTheSessionStateIsIntialized()
+        {
+            testDataContexts.First().LatestLoadedState.Should().NotBeNull();
+        }
     }
 }
