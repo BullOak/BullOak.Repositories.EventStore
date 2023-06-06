@@ -31,7 +31,17 @@ jobs:
         working-directory: ./src
       - name: Stop Tcp ESDB image
         if: always()
-        run: docker stop $(docker ps -a -q -f name=tcp_esdbnode) && docker rm $(docker ps -a -q -f name=tcp_esdbnode)
+        run: |
+          id=$(docker ps -a -q -f name=tcp_esdbnode)
+          if [ ! -z  "$id" ]; then
+            docker stop $id
+            docker rm $id
+          fi
       - name: Stop Grpc ESDB image
         if: always()
-        run: docker stop $(docker ps -a -q -f name=grpc_esdbnode) && docker rm $(docker ps -a -q -f name=grpc_esdbnode)
+        run: |
+          id=$(docker ps -a -q -f name=grpc_esdbnode)
+          if [ ! -z  "$id" ]; then
+            docker stop $id
+            docker rm $id
+          fi
