@@ -59,7 +59,7 @@
 
             streamExists = data.StreamExists;
 
-            await LoadFromEvents(data.Events.Select(x => x.ToItemWithType()), streamExists, data.StoredEventPosition.ToInt64());
+            await LoadFromEvents(data.Events.Select(x => x.ToItemWithType()), !streamExists, data.StoredEventPosition.ToInt64());
         }
 
         private void CheckDisposedState()

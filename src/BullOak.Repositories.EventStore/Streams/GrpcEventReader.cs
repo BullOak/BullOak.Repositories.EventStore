@@ -36,7 +36,7 @@
                 cancellationToken: cancellationToken);
 
             if (!await StreamExists(readResult))
-                return new StreamReadResults(EmptyReadResult, true, StoredEventPosition.FromInt64(-1));
+                return new StreamReadResults(EmptyReadResult, false, StoredEventPosition.FromInt64(-1));
 
             predicate ??= _ => true;
 
@@ -44,11 +44,12 @@
                 StreamPosition.End,
                 1,
                 deadline: TimeSpan.FromSeconds(30),
-                resolveLinkTos: true).FirstAsync(cancellationToken));
-            var lastIndex = lastEvent.OriginalEventNumber;
+                resolveLinkTos: false).FirstOrDefaultAsync(cancellationToken));
 
-            if(lastEvent.Event.ToStoredEvent(stateFactory).DeserializedEvent is EntitySoftDeleted)
-                return new StreamReadResults(EmptyReadResult, true, StoredEventPosition.FromInt64(-1));
+            if(lastEvent.Event == null || string.Equals(lastEvent.Event.EventType, DefaultSoftDeleteEvent.Type.FullName, StringComparison.Ordinal))
+                return new StreamReadResults(EmptyReadResult, false, StoredEventPosition.FromInt64(-1));
+
+            var lastIndex = lastEvent.OriginalEventNumber;
 
             IAsyncEnumerable<StoredEvent> storedEvents;
             if (direction == StreamReadDirection.Backwards)

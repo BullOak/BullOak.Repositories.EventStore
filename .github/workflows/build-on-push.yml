@@ -12,7 +12,7 @@ jobs:
       - name: Run Tcp ESDB image
         run: docker run -d --name tcp_esdbnode -it -p 2113:2113 -p 1113:1113 eventstore/eventstore:release-5.0.11 --runprojections all --startstandardprojections
       - name: Run Grpc ESDB image
-        run: docker run -d --name grpc_esdbnode -it -p 2114:2113 -p 1114:1113 eventstore/eventstore:21.10.1-bionic --insecure --runprojections all --startstandardprojections --enable-atom-pub-over-http
+        run: docker run -d --name grpc_esdbnode -it -p 2114:2113 -p 1114:1113 eventstore/eventstore:22.10.2-bionic --insecure --runprojections all --startstandardprojections --enable-atom-pub-over-http
       - name: Checkout
         uses: actions/checkout@v2
       - name: Setup .NET

@@ -17,13 +17,14 @@ namespace BullOak.Repositories.EventStore.ConsoleTestEventStoreClient
             //esdb://localhost:2113?tls=false
 
             var settings = EventStoreClientSettings
-                .Create("esdb://localhost:2113?tls=false");
+                .Create("esdb://localhost:2114?tls=false");
             var client = new EventStoreClient(settings);
 
             //await TestReadFromtombstoned(client);
 
             var projectionClient = new EventStoreProjectionManagementClient(settings);
             var operationsClient = new EventStoreOperationsClient(settings);
+
 
             await client.DeleteAsync("dokimi-1", StreamState.Any);
             await client.DeleteAsync("dokimi-2", StreamState.Any);
@@ -42,7 +43,7 @@ namespace BullOak.Repositories.EventStore.ConsoleTestEventStoreClient
             //    await readDeltedStreamResult.CountAsync());
 
             var data = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new Data() {Value = 5}));
-            var writeResult = await client.AppendToStreamAsync("dokimi-1", StreamRevision.FromInt64(-1),
+            var writeResult = await client.AppendToStreamAsync("dokimi-1", StreamState.Any,
                 new[] { new EventData(Uuid.NewUuid(), "TestType", data) });
             writeResult = await client.AppendToStreamAsync("dokimi-2", StreamRevision.FromInt64(-1),
                 new[] { new EventData(Uuid.NewUuid(), "TestType", data) });
@@ -51,11 +52,20 @@ namespace BullOak.Repositories.EventStore.ConsoleTestEventStoreClient
 
             await Task.Delay(TimeSpan.FromSeconds(10));
 
-            var readResult = client.ReadStreamAsync(Direction.Forwards, "$ce-dokimi",
-                StreamPosition.Start,
+            var readResult = client.ReadStreamAsync(Direction.Backwards, "$ce-dokimi",
+                StreamPosition.End,
                 resolveLinkTos: true);
+
+            readResult = client.ReadStreamAsync(Direction.Backwards, "$ce-dokimi",
+                StreamPosition.End,
+                1,
+                deadline: TimeSpan.FromSeconds(30),
+                resolveLinkTos: false);
+
             var isSuccess = await readResult.ReadState;
             var events = await readResult.Where(x=> x.Event != null).ToListAsync();
+
+            
             var eventCount = events.Count;
 
             var readResultStream = client.ReadStreamAsync(Direction.Forwards, "dokimi-2", StreamPosition.Start);
