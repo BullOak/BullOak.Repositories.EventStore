@@ -72,5 +72,5 @@ Scenario Outline: Reconstitute state based on category with two event types up t
 	And after waiting for 15 seconds for categories to be processed
 	When I load all my entities as of '2020-09-20 11:10:00' for the streams category
 	Then the load process should succeed
-    And the visibilty should be disabled
+    And the visibility should be disabled
 
