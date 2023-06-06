@@ -17,7 +17,7 @@ namespace BullOak.Repositories.EventStore.ConsoleTestEventStoreClient
             //esdb://localhost:2113?tls=false
 
             var settings = EventStoreClientSettings
-                .Create("esdb://localhost:2113?tls=false");
+                .Create("esdb://localhost:2114?tls=false");
             var client = new EventStoreClient(settings);
 
             //await TestReadFromtombstoned(client);
@@ -25,9 +25,10 @@ namespace BullOak.Repositories.EventStore.ConsoleTestEventStoreClient
             var projectionClient = new EventStoreProjectionManagementClient(settings);
             var operationsClient = new EventStoreOperationsClient(settings);
 
+
             await client.DeleteAsync("dokimi-1", StreamState.Any);
-            await client.DeleteAsync("dokimi-2", StreamState.Any);
-            await client.DeleteAsync("dokimi-3", StreamState.Any);
+            //await client.DeleteAsync("dokimi-2", StreamState.Any);
+            //await client.DeleteAsync("dokimi-3", StreamState.Any);
 
 
             //await projectionClient.DisableAsync("$by_category");
@@ -42,8 +43,11 @@ namespace BullOak.Repositories.EventStore.ConsoleTestEventStoreClient
             //    await readDeltedStreamResult.CountAsync());
 
             var data = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new Data() {Value = 5}));
-            var writeResult = await client.AppendToStreamAsync("dokimi-1", StreamRevision.FromInt64(-1),
+            var writeResult = await client.AppendToStreamAsync("dokimi-1", StreamState.Any,
                 new[] { new EventData(Uuid.NewUuid(), "TestType", data) });
+
+            var testResult = await client.DeleteAsync("dokimi-1", StreamState.Any);
+            var randomStreamDeleteResult = await client.DeleteAsync(Guid.NewGuid().ToString(), StreamState.Any);
             writeResult = await client.AppendToStreamAsync("dokimi-2", StreamRevision.FromInt64(-1),
                 new[] { new EventData(Uuid.NewUuid(), "TestType", data) });
             writeResult = await client.AppendToStreamAsync("dokimi-3", StreamRevision.FromInt64(-1),
