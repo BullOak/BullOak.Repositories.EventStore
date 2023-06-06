@@ -16,6 +16,7 @@
 
         public Exception RecordedException { get; internal set; }
         public IHoldHigherOrder LatestLoadedState { get; internal set; }
+        public bool IsNewState { get; internal set; }
 
         public StreamReadResults LatestStreamReadResults { get; internal set; }
         public Dictionary<string, IManageSessionOf<IHoldHigherOrder>> NamedSessions { get; } = new();
