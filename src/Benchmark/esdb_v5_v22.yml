@@ -1,0 +1,44 @@
+version: "3"
+
+services:
+  eventstore_v5:
+    image: eventstore/eventstore:release-5.0.11
+    volumes:
+      - eventstore_v5-data:/var/lib/eventstore
+    environment:
+      - EVENTSTORE_RUN_PROJECTIONS=All
+      - EVENTSTORE_START_STANDARD_PROJECTIONS=true
+    ports:
+      - 1113:1113
+      - 2113:2113
+    networks:
+      - devsvcnet
+
+  eventstore_v22:
+    image: eventstore/eventstore:22.10.2-buster-slim
+    volumes:
+      - eventstore_v22-data:/var/lib/eventstore
+    environment:
+      - EVENTSTORE_CLUSTER_SIZE=1
+      - EVENTSTORE_RUN_PROJECTIONS=All
+      - EVENTSTORE_START_STANDARD_PROJECTIONS=true
+      - EVENTSTORE_EXT_TCP_PORT=1113
+      - EVENTSTORE_INSECURE=true
+      - EVENTSTORE_ENABLE_EXTERNAL_TCP=true
+      - EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP=true
+    ports:
+      - 1114:1113
+      - 2114:2113
+    networks:
+      - devsvcnet
+
+volumes:
+  eventstore_v5-data:
+    driver: local
+
+  eventstore_v22-data:
+    driver: local
+
+networks:
+  devsvcnet:
+    driver: bridge

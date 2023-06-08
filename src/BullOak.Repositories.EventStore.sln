@@ -24,6 +24,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build scripts", "Build scri
 		..\.github\workflows\build-version-tag.yml = ..\.github\workflows\build-version-tag.yml
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmark", "Benchmark\Benchmark.csproj", "{4A347281-E257-458A-91A4-9254EA8039EC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,6 +52,10 @@ Global
 		{C06585E1-718E-45D5-991D-E9B8ABD07FA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C06585E1-718E-45D5-991D-E9B8ABD07FA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C06585E1-718E-45D5-991D-E9B8ABD07FA9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A347281-E257-458A-91A4-9254EA8039EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A347281-E257-458A-91A4-9254EA8039EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A347281-E257-458A-91A4-9254EA8039EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A347281-E257-458A-91A4-9254EA8039EC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -60,6 +66,7 @@ Global
 		{896680DA-C076-403E-B117-3FEF57A919FE} = {ACD302AF-8190-4A7B-8888-48D7ECCC4829}
 		{C06585E1-718E-45D5-991D-E9B8ABD07FA9} = {ACD302AF-8190-4A7B-8888-48D7ECCC4829}
 		{130AEC62-DF94-4C8B-90F3-89CEC4BBFD75} = {C396DBC5-B973-4E0A-83A9-509801AFE85E}
+		{4A347281-E257-458A-91A4-9254EA8039EC} = {ACD302AF-8190-4A7B-8888-48D7ECCC4829}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9FEF1659-166B-4856-B77C-3ABF38899EEB}
