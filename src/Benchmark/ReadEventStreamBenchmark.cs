@@ -9,7 +9,6 @@ using EventStore.Client;
 namespace Benchmark;
 
 [MemoryDiagnoser]
-[RPlotExporter]
 public class ReadEventStreamBenchmark : BenchmarkParameters
 {
     private readonly EventStoreRepository<string, IHoldTestState> repository;
