@@ -39,8 +39,8 @@ public class ReadEventStreamBenchmark : BenchmarkParameters
     // Run WriteEventStreamBenchmark before running this one
     [Benchmark]
     [WarmupCount(1)]
-    [MinIterationCount(5)]
-    [MaxIterationCount(10)]
+    [MinIterationCount(10)]
+    [MaxIterationCount(20)]
     public async Task LoadStream()
     {
         var (streamId, events) = EventsGenerator.Generate(EventsCount, EventSize);
@@ -51,14 +51,22 @@ public class ReadEventStreamBenchmark : BenchmarkParameters
             throw new InvalidOperationException(
                 $"Expected elements count {EventSize}, got {state.Elements?.Length}");
 
-        // Workaround against
-        // Grpc.Core.RpcException: Status(
-        //   StatusCode="ResourceExhausted",
-        //   Detail="Error starting gRPC call.
-        //     HttpRequestException: An error occurred while sending the request.
-        //     IOException: The request was aborted.
-        //     Http2StreamException: The HTTP/2 server reset the stream. HTTP/2 error code 'ENHANCE_YOUR_CALM' (0xb).",
-        //   DebugException="System.Net.Http.HttpRequestException: An error occurred while sending the request.")
-        await Task.Delay(TimeSpan.FromSeconds(3));
+        // TCP Connections limit workaround.
+        //
+        // Frequent GRPC requests may exhaust networking resources:
+        //     Grpc.Core.RpcException: Status(
+        //       StatusCode="ResourceExhausted",
+        //       Detail="Error starting gRPC call.
+        //         HttpRequestException: An error occurred while sending the request.
+        //         IOException: The request was aborted.
+        //         Http2StreamException: The HTTP/2 server reset the stream. HTTP/2 error code 'ENHANCE_YOUR_CALM' (0xb).",
+        //       DebugException="System.Net.Http.HttpRequestException: An error occurred while sending the request.")
+        // it means that OS TCP connection pool is exhausted.
+        //
+        // Either increase those TCP limits (see <https://stackoverflow.com/a/3923785>) and remove the following line,
+        // or keep the following line and subtract the delay value from the `Mean` when interpreting results.
+        //
+        // Task.Delay seems to be a more reliable workaround.
+        await Task.Delay(TimeSpan.FromSeconds(1));
     }
 }

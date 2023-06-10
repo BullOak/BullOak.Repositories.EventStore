@@ -21,7 +21,38 @@ specified via attributes in the [test code](./BenchmarkParameters.cs)):
 
 ## Running benchmark
 
+> Benchmark test makes frequent requests to the EventStoreDB, and this may
+> exhaust OS TCP connection limits. Symptom is that you will see GRPC exception
+>
+> ```txt
+> Grpc.Core.RpcException: Status(
+>   StatusCode="ResourceExhausted",
+>   Detail="Error starting gRPC call.
+>     HttpRequestException: An error occurred while sending the request.
+>     IOException: The request was aborted.
+>     Http2StreamException: The HTTP/2 server reset the stream. HTTP/2 error code 'ENHANCE_YOUR_CALM' (0xb).",
+>   DebugException="System.Net.Http.HttpRequestException: An error occurred while sending the request.")
+> ```
+>
+> As a workaround, we may use one of the two following options.
+>
+> First option is to increase OS TCP connections limits. In Linux that would be
+> something similar to this:
+>
+> ```bash
+> sudo sysctl net.core.netdev_max_backlog=10000
+> sudo sysctl net.ipv4.tcp_max_syn_backlog=10000
+> ```
+>
+> (see <https://stackoverflow.com/a/3923785>)
+>
+> Second option would be to use a small delay at the end of the test code, and
+> subtract the delay value from the `Mean` when interpreting results.
+>
+> Second option (explicit delay) seems to be more reliable.
+
 Start EventStore V22 instance with default authentication settings.
+
 You may use Docker Compose and configuration file included in this project:
 
 ```bash
@@ -63,97 +94,98 @@ docker volume prune -f
 
 ## Results
 
-> 3 second delay was added after each operation as a workaround against
-> `ResourceExhausted` error from ESDB/GRPC. Subtract `3.0` from the
+> 1 second delay was added after each operation as a workaround against
+> `ResourceExhausted` error from ESDB/GRPC. Subtract `1.0` from the
 > `Mean` values below when interpreting results.
 
 ### `BullOak.EventStore` 3.0.0-alpha23
 
-``` ini
+```ini
 BenchmarkDotNet=v0.13.5, OS=pop 22.04
 AMD Ryzen 9 7950X, 1 CPU, 32 logical and 16 physical cores
 .NET SDK=7.0.302
   [Host]     : .NET 6.0.16 (6.0.1623.17311), X64 RyuJIT AVX2
-  Job-PWWHVJ : .NET 6.0.16 (6.0.1623.17311), X64 RyuJIT AVX2
+  Job-BRXPQI : .NET 6.0.16 (6.0.1623.17311), X64 RyuJIT AVX2
 
-MaxIterationCount=10  MinIterationCount=5  WarmupCount=1
+MaxIterationCount=20  MinIterationCount=10  WarmupCount=1
 ```
 
 |     Method | EventsCount | EventSize |    Mean |    Error |   StdDev |       Gen0 |      Gen1 |      Gen2 |     Allocated |
 |----------- |------------ |---------- |--------:|---------:|---------:|-----------:|----------:|----------:|--------------:|
-| LoadStream |          10 |        10 | 3.003 s | 0.0005 s | 0.0001 s |          - |         - |         - |     397.78 KB |
-| LoadStream |          10 |        20 | 3.002 s | 0.0039 s | 0.0010 s |          - |         - |         - |     415.98 KB |
-| LoadStream |          10 |        50 | 3.004 s | 0.0060 s | 0.0015 s |          - |         - |         - |     555.05 KB |
-| LoadStream |         100 |        10 | 3.004 s | 0.0077 s | 0.0020 s |          - |         - |         - |    1798.96 KB |
-| LoadStream |         100 |        20 | 3.006 s | 0.0006 s | 0.0001 s |          - |         - |         - |    2173.54 KB |
-| LoadStream |         100 |        50 | 3.007 s | 0.0081 s | 0.0012 s |          - |         - |         - |    3301.76 KB |
-| LoadStream |         200 |        10 | 3.006 s | 0.0040 s | 0.0006 s |          - |         - |         - |    3361.64 KB |
-| LoadStream |         200 |        20 | 3.007 s | 0.0027 s | 0.0007 s |          - |         - |         - |    4144.62 KB |
-| LoadStream |         200 |        50 | 3.012 s | 0.0051 s | 0.0013 s |          - |         - |         - |    6290.73 KB |
-| LoadStream |         500 |        10 | 3.012 s | 0.0070 s | 0.0018 s |          - |         - |         - |    8321.01 KB |
-| LoadStream |         500 |        20 | 3.017 s | 0.0059 s | 0.0015 s |          - |         - |         - |    9846.96 KB |
-| LoadStream |         500 |        50 | 3.023 s | 0.0215 s | 0.0033 s |          - |         - |         - |   15286.16 KB |
-| LoadStream |        1000 |        10 | 3.022 s | 0.0121 s | 0.0031 s |          - |         - |         - |   16264.49 KB |
-| LoadStream |        1000 |        20 | 3.034 s | 0.0182 s | 0.0047 s |          - |         - |         - |   19529.27 KB |
-| LoadStream |        1000 |        50 | 3.053 s | 0.0162 s | 0.0042 s |          - |         - |         - |   30370.91 KB |
-| LoadStream |        2000 |        10 | 3.036 s | 0.0166 s | 0.0026 s |          - |         - |         - |    32010.7 KB |
-| LoadStream |        2000 |        20 | 3.060 s | 0.0313 s | 0.0081 s |          - |         - |         - |   38747.32 KB |
-| LoadStream |        2000 |        50 | 3.079 s | 0.0273 s | 0.0042 s |          - |         - |         - |   61426.39 KB |
-| LoadStream |        5000 |        10 | 3.090 s | 0.0601 s | 0.0093 s |          - |         - |         - |    80301.3 KB |
-| LoadStream |        5000 |        20 | 3.117 s | 0.0239 s | 0.0062 s |  1000.0000 |         - |         - |   99457.47 KB |
-| LoadStream |        5000 |        50 | 3.182 s | 0.0562 s | 0.0200 s |  1000.0000 |         - |         - |  152812.96 KB |
-| LoadStream |       10000 |        10 | 3.167 s | 0.0360 s | 0.0093 s |  1000.0000 |         - |         - |  161482.42 KB |
-| LoadStream |       10000 |        20 | 3.240 s | 0.0506 s | 0.0131 s |  2000.0000 | 1000.0000 |         - |  198632.21 KB |
-| LoadStream |       10000 |        50 | 3.364 s | 0.0461 s | 0.0071 s |  4000.0000 | 2000.0000 | 1000.0000 |  307373.34 KB |
-| LoadStream |       20000 |        10 | 3.337 s | 0.0290 s | 0.0075 s |  4000.0000 | 2000.0000 | 1000.0000 |  319964.18 KB |
-| LoadStream |       20000 |        20 | 3.413 s | 0.0598 s | 0.0155 s |  5000.0000 | 3000.0000 | 1000.0000 |  395873.04 KB |
-| LoadStream |       20000 |        50 | 3.687 s | 0.0526 s | 0.0137 s |  8000.0000 | 6000.0000 | 1000.0000 |  613118.03 KB |
-| LoadStream |       50000 |        10 | 3.733 s | 0.0651 s | 0.0289 s | 10000.0000 | 8000.0000 | 1000.0000 |  805389.76 KB |
-| LoadStream |       50000 |        20 | 3.994 s | 0.0727 s | 0.0433 s | 13000.0000 | 3000.0000 | 1000.0000 |   990498.4 KB |
-| LoadStream |       50000 |        50 | 4.707 s | 0.0928 s | 0.0144 s | 19000.0000 | 4000.0000 | 1000.0000 | 1535756.89 KB |
+| LoadStream |          10 |        10 | 1.003 s | 0.0003 s | 0.0002 s |          - |         - |         - |     248.38 KB |
+| LoadStream |          10 |        20 | 1.003 s | 0.0014 s | 0.0008 s |          - |         - |         - |     320.44 KB |
+| LoadStream |          10 |        50 | 1.003 s | 0.0019 s | 0.0013 s |          - |         - |         - |     423.38 KB |
+| LoadStream |         100 |        10 | 1.005 s | 0.0006 s | 0.0004 s |          - |         - |         - |    1692.23 KB |
+| LoadStream |         100 |        20 | 1.005 s | 0.0012 s | 0.0008 s |          - |         - |         - |    2133.46 KB |
+| LoadStream |         100 |        50 | 1.008 s | 0.0006 s | 0.0004 s |          - |         - |         - |    3178.84 KB |
+| LoadStream |         200 |        10 | 1.006 s | 0.0021 s | 0.0014 s |          - |         - |         - |    3291.84 KB |
+| LoadStream |         200 |        20 | 1.008 s | 0.0012 s | 0.0007 s |          - |         - |         - |       4143 KB |
+| LoadStream |         200 |        50 | 1.012 s | 0.0034 s | 0.0020 s |          - |         - |         - |    6221.27 KB |
+| LoadStream |         500 |        10 | 1.012 s | 0.0037 s | 0.0025 s |          - |         - |         - |    7913.44 KB |
+| LoadStream |         500 |        20 | 1.017 s | 0.0025 s | 0.0015 s |          - |         - |         - |    9839.73 KB |
+| LoadStream |         500 |        50 | 1.026 s | 0.0014 s | 0.0008 s |          - |         - |         - |   15218.51 KB |
+| LoadStream |        1000 |        10 | 1.023 s | 0.0025 s | 0.0015 s |          - |         - |         - |   15670.19 KB |
+| LoadStream |        1000 |        20 | 1.030 s | 0.0022 s | 0.0013 s |          - |         - |         - |    19392.7 KB |
+| LoadStream |        1000 |        50 | 1.053 s | 0.0082 s | 0.0054 s |          - |         - |         - |   30288.97 KB |
+| LoadStream |        2000 |        10 | 1.038 s | 0.0037 s | 0.0022 s |          - |         - |         - |   32186.16 KB |
+| LoadStream |        2000 |        20 | 1.054 s | 0.0084 s | 0.0056 s |          - |         - |         - |   38967.61 KB |
+| LoadStream |        2000 |        50 | 1.084 s | 0.0127 s | 0.0084 s |          - |         - |         - |   61511.05 KB |
+| LoadStream |        5000 |        10 | 1.092 s | 0.0125 s | 0.0083 s |          - |         - |         - |    80757.4 KB |
+| LoadStream |        5000 |        20 | 1.106 s | 0.0186 s | 0.0097 s |  1000.0000 |         - |         - |   97029.32 KB |
+| LoadStream |        5000 |        50 | 1.179 s | 0.0196 s | 0.0130 s |  1000.0000 |         - |         - |  153617.35 KB |
+| LoadStream |       10000 |        10 | 1.174 s | 0.0222 s | 0.0161 s |  1000.0000 |         - |         - |  158585.27 KB |
+| LoadStream |       10000 |        20 | 1.237 s | 0.0244 s | 0.0162 s |  2000.0000 | 1000.0000 |         - |  197793.82 KB |
+| LoadStream |       10000 |        50 | 1.383 s | 0.0252 s | 0.0182 s |  4000.0000 | 2000.0000 | 1000.0000 |  307212.94 KB |
+| LoadStream |       20000 |        10 | 1.333 s | 0.0171 s | 0.0090 s |  4000.0000 | 2000.0000 | 1000.0000 |  319541.38 KB |
+| LoadStream |       20000 |        20 | 1.411 s | 0.0259 s | 0.0171 s |  5000.0000 | 3000.0000 | 1000.0000 |  395874.24 KB |
+| LoadStream |       20000 |        50 | 1.706 s | 0.0337 s | 0.0263 s |  8000.0000 | 6000.0000 | 1000.0000 |   614288.3 KB |
+| LoadStream |       50000 |        10 | 1.744 s | 0.0309 s | 0.0205 s | 10000.0000 | 8000.0000 | 1000.0000 |  805549.17 KB |
+| LoadStream |       50000 |        20 | 2.035 s | 0.0346 s | 0.0229 s | 13000.0000 | 3000.0000 | 1000.0000 |  992398.91 KB |
+| LoadStream |       50000 |        50 | 2.749 s | 0.0513 s | 0.0339 s | 19000.0000 | 4000.0000 | 1000.0000 | 1535713.16 KB |
 
 ### `BullOak.EventStore` 3.0.0-alpha21
 
 > This is the version before refactorings made in `3.0.0-alpha23`.
 
-``` ini
+```ini
 BenchmarkDotNet=v0.13.5, OS=pop 22.04
 AMD Ryzen 9 7950X, 1 CPU, 32 logical and 16 physical cores
 .NET SDK=7.0.302
   [Host]     : .NET 6.0.16 (6.0.1623.17311), X64 RyuJIT AVX2
-  Job-ZVLJCU : .NET 6.0.16 (6.0.1623.17311), X64 RyuJIT AVX2
+  Job-VQRORY : .NET 6.0.16 (6.0.1623.17311), X64 RyuJIT AVX2
 
-MaxIterationCount=10  MinIterationCount=5  WarmupCount=1  
+MaxIterationCount=20  MinIterationCount=10  WarmupCount=1
 ```
+
 |     Method | EventsCount | EventSize |    Mean |    Error |   StdDev |       Gen0 |       Gen1 |      Gen2 |     Allocated |
 |----------- |------------ |---------- |--------:|---------:|---------:|-----------:|-----------:|----------:|--------------:|
-| LoadStream |          10 |        10 | 3.003 s | 0.0009 s | 0.0001 s |          - |          - |         - |     379.07 KB |
-| LoadStream |          10 |        20 | 3.003 s | 0.0037 s | 0.0010 s |          - |          - |         - |     423.91 KB |
-| LoadStream |          10 |        50 | 3.003 s | 0.0063 s | 0.0010 s |          - |          - |         - |     545.04 KB |
-| LoadStream |         100 |        10 | 3.004 s | 0.0042 s | 0.0006 s |          - |          - |         - |    1801.25 KB |
-| LoadStream |         100 |        20 | 3.005 s | 0.0062 s | 0.0016 s |          - |          - |         - |    2246.13 KB |
-| LoadStream |         100 |        50 | 3.007 s | 0.0091 s | 0.0024 s |          - |          - |         - |    3308.77 KB |
-| LoadStream |         200 |        10 | 3.007 s | 0.0043 s | 0.0007 s |          - |          - |         - |    3441.97 KB |
-| LoadStream |         200 |        20 | 3.008 s | 0.0026 s | 0.0007 s |          - |          - |         - |    4129.28 KB |
-| LoadStream |         200 |        50 | 3.014 s | 0.0054 s | 0.0014 s |          - |          - |         - |    6332.44 KB |
-| LoadStream |         500 |        10 | 3.014 s | 0.0052 s | 0.0013 s |          - |          - |         - |    8031.97 KB |
-| LoadStream |         500 |        20 | 3.015 s | 0.0067 s | 0.0018 s |          - |          - |         - |    9916.69 KB |
-| LoadStream |         500 |        50 | 3.030 s | 0.0081 s | 0.0021 s |          - |          - |         - |   15366.39 KB |
-| LoadStream |        1000 |        10 | 3.022 s | 0.0047 s | 0.0012 s |          - |          - |         - |   16319.57 KB |
-| LoadStream |        1000 |        20 | 3.028 s | 0.0129 s | 0.0020 s |          - |          - |         - |   19595.76 KB |
-| LoadStream |        1000 |        50 | 3.055 s | 0.0250 s | 0.0065 s |          - |          - |         - |   30463.45 KB |
-| LoadStream |        2000 |        10 | 3.046 s | 0.0243 s | 0.0063 s |          - |          - |         - |   31415.71 KB |
-| LoadStream |        2000 |        20 | 3.058 s | 0.0218 s | 0.0057 s |          - |          - |         - |   40002.58 KB |
-| LoadStream |        2000 |        50 | 3.078 s | 0.0163 s | 0.0042 s |          - |          - |         - |   61017.23 KB |
-| LoadStream |        5000 |        10 | 3.096 s | 0.0533 s | 0.0083 s |          - |          - |         - |   80994.34 KB |
-| LoadStream |        5000 |        20 | 3.124 s | 0.0268 s | 0.0070 s |  1000.0000 |          - |         - |   99810.02 KB |
-| LoadStream |        5000 |        50 | 3.184 s | 0.0391 s | 0.0061 s |  1000.0000 |          - |         - |  152294.48 KB |
-| LoadStream |       10000 |        10 | 3.162 s | 0.0302 s | 0.0047 s |  1000.0000 |          - |         - |  160946.05 KB |
-| LoadStream |       10000 |        20 | 3.240 s | 0.0352 s | 0.0091 s |  2000.0000 |  1000.0000 |         - |  199076.64 KB |
-| LoadStream |       10000 |        50 | 3.414 s | 0.0447 s | 0.0116 s |  4000.0000 |  2000.0000 | 1000.0000 |  307681.18 KB |
-| LoadStream |       20000 |        10 | 3.370 s | 0.0509 s | 0.0132 s |  4000.0000 |  2000.0000 | 1000.0000 |  324253.77 KB |
-| LoadStream |       20000 |        20 | 3.497 s | 0.0629 s | 0.0224 s |  5000.0000 |  3000.0000 | 1000.0000 |  396165.99 KB |
-| LoadStream |       20000 |        50 | 3.869 s | 0.0751 s | 0.0334 s | 10000.0000 |  6000.0000 | 3000.0000 |  614420.26 KB |
-| LoadStream |       50000 |        10 | 3.974 s | 0.0739 s | 0.0114 s | 12000.0000 |  8000.0000 | 3000.0000 |  808827.81 KB |
-| LoadStream |       50000 |        20 | 4.306 s | 0.0820 s | 0.0429 s | 15000.0000 |  9000.0000 | 3000.0000 |   994847.8 KB |
-| LoadStream |       50000 |        50 | 5.189 s | 0.0901 s | 0.0321 s | 22000.0000 | 17000.0000 | 5000.0000 | 1539133.51 KB |
+| LoadStream |          10 |        10 | 1.003 s | 0.0006 s | 0.0004 s |          - |          - |         - |     268.71 KB |
+| LoadStream |          10 |        20 | 1.003 s | 0.0005 s | 0.0004 s |          - |          - |         - |     343.88 KB |
+| LoadStream |          10 |        50 | 1.003 s | 0.0003 s | 0.0002 s |          - |          - |         - |     453.84 KB |
+| LoadStream |         100 |        10 | 1.005 s | 0.0004 s | 0.0003 s |          - |          - |         - |    1717.99 KB |
+| LoadStream |         100 |        20 | 1.006 s | 0.0008 s | 0.0005 s |          - |          - |         - |    2094.98 KB |
+| LoadStream |         100 |        50 | 1.008 s | 0.0006 s | 0.0004 s |          - |          - |         - |       3152 KB |
+| LoadStream |         200 |        10 | 1.007 s | 0.0025 s | 0.0016 s |          - |          - |         - |    3308.71 KB |
+| LoadStream |         200 |        20 | 1.008 s | 0.0012 s | 0.0006 s |          - |          - |         - |    4078.55 KB |
+| LoadStream |         200 |        50 | 1.013 s | 0.0010 s | 0.0006 s |          - |          - |         - |    6217.61 KB |
+| LoadStream |         500 |        10 | 1.011 s | 0.0012 s | 0.0007 s |          - |          - |         - |    7921.59 KB |
+| LoadStream |         500 |        20 | 1.016 s | 0.0023 s | 0.0015 s |          - |          - |         - |    9984.25 KB |
+| LoadStream |         500 |        50 | 1.026 s | 0.0020 s | 0.0012 s |          - |          - |         - |   15500.52 KB |
+| LoadStream |        1000 |        10 | 1.026 s | 0.0042 s | 0.0028 s |          - |          - |         - |   16210.26 KB |
+| LoadStream |        1000 |        20 | 1.029 s | 0.0028 s | 0.0014 s |          - |          - |         - |   19446.05 KB |
+| LoadStream |        1000 |        50 | 1.054 s | 0.0080 s | 0.0053 s |          - |          - |         - |   30362.68 KB |
+| LoadStream |        2000 |        10 | 1.046 s | 0.0095 s | 0.0063 s |          - |          - |         - |   31346.41 KB |
+| LoadStream |        2000 |        20 | 1.057 s | 0.0088 s | 0.0052 s |          - |          - |         - |   39188.41 KB |
+| LoadStream |        2000 |        50 | 1.080 s | 0.0097 s | 0.0064 s |          - |          - |         - |   61176.91 KB |
+| LoadStream |        5000 |        10 | 1.104 s | 0.0118 s | 0.0078 s |          - |          - |         - |   81172.85 KB |
+| LoadStream |        5000 |        20 | 1.127 s | 0.0133 s | 0.0088 s |  1000.0000 |          - |         - |   99251.73 KB |
+| LoadStream |        5000 |        50 | 1.193 s | 0.0218 s | 0.0144 s |  1000.0000 |          - |         - |  152116.36 KB |
+| LoadStream |       10000 |        10 | 1.177 s | 0.0211 s | 0.0140 s |  1000.0000 |          - |         - |  161332.19 KB |
+| LoadStream |       10000 |        20 | 1.259 s | 0.0176 s | 0.0116 s |  2000.0000 |  1000.0000 |         - |  197245.36 KB |
+| LoadStream |       10000 |        50 | 1.443 s | 0.0129 s | 0.0077 s |  4000.0000 |  2000.0000 | 1000.0000 |  307932.65 KB |
+| LoadStream |       20000 |        10 | 1.401 s | 0.0144 s | 0.0095 s |  4000.0000 |  2000.0000 | 1000.0000 |  324198.27 KB |
+| LoadStream |       20000 |        20 | 1.519 s | 0.0259 s | 0.0171 s |  5000.0000 |  3000.0000 | 1000.0000 |  397231.91 KB |
+| LoadStream |       20000 |        50 | 1.941 s | 0.0184 s | 0.0122 s | 10000.0000 |  6000.0000 | 3000.0000 |  614465.45 KB |
+| LoadStream |       50000 |        10 | 1.998 s | 0.0369 s | 0.0288 s | 12000.0000 |  8000.0000 | 3000.0000 |  809893.01 KB |
+| LoadStream |       50000 |        20 | 2.384 s | 0.0471 s | 0.0368 s | 14000.0000 |  8000.0000 | 3000.0000 |  993713.66 KB |
+| LoadStream |       50000 |        50 | 3.199 s | 0.0442 s | 0.0293 s | 22000.0000 | 17000.0000 | 5000.0000 | 1539122.24 KB |
