@@ -37,7 +37,7 @@ public class ReadEventStreamBenchmark : BenchmarkParameters
     }
 
     // This test expects data available in ESDB
-    // Run ReadEventStreamBenchmark before running this one
+    // Run WriteEventStreamBenchmark before running this one
     [Benchmark]
     [WarmupCount(1)]
     [MinIterationCount(5)]

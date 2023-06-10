@@ -15,6 +15,7 @@ rehydrating the state.
 
 Benchmark has two parameters (passed into test by BenchmarkDotNet, set of values
 specified via attributes in the [test code](./BenchmarkParameters.cs)):
+
 * `EventsCount` to control the number of events in an event stream
 * `EventSize` to control event size
 
@@ -33,9 +34,10 @@ this is why it starts both ESDB V5 and ESDB V22)
 Prepare the data for read benchmark test:
 
 > ***IMPORTANT:***
+>
 > * This step needs to be run after set of benchmark parameters is modified
 >   or when starting EventStoreDB from a clean state.
-> * This step takes _long time_ to complete.
+> * This step takes *long time* to complete.
 
 ```bash
 dotnet run -c Release -- --filter '*WriteEventStreamBenchmark*'
