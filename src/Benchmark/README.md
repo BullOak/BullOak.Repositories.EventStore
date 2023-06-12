@@ -94,10 +94,6 @@ docker volume prune -f
 
 ## Results
 
-> 1 second delay was added after each operation as a workaround against
-> `ResourceExhausted` error from ESDB/GRPC. Subtract `1.0` from the
-> `Mean` values below when interpreting results.
-
 ### `BullOak.EventStore` 3.0.0-alpha23
 
 ```ini
