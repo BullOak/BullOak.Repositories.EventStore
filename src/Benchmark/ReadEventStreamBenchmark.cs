@@ -35,25 +35,31 @@ public class ReadEventStreamBenchmark : BenchmarkParameters
         repository = new EventStoreRepository<string, IHoldTestState>(configuration, reader, writer);
     }
 
-    // This test expects data available in ESDB
-    // Run WriteEventStreamBenchmark before running this one
+    // This test expects data available in ESDB.
+    // Run WriteEventStreamBenchmark to create event streams.
     [Benchmark]
     [WarmupCount(1)]
-    [MinIterationCount(10)]
-    [MaxIterationCount(20)]
+    [MinIterationCount(20)]
+    [MaxIterationCount(50)]
     public async Task LoadStream()
     {
-        var (streamId, events) = EventsGenerator.Generate(EventsCount, EventSize);
+        var streamId = EventsGenerator.GetStreamId(EventsCount, EventSize);
 
         using var readSession = await repository.BeginSessionFor(streamId, throwIfNotExists: true);
+
         var state = readSession.GetCurrentState();
         if (state.Elements?.Length != EventSize)
             throw new InvalidOperationException(
                 $"Expected elements count {EventSize}, got {state.Elements?.Length}");
+    }
 
+    [IterationSetup]
+    public void WaitBeforeRead()
+    {
         // TCP Connections limit workaround.
         //
         // Frequent GRPC requests may exhaust networking resources:
+        //
         //     Grpc.Core.RpcException: Status(
         //       StatusCode="ResourceExhausted",
         //       Detail="Error starting gRPC call.
@@ -61,12 +67,14 @@ public class ReadEventStreamBenchmark : BenchmarkParameters
         //         IOException: The request was aborted.
         //         Http2StreamException: The HTTP/2 server reset the stream. HTTP/2 error code 'ENHANCE_YOUR_CALM' (0xb).",
         //       DebugException="System.Net.Http.HttpRequestException: An error occurred while sending the request.")
+        //
         // it means that OS TCP connection pool is exhausted.
         //
-        // Either increase those TCP limits (see <https://stackoverflow.com/a/3923785>) and remove the following line,
-        // or keep the following line and subtract the delay value from the `Mean` when interpreting results.
+        // Increasing those TCP limits (see <https://stackoverflow.com/a/3923785>) helps to some extent,
+        // but ResourceExhausted can still happen.
         //
-        // Task.Delay seems to be a more reliable workaround.
-        await Task.Delay(TimeSpan.FromSeconds(1));
+        // Explicit delay seems to be a more reliable workaround.
+
+        Thread.Sleep(TimeSpan.FromSeconds(1));
     }
 }

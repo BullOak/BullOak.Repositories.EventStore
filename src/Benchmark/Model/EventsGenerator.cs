@@ -2,7 +2,7 @@ namespace Benchmark.Model;
 
 public static class EventsGenerator
 {
-    private static string GetStreamId(int eventsCount, int eventSize) => $"{eventsCount:000000}_{eventSize:0000}";
+    public static string GetStreamId(int eventsCount, int eventSize) => $"{eventsCount:000000}_{eventSize:0000}";
 
     public static (string StreamId, IReadOnlyList<ITestEvent> Events) Generate(int eventsCount, int eventElements)
     {
