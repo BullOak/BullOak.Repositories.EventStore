@@ -68,10 +68,9 @@ namespace BullOak.Repositories.EventStore
             if (throwIfNotExists && !readResult.StreamExists)
                 throw new StreamNotFoundException(streamName);
 
-            var readResults = await eventReader.ReadFrom(streamName);
             var session = new EventStoreSession<TState>(stateValidator, configs, readResult, eventWriter, streamName, dateTimeProvider);
 
-            await session.LoadFromReadResult(readResults);
+            await session.LoadFromReadResult(readResult);
 
             return session;
         }
