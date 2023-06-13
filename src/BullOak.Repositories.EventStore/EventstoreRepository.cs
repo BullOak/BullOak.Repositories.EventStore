@@ -22,23 +22,28 @@ namespace BullOak.Repositories.EventStore
         private static readonly AlwaysPassValidator<TState> defaultValidator = new();
         private static readonly Func<IAmAStoredEvent, bool> alwaysPassPredicate = _ => true;
 
+        private readonly string streamNamePrefix;
+        public string StreamNamePrefix => streamNamePrefix;
+
         public EventStoreRepository
         (
             IValidateState<TState> stateValidator,
             IHoldAllConfiguration configs,
             IReadEventsFromStream eventReader,
             IStoreEventsToStream eventWriter,
-            IDateTimeProvider dateTimeProvider = null
+            IDateTimeProvider dateTimeProvider = null,
+            string streamNamePrefix = null
         )
         {
             this.stateValidator = stateValidator ?? throw new ArgumentNullException(nameof(stateValidator));
             this.configs = configs ?? throw new ArgumentNullException(nameof(configs));
 
-
             this.eventReader = eventReader;
             this.eventWriter = eventWriter;
 
             this.dateTimeProvider = dateTimeProvider ?? new SystemDateTimeProvider();
+
+            this.streamNamePrefix = streamNamePrefix ?? String.Empty;
         }
 
         public EventStoreRepository
@@ -54,13 +59,17 @@ namespace BullOak.Repositories.EventStore
         public async Task<IManageSessionOf<TState>> BeginSessionFor(TId id, bool throwIfNotExists = false,
             DateTime? appliesAt = null)
         {
-            if (throwIfNotExists && !(await Contains(id)))
-                throw new StreamNotFoundException(id.ToString());
+            var streamName = id.ToString();
 
-            var session = new EventStoreSession<TState>(stateValidator, configs, eventReader, eventWriter, id.ToString(), dateTimeProvider);
-            await session.Initialize(appliesAt.HasValue
-                ? e => GetBeforeDateEventPredicate(e, appliesAt.Value)
-                : alwaysPassPredicate);
+            var readResult = await eventReader.ReadFrom(streamName);
+
+            if (throwIfNotExists && !readResult.StreamExists)
+                throw new StreamNotFoundException(streamName);
+
+            var readResults = await eventReader.ReadFrom(streamName);
+            var session = new EventStoreSession<TState>(stateValidator, configs, readResult, eventWriter, streamName, dateTimeProvider);
+
+            await session.LoadFromReadResult(readResults);
 
             return session;
         }
@@ -75,16 +84,9 @@ namespace BullOak.Repositories.EventStore
 
         public async Task<bool> Contains(TId selector)
         {
-            try
-            {
-                var readResult = await eventReader.ReadFrom(selector.ToString());
+            var readResult = await eventReader.ReadFrom(selector.ToString());
 
-                return readResult.StreamExists && await readResult.Events.AnyAsync();
-            }
-            catch (Exception)
-            {
-                return false;
-            }
+            return readResult.StreamExists; // The reader returns that the stream doesn't exist if it's entirely empty.
         }
 
         /// <summary>

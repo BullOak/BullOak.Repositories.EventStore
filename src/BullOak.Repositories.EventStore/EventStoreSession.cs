@@ -17,50 +17,28 @@
         private readonly string streamName;
         private bool isInDisposedState = false;
 
-        private readonly IReadEventsFromStream eventReader;
         private readonly IStoreEventsToStream eventWriter;
         private static readonly IValidateState<TState> defaultValidator = new AlwaysPassValidator<TState>();
 
         private bool streamExists;
 
-        public EventStoreSession
-        (
+        public EventStoreSession(IValidateState<TState> stateValidator,
             IHoldAllConfiguration configuration,
-            IReadEventsFromStream eventReader,
+            StreamReadResults readResult,
             IStoreEventsToStream eventWriter,
             string streamName,
-            IDateTimeProvider dateTimeProvider = null
-        ) : this(defaultValidator, configuration, eventReader, eventWriter, streamName, dateTimeProvider)
+            IDateTimeProvider dateTimeProvider = null)
+            : base(stateValidator, configuration)
         {
-        }
-
-        public EventStoreSession
-        (
-            IValidateState<TState> stateValidator,
-            IHoldAllConfiguration configuration,
-            IReadEventsFromStream eventReader,
-            IStoreEventsToStream eventWriter,
-            string streamName,
-            IDateTimeProvider dateTimeProvider = null
-        ) : base(stateValidator, configuration)
-        {
-            this.eventReader = eventReader ?? throw new ArgumentNullException(nameof(eventReader));
             this.eventWriter = eventWriter ?? throw new ArgumentNullException(nameof(eventWriter));
-
             this.streamName = streamName ?? throw new ArgumentNullException(nameof(streamName));
             this.dateTimeProvider = dateTimeProvider ?? new SystemDateTimeProvider();
+
+            streamExists = readResult.StreamExists;
         }
 
-        public async Task Initialize(Func<IAmAStoredEvent, bool> loadEventPredicate = null)
-        {
-            CheckDisposedState();
-            //TODO: user credentials
-            var data = await eventReader.ReadFrom(streamName, loadEventPredicate);
-
-            streamExists = data.StreamExists;
-
-            await LoadFromEvents(data.Events.Select(x => x.ToItemWithType()), !streamExists, data.StoredEventPosition.ToInt64());
-        }
+        public Task LoadFromReadResult(StreamReadResults readResults)
+            => LoadFromEvents(readResults.Events.Select(x=> x.ToItemWithType()), !readResults.StreamExists, readResults.StoredEventPosition.ToInt64());
 
         private void CheckDisposedState()
         {
