@@ -61,7 +61,9 @@ namespace BullOak.Repositories.EventStore
         {
             var streamName = id.ToString();
 
-            var readResult = await eventReader.ReadFrom(streamName);
+            var readResult = await eventReader.ReadFrom(streamName, appliesAt.HasValue
+                ? e => GetBeforeDateEventPredicate(e, appliesAt.Value)
+                : alwaysPassPredicate);
 
             if (throwIfNotExists && !readResult.StreamExists)
                 throw new StreamNotFoundException(streamName);
