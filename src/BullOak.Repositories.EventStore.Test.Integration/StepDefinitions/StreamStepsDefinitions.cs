@@ -172,8 +172,8 @@
             States.ElementAt(--streamNumber).state.HigherOrder.Should().Be(highestOrderValue);
         }
 
-        [Then(@"the visibilty should be disabled")]
-        public void ThenTheVisibiltyShouldBeEnabled()
+        [Then(@"the visibility should be disabled")]
+        public void ThenTheVisibilityShouldBeEnabled()
         {
             testDataContexts.First().LatestLoadedState.Visility.Should().BeFalse();
         }

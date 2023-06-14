@@ -19,7 +19,7 @@
     <PackageReference Include="Grpc.Net.Client" Version="2.53.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="OneOf" Version="3.0.243" />
     <PackageReference Include="Polly" Version="7.2.3" />
@@ -38,15 +38,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BullOak.Repositories.EventStore\BullOak.Repositories.EventStore.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="appsettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="EventStoreServer\EventStore.ClusterNode.exe">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 
 </Project>

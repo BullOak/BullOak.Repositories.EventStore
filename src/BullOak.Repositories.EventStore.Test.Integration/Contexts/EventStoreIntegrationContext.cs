@@ -68,7 +68,7 @@
             DateTimeProvider = new TestDateTimeProvider();
         }
 
-        public static void SetupNode()
+        public static void SetupConfiguration()
         {
             configuration = Configuration.Begin()
                 .WithDefaultCollection()
@@ -96,10 +96,6 @@
                 Protocol.Grpc => new GrpcEventWriter(await ConfigureEventStoreGrpc()),
                 _ => throw new ArgumentOutOfRangeException(nameof(protocol))
             };
-
-        public static void TeardownNode()
-        {
-        }
 
         public async Task<IManageSessionOf<IHoldHigherOrder>> StartSession(string streamName, DateTime? appliesAt = null)
         {
@@ -150,6 +146,7 @@
         {
             var readResults = connV20.ReadStreamAsync(ClientV20.Direction.Forwards, id, ClientV20.StreamPosition.Start);
             return await readResults
+                        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
                         .Where(e => e.Event != null)
                         .Select(e => e.Event.ToStoredEvent(configuration.StateFactory))
                         .ToArrayAsync();

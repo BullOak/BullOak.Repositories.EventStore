@@ -31,13 +31,7 @@ namespace BullOak.Repositories.EventStore.Test.Integration.StepDefinitions
         [BeforeTestRun]
         public static void SetupEventStoreNode()
         {
-            EventStoreIntegrationContext.SetupNode();
-        }
-
-        [AfterTestRun]
-        public static void TeardownNode()
-        {
-            EventStoreIntegrationContext.TeardownNode();
+            EventStoreIntegrationContext.SetupConfiguration();
         }
 
         [Given(@"the (tcp|grpc) protocol is being used")]
