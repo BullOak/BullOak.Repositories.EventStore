@@ -96,7 +96,7 @@ docker volume prune -f
 
 ### Comparing versions 3.0.0-alpha24, 3.0.0-alpha23, 3.0.0-alpha21
 
-Benchmark results directly comparing 3 latest versions:
+Benchmark results directly comparing 3 last versions:
 
 * [Full report](./Benchmark-VersionsComparison-Full.html)
 * [Short report](./Benchmark-VersionsComparison-Short.html) with most
