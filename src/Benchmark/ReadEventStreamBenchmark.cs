@@ -8,6 +8,7 @@ using EventStore.Client;
 
 namespace Benchmark;
 
+[Config(typeof(BullOakVersionsConfig))]
 [MemoryDiagnoser]
 public class ReadEventStreamBenchmark : BenchmarkParameters
 {
