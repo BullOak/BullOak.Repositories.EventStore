@@ -3,9 +3,9 @@
     public struct ReadModel<TState>
     {
         public readonly TState state;
-        public readonly int concurrencyId;
+        public readonly long concurrencyId;
 
-        public ReadModel(TState state, int concurrencyId)
+        public ReadModel(TState state, long concurrencyId)
         {
             this.state = state;
             this.concurrencyId = concurrencyId;

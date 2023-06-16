@@ -5,6 +5,28 @@
     using System;
     using System.Collections.Generic;
     using Streams;
+    using System.Threading.Tasks;
+    using System.Linq;
+    using BullOak.Repositories.EventStore.Events;
+
+    public struct IntegrationStreamReadResults
+    {
+        public readonly IEnumerable<StoredEvent> Events;
+        public readonly bool StreamExists;
+
+        private IntegrationStreamReadResults(IEnumerable<StoredEvent> events, bool streamExists)
+        {
+            Events = events ?? throw new ArgumentNullException(nameof(events));
+            StreamExists = streamExists;
+        }
+
+        public async static Task<IntegrationStreamReadResults> FromStreamReadResult(StreamReadResults readResults)
+        {
+            var events = await readResults.Events.ToListAsync();
+
+            return new IntegrationStreamReadResults(events, readResults.StreamExists);
+        }
+    }
 
     internal class TestDataContext
     {
@@ -18,13 +40,16 @@
         public IHoldHigherOrder LatestLoadedState { get; internal set; }
         public bool IsNewState { get; internal set; }
 
-        public StreamReadResults LatestStreamReadResults { get; internal set; }
+        public IntegrationStreamReadResults LoadedStreamResults { get; private set; }
         public Dictionary<string, IManageSessionOf<IHoldHigherOrder>> NamedSessions { get; } = new();
         public Dictionary<string, List<Exception>> NamedSessionsExceptions { get; } = new();
 
-        public int LastConcurrencyId { get; set; }
+        public long LastConcurrencyId { get; set; }
 
         internal List<IMyEvent> LastGeneratedEvents = new List<IMyEvent>();
+
+        internal async Task SetReadResults(StreamReadResults readResults)
+            => LoadedStreamResults = await IntegrationStreamReadResults.FromStreamReadResult(readResults);
 
         internal void ResetStream(string categoryName = null)
         {

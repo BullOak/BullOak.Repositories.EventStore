@@ -36,7 +36,7 @@
                 cancellationToken: cancellationToken);
 
             if (!await StreamExists(readResult))
-                return new StreamReadResults(EmptyReadResult, false, StoredEventPosition.FromInt64(-1));
+                return new StreamReadResults(EmptyReadResult, false);
 
             predicate ??= _ => true;
 
@@ -47,7 +47,7 @@
                 resolveLinkTos: false).FirstOrDefaultAsync(cancellationToken));
 
             if(lastEvent.Event == null || string.Equals(lastEvent.Event.EventType, DefaultSoftDeleteEvent.Type.FullName, StringComparison.Ordinal))
-                return new StreamReadResults(EmptyReadResult, false, StoredEventPosition.FromInt64(-1));
+                return new StreamReadResults(EmptyReadResult, false);
 
             var lastIndex = lastEvent.OriginalEventNumber;
 
@@ -72,8 +72,12 @@
                     .Where(e => predicate(e));
             }
 
-            return new StreamReadResults(storedEvents, true, StoredEventPosition.FromInt64(lastIndex.ToInt64()));
+            //TODO: Change int conversions. This sucks
+            return new StreamReadResults(storedEvents, true);
         }
+
+        private StoredEventPosition ToStoredPosition(StreamPosition? streamPosition)
+            => streamPosition.HasValue ? StoredEventPosition.FromInt64(streamPosition.Value.ToInt64()) : StoredEventPosition.FromInt64(-1);
 
         private async Task<bool> StreamExists(ReadStreamResult readResult)
         {

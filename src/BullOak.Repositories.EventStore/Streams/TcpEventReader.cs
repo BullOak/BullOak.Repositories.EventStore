@@ -37,7 +37,7 @@
                 var readResult = await connection.ReadStreamEventsBackwardAsync(streamId, StreamPosition.End, pageSize, true);
 
                 if (!StreamExists(readResult))
-                    return new StreamReadResults(EmptyReadResult, false, StoredEventPosition.FromInt64(-1));
+                    return new StreamReadResults(EmptyReadResult, false);
 
                 storedEvents = readResult.Events
                     // Trust me, resharper is wrong in this one. Event can be null
@@ -53,7 +53,7 @@
                 var readResult = await connection.ReadStreamEventsForwardAsync(streamId, StreamPosition.Start, pageSize, true);
 
                 if (!StreamExists(readResult))
-                    return new StreamReadResults(EmptyReadResult, false, StoredEventPosition.FromInt64(-1));
+                    return new StreamReadResults(EmptyReadResult, false);
 
                 storedEvents = readResult.Events
                     // Trust me, resharper is wrong in this one. Event can be null
@@ -66,7 +66,7 @@
 
             var result = await connection.ReadEventAsync(streamId, StreamPosition.End, false);
             var idx = result.Event?.OriginalEventNumber ?? -1;
-            return new StreamReadResults(storedEvents, true, StoredEventPosition.FromInt64(idx));
+            return new StreamReadResults(storedEvents, true);
         }
 
         private static bool StreamExists(StreamEventsSlice readResult)

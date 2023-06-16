@@ -75,8 +75,7 @@ public class TcpEventWriter : IStoreEventsToStream
         CancellationToken cancellationToken
     )
     {
-        var writeResult = await connection.ConditionalAppendToStreamAsync
-            (
+        var writeResult = await connection.ConditionalAppendToStreamAsync(
                 streamId,
                 revision,
                 eventsToAdd.Select(eventObject => eventObject.CreateV5EventData(dateTimeProvider))

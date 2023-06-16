@@ -325,19 +325,12 @@
         }
 
         [Then(@"events returned should be (.*)")]
-        public async Task ThenEventsReturnedShouldBe(int expected)
-        {
-            var context = testDataContexts.First();
-            var actual = await context.LatestStreamReadResults.Events.ToListAsync();
-            actual.Should().HaveCount(expected);
-        }
+        public void ThenEventsReturnedShouldBe(int expected)
+            => testDataContexts.First().LoadedStreamResults.Events.Should().HaveCount(expected);
 
         [Then(@"stream position should be (.*)")]
         public void ThenStreamPositionShouldBe(int expected)
-        {
-            var actual = testDataContexts.First().LatestStreamReadResults.StoredEventPosition;
-            actual.ToInt64().Should().Be(expected);
-        }
+            => testDataContexts.First().LoadedStreamResults.Events.Max(x=> x.PositionInStream).Should().Be(expected);
 
         [When(@"I try to open the new stream")]
         public async Task WhenITryToOpenANewStream()

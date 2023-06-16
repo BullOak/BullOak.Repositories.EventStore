@@ -127,7 +127,7 @@
             testDataContext.RecordedException = await Record.ExceptionAsync(async () =>
             {
                 var readResults = await eventStoreContainer.EventReader.ReadFrom(testDataContext.CurrentStreamId);
-                testDataContext.LatestStreamReadResults = readResults;
+                await testDataContext.SetReadResults(readResults);
             });
         }
 

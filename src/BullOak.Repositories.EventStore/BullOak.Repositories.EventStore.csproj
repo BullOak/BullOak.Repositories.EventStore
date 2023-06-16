@@ -2,7 +2,7 @@
 
     <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
@@ -23,8 +23,18 @@
     <PackageIcon>icon128.png</PackageIcon>
     <PackageIconUrl>https://raw.githubusercontent.com/BullOak/BullOak/master/icons/Icon128.png</PackageIconUrl>
     <PackageTags>CQRS EventStourcing event-driven repository repositories DDD domain-driven-design</PackageTags>
-    <AssemblyVersion>0.0.0</AssemblyVersion>
-    <FileVersion>0.0.0</FileVersion>
+    <AssemblyVersion>$(VersionPrefix)</AssemblyVersion>
+    <FileVersion>$(VersionPrefix)</FileVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <WarningsNotAsErrors></WarningsNotAsErrors>
+    <NoWarn>1701;1702;NU5104;</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <WarningsNotAsErrors></WarningsNotAsErrors>
+    <NoWarn>1701;1702;NU5104;</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -32,7 +42,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BullOak.Repositories" Version="2.6.5" />
+    <PackageReference Include="BullOak.Repositories" Version="3.0.0-alpha-003" />
     <PackageReference Include="EventStore.Client.Grpc" Version="22.0.0" />
     <PackageReference Include="EventStore.Client.Grpc.Operations" Version="22.0.0" />
     <PackageReference Include="EventStore.Client.Grpc.Streams" Version="22.0.0" />

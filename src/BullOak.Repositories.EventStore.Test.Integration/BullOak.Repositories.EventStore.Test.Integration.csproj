@@ -23,7 +23,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="OneOf" Version="3.0.243" />
     <PackageReference Include="Polly" Version="7.2.3" />
-    <PackageReference Include="BullOak.Repositories" Version="2.6.5" />
+    <PackageReference Include="BullOak.Repositories" Version="3.0.0-alpha-003" />
     <PackageReference Include="SpecFlow.xUnit" Version="3.9.74" />
     <PackageReference Include="System.Collections.Immutable" Version="7.0.0" />
     <PackageReference Include="xunit.runner.console" Version="2.4.2">

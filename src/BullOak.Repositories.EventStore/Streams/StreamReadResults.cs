@@ -8,13 +8,11 @@
     {
         public readonly IAsyncEnumerable<StoredEvent> Events;
         public readonly bool StreamExists;
-        public readonly StoredEventPosition StoredEventPosition;
 
-        public StreamReadResults(IAsyncEnumerable<StoredEvent> events, bool streamExists, StoredEventPosition storedEventPosition)
+        public StreamReadResults(IAsyncEnumerable<StoredEvent> events, bool streamExists)
         {
             Events = events ?? throw new ArgumentNullException(nameof(events));
             StreamExists = streamExists;
-            StoredEventPosition = storedEventPosition;
         }
     }
 }

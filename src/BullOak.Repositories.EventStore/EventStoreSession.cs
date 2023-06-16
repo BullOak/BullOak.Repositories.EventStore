@@ -8,7 +8,7 @@
     using System.Threading.Tasks;
     using Streams;
 
-    public class EventStoreSession<TState> : BaseEventSourcedSession<TState, long>
+    public class EventStoreSession<TState> : BaseEventSourcedSession<TState>
     {
         private static readonly Task<int> done = Task.FromResult(0);
 
@@ -38,7 +38,7 @@
         }
 
         public Task LoadFromReadResult(StreamReadResults readResults)
-            => LoadFromEvents(readResults.Events.Select(x=> x.ToItemWithType()), !readResults.StreamExists, readResults.StoredEventPosition.ToInt64());
+            => LoadFromEvents(readResults.Events.Select(x=> new BullOak.Repositories.Appliers.StoredEvent(x.EventType, x.DeserializedEvent, x.PositionInStream)));
 
         private void CheckDisposedState()
         {
