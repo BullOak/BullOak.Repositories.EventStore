@@ -51,7 +51,7 @@
                 testDataContext.LatestLoadedState = session.GetCurrentState();
             }
         }
-
+        
         [When(@"I load my entity")]
         public async Task WhenILoadMyEntity()
         {
@@ -62,6 +62,26 @@
                 {
                     await WhenILoadIgnoringAnyPreviousErrors();
                 });
+        }
+
+        [When(@"I load my entity using optimization set to (true|false)")]
+        public async Task WhenILoadMyEntityUsingOptimizationSetToTrue(bool optimizedReads)
+        {
+            var testDataContext = testDataContexts.First();
+            if (testDataContext.RecordedException != null) return;
+
+            testDataContext.RecordedException = await Record.ExceptionAsync(async () =>
+            {
+                var session = await eventStoreContainer.StartSession(testDataContext.CurrentStreamId, optimizeForShortStreams: optimizedReads);
+                if (optimizedReads)
+                    await testDataContext.SetReadResults(await eventStoreContainer.EventReader.ReadToMemoryFrom(testDataContext.CurrentStreamId));
+                else
+                    await testDataContext.SetReadResults(await eventStoreContainer.EventReader.ReadFrom(testDataContext.CurrentStreamId));
+
+                testDataContext.LatestLoadedState = session.GetCurrentState();
+                testDataContext.LastConcurrencyId = testDataContext.LoadedStreamResults.Events.Max(x => x.PositionInStream);
+
+            });
         }
 
         [When(@"I load my entity as of '(.*)'")]

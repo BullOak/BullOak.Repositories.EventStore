@@ -15,11 +15,13 @@
         private readonly ICreateStateInstances stateFactory;
         private readonly EventStoreClient client;
         private static readonly IAsyncEnumerable<StoredEvent> EmptyReadResult = Array.Empty<StoredEvent>().ToAsyncEnumerable();
+        private readonly TimeSpan deadline;
 
-        public GrpcEventReader(EventStoreClient client, IHoldAllConfiguration configuration)
+        public GrpcEventReader(EventStoreClient client, IHoldAllConfiguration configuration, TimeSpan? deadline = null)
         {
             stateFactory = configuration?.StateFactory ?? throw new ArgumentNullException(nameof(configuration));
             this.client = client ?? throw new ArgumentNullException(nameof(client));
+            this.deadline = deadline ?? TimeSpan.FromSeconds(30);
         }
 
         public async Task<StreamReadResults> ReadFrom(string streamId, Func<IAmAStoredEvent, bool> predicate = null, StreamReadDirection direction = StreamReadDirection.Forwards, CancellationToken cancellationToken = default)
@@ -32,24 +34,13 @@
                 streamId,
                 direction == StreamReadDirection.Backwards ? StreamPosition.End : StreamPosition.Start,
                 resolveLinkTos: true,
-                deadline: TimeSpan.FromSeconds(30),
+                deadline: deadline,
                 cancellationToken: cancellationToken);
-
+            
             if (!await StreamExists(readResult))
                 return new StreamReadResults(EmptyReadResult, false);
 
             predicate ??= _ => true;
-
-            var lastEvent = (await client.ReadStreamAsync(Direction.Backwards, streamId,
-                StreamPosition.End,
-                1,
-                deadline: TimeSpan.FromSeconds(30),
-                resolveLinkTos: false).FirstOrDefaultAsync(cancellationToken));
-
-            if(lastEvent.Event == null || string.Equals(lastEvent.Event.EventType, DefaultSoftDeleteEvent.Type.FullName, StringComparison.Ordinal))
-                return new StreamReadResults(EmptyReadResult, false);
-
-            var lastIndex = lastEvent.OriginalEventNumber;
 
             IAsyncEnumerable<StoredEvent> storedEvents;
             if (direction == StreamReadDirection.Backwards)
@@ -76,6 +67,13 @@
             return new StreamReadResults(storedEvents, true);
         }
 
+        public async Task<StreamReadToMemoryResults> ReadToMemoryFrom(string streamId, Func<IAmAStoredEvent, bool> predicate = null, StreamReadDirection direction = StreamReadDirection.Forwards, CancellationToken cancellationToken = default)
+        {
+            var results = await ReadFrom(streamId, predicate, direction, cancellationToken);
+
+            return await StreamReadToMemoryResults.FromStreamReadResults(results);
+        }
+
         private StoredEventPosition ToStoredPosition(StreamPosition? streamPosition)
             => streamPosition.HasValue ? StoredEventPosition.FromInt64(streamPosition.Value.ToInt64()) : StoredEventPosition.FromInt64(-1);
 
@@ -94,5 +92,6 @@
                 return false;
             }
         }
+
     }
 }

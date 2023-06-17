@@ -9,8 +9,9 @@ using BullOak.Repositories.EventStore.Streams;
 namespace BullOak.Repositories.EventStore
 {
     using Exceptions;
+    using OneOf;
 
-    public class EventStoreRepository<TId, TState> : IStartSessions<TId, TState>, IEventStoreStreamDeleter<TId>
+    public class EventStoreRepository<TId, TState> : IStartOprimizeableSessions<TId, TState>, IEventStoreStreamDeleter<TId>
     {
         private readonly IHoldAllConfiguration configs;
         private readonly IDateTimeProvider dateTimeProvider;
@@ -55,22 +56,36 @@ namespace BullOak.Repositories.EventStore
             : this(defaultValidator, configs, eventReader, eventWriter)
         {
         }
+        public Task<IManageSessionOf<TState>> BeginSessionFor(TId id, bool throwIfNotExists,
+            DateTime? appliesAt)
+            => BeginSessionFor(id, throwIfNotExists, appliesAt, true);
 
         public async Task<IManageSessionOf<TState>> BeginSessionFor(TId id, bool throwIfNotExists = false,
-            DateTime? appliesAt = null)
+            DateTime? appliesAt = null, bool optimizeForShortStreams = true)
         {
             var streamName = id.ToString();
+            OneOf<StreamReadToMemoryResults, StreamReadResults> readResults;
 
-            var readResult = await eventReader.ReadFrom(streamName, appliesAt.HasValue
-                ? e => GetBeforeDateEventPredicate(e, appliesAt.Value)
-                : alwaysPassPredicate);
+            if (optimizeForShortStreams)
+                readResults = OneOf<StreamReadToMemoryResults, StreamReadResults>.FromT0(await eventReader.ReadToMemoryFrom(streamName, appliesAt.HasValue
+                    ? e => GetBeforeDateEventPredicate(e, appliesAt.Value)
+                    : alwaysPassPredicate));
+            else
+                readResults = OneOf<StreamReadToMemoryResults, StreamReadResults>.FromT1(await eventReader.ReadFrom(streamName, appliesAt.HasValue
+                    ? e => GetBeforeDateEventPredicate(e, appliesAt.Value)
+                    : alwaysPassPredicate));
 
-            if (throwIfNotExists && !readResult.StreamExists)
+            var streamExists = readResults.Match(x => x.StreamExists, x => x.StreamExists);
+
+            if (throwIfNotExists && !streamExists)
                 throw new StreamNotFoundException(streamName);
 
-            var session = new EventStoreSession<TState>(stateValidator, configs, readResult, eventWriter, streamName, dateTimeProvider);
+            var session = new EventStoreSession<TState>(stateValidator, configs, streamExists, eventWriter, streamName, dateTimeProvider);
 
-            await session.LoadFromReadResult(readResult);
+            await readResults.Match(x =>
+            {
+                session.LoadFromReadResult(x); return Task.CompletedTask;
+            }, x => session.LoadFromReadResult(x));
 
             return session;
         }

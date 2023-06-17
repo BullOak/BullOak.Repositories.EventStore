@@ -49,5 +49,6 @@
     <PackageReference Include="EventStore.Client" Version="22.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Grpc.Net.Client" Version="2.53.0" />
+    <PackageReference Include="OneOf" Version="3.0.243" />
   </ItemGroup>
 </Project>

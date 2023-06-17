@@ -101,9 +101,9 @@
         {
         }
 
-        public async Task<IManageSessionOf<IHoldHigherOrder>> StartSession(string streamName, DateTime? appliesAt = null)
+        public async Task<IManageSessionOf<IHoldHigherOrder>> StartSession(string streamName, DateTime? appliesAt = null, bool optimizeForShortStreams = true)
         {
-            var session = await Repository.BeginSessionFor(streamName, appliesAt: appliesAt).ConfigureAwait(false);
+            var session = await Repository.BeginSessionFor(streamName, appliesAt: appliesAt, optimizeForShortStreams: optimizeForShortStreams).ConfigureAwait(false);
             return session;
         }
 

@@ -16,6 +16,7 @@
         private readonly IEventStoreConnection connection;
         private readonly int pageSize;
         private static readonly IAsyncEnumerable<StoredEvent> EmptyReadResult = Array.Empty<StoredEvent>().ToAsyncEnumerable();
+        private static readonly StoredEvent[] EmptyStoredEvents = new StoredEvent[0];
 
         public TcpEventReader(IEventStoreConnection client, IHoldAllConfiguration configuration, int pageSize = 4096)
         {
@@ -24,20 +25,20 @@
             this.pageSize = pageSize;
         }
 
-        public async Task<StreamReadResults> ReadFrom(string streamId, Func<IAmAStoredEvent, bool> predicate = null, StreamReadDirection direction = StreamReadDirection.Forwards, CancellationToken cancellationToken = default)
+        public async Task<StreamReadToMemoryResults> ReadToMemoryFrom(string streamId, Func<IAmAStoredEvent, bool> predicate = null, StreamReadDirection direction = StreamReadDirection.Forwards, CancellationToken cancellationToken = default)
         {
             if (predicate == null)
                 direction = StreamReadDirection.Forwards;
 
             predicate ??= _ => true;
 
-            IAsyncEnumerable<StoredEvent> storedEvents;
+            StoredEvent[] storedEvents;
             if (direction == StreamReadDirection.Backwards)
             {
                 var readResult = await connection.ReadStreamEventsBackwardAsync(streamId, StreamPosition.End, pageSize, true);
 
                 if (!StreamExists(readResult))
-                    return new StreamReadResults(EmptyReadResult, false);
+                    return new StreamReadToMemoryResults(EmptyStoredEvents, false);
 
                 storedEvents = readResult.Events
                     // Trust me, resharper is wrong in this one. Event can be null
@@ -46,14 +47,14 @@
                     .Select((e, _) => e.Event.ToStoredEvent(stateFactory))
                     .TakeWhile(e => e.DeserializedEvent is not EntitySoftDeleted)
                     .Where(e => predicate(e))
-                    .ToAsyncEnumerable();
+                    .ToArray();
             }
             else
             {
                 var readResult = await connection.ReadStreamEventsForwardAsync(streamId, StreamPosition.Start, pageSize, true);
 
                 if (!StreamExists(readResult))
-                    return new StreamReadResults(EmptyReadResult, false);
+                    return new StreamReadToMemoryResults(EmptyStoredEvents, false);
 
                 storedEvents = readResult.Events
                     // Trust me, resharper is wrong in this one. Event can be null
@@ -61,12 +62,16 @@
                     .Where(e => e.Event != null)
                     .Select((e, c) => e.Event.ToStoredEvent(stateFactory))
                     .Where(e => predicate(e))
-                    .ToAsyncEnumerable();
+                    .ToArray();
             }
 
-            var result = await connection.ReadEventAsync(streamId, StreamPosition.End, false);
-            var idx = result.Event?.OriginalEventNumber ?? -1;
-            return new StreamReadResults(storedEvents, true);
+            return new StreamReadToMemoryResults(storedEvents, true);
+        }
+
+        public async Task<StreamReadResults> ReadFrom(string streamId, Func<IAmAStoredEvent, bool> predicate = null, StreamReadDirection direction = StreamReadDirection.Forwards, CancellationToken cancellationToken = default)
+        {
+            var readToMemResults = await ReadToMemoryFrom(streamId, predicate, direction, cancellationToken);
+            return new StreamReadResults(readToMemResults.Events.ToAsyncEnumerable(), readToMemResults.StreamExists);
         }
 
         private static bool StreamExists(StreamEventsSlice readResult)

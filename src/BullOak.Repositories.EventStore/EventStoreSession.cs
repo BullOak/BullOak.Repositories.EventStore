@@ -24,7 +24,7 @@
 
         public EventStoreSession(IValidateState<TState> stateValidator,
             IHoldAllConfiguration configuration,
-            StreamReadResults readResult,
+            bool streamExists,
             IStoreEventsToStream eventWriter,
             string streamName,
             IDateTimeProvider dateTimeProvider = null)
@@ -34,11 +34,14 @@
             this.streamName = streamName ?? throw new ArgumentNullException(nameof(streamName));
             this.dateTimeProvider = dateTimeProvider ?? new SystemDateTimeProvider();
 
-            streamExists = readResult.StreamExists;
+            this.streamExists = streamExists;
         }
 
         public Task LoadFromReadResult(StreamReadResults readResults)
-            => LoadFromEvents(readResults.Events.Select(x=> new BullOak.Repositories.Appliers.StoredEvent(x.EventType, x.DeserializedEvent, x.PositionInStream)));
+            => LoadFromEvents(readResults.Events.Select(x => new BullOak.Repositories.Appliers.StoredEvent(x.EventType, x.DeserializedEvent, x.PositionInStream)));
+
+        public void LoadFromReadResult(StreamReadToMemoryResults readResults)
+            => LoadFromEvents(readResults.Events.Select(x => new BullOak.Repositories.Appliers.StoredEvent(x.EventType, x.DeserializedEvent, x.PositionInStream)));
 
         private void CheckDisposedState()
         {

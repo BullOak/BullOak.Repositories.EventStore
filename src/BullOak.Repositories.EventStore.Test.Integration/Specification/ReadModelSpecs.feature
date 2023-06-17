@@ -6,7 +6,7 @@
 Background:
     Given the grpc protocol is being used
 
-Scenario Outline: Reconstitute state from one event stored using interface
+Scenario: Reconstitute state from one event stored using interface
     Given a new stream
 	And 3 new events
 	And I try to save the new events in the stream through their interface
@@ -14,6 +14,20 @@ Scenario Outline: Reconstitute state from one event stored using interface
 	Then the load process should succeed
 	And HighOrder property should be 2
 	And have a concurrency id of 2
+
+Scenario Outline: Reconstitute state specifying optimization
+    Given a new stream
+	And 3 new events
+	And I try to save the new events in the stream through their interface
+	When I load my entity using optimization set to <optimize-for-short-streams>
+	Then the load process should succeed
+	And HighOrder property should be 2
+	And have a concurrency id of 2
+    Examples:
+    | optimize-for-short-streams |
+    | true                       |
+    | false                      |
+
 
 Scenario Outline: Load entity as at a point in time
     Given a new stream

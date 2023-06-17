@@ -40,7 +40,7 @@
         public IHoldHigherOrder LatestLoadedState { get; internal set; }
         public bool IsNewState { get; internal set; }
 
-        public IntegrationStreamReadResults LoadedStreamResults { get; private set; }
+        public StreamReadToMemoryResults LoadedStreamResults { get; private set; }
         public Dictionary<string, IManageSessionOf<IHoldHigherOrder>> NamedSessions { get; } = new();
         public Dictionary<string, List<Exception>> NamedSessionsExceptions { get; } = new();
 
@@ -49,7 +49,9 @@
         internal List<IMyEvent> LastGeneratedEvents = new List<IMyEvent>();
 
         internal async Task SetReadResults(StreamReadResults readResults)
-            => LoadedStreamResults = await IntegrationStreamReadResults.FromStreamReadResult(readResults);
+            => LoadedStreamResults = new StreamReadToMemoryResults(await readResults.Events.ToArrayAsync(), readResults.StreamExists);
+        internal Task SetReadResults(StreamReadToMemoryResults readResults)
+        { LoadedStreamResults = readResults; return Task.CompletedTask; }
 
         internal void ResetStream(string categoryName = null)
         {

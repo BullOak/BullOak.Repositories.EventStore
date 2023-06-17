@@ -13,5 +13,10 @@ namespace BullOak.Repositories.EventStore.Streams
             Func<IAmAStoredEvent, bool> predicate = null,
             StreamReadDirection direction = StreamReadDirection.Forwards,
             CancellationToken cancellationToken = default);
+
+        Task<StreamReadToMemoryResults> ReadToMemoryFrom(string streamId,
+            Func<IAmAStoredEvent, bool> predicate = null,
+            StreamReadDirection direction = StreamReadDirection.Forwards,
+            CancellationToken cancellationToken = default);
     }
 }
