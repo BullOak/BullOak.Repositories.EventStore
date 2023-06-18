@@ -14,10 +14,9 @@ public class BullOakVersionsConfig : ManualConfig
         const string nugetPackage = "BullOak.Repositories.EventStore";
         var nugetPackageVersions = new[]
         {
-            ("3.0.0-alpha-025", true),
-            ("3.0.0-alpha-024", false),
-            ("3.0.0-alpha-023", false),
-            ("3.0.0-alpha-021", false)
+            ("3.0.0", true),
+            ("3.0.0-rc2", false),
+            ("3.0.0-rc1", false)
         };
 
         foreach (var (version, isBaseline) in nugetPackageVersions)

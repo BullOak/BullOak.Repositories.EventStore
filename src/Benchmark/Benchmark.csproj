@@ -9,7 +9,7 @@
 
     <ItemGroup>
       <PackageReference Include="BenchmarkDotNet" Version="0.13.5" />
-      <PackageReference Include="BullOak.Repositories.EventStore" Version="3.0.0-alpha-020" />
+      <PackageReference Include="BullOak.Repositories.EventStore" Version="3.0.0-rc1" />
     </ItemGroup>
 
 </Project>

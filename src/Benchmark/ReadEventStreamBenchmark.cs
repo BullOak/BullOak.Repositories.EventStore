@@ -8,7 +8,15 @@ using EventStore.Client;
 
 namespace Benchmark;
 
-[Config(typeof(BullOakVersionsConfig))]
+// Multi-version comparison test disabled until next 3.x version(s) will appear,
+// we will then be able to compare e.g. 3.0.0-rc1 with 3.0.0 final etc.
+//
+// Introduction of the new parameter `optimizeForShortStreams` in `BeginSessionFor`
+// made it impossible (or, at least very much non-trivial) to compare
+// 3.0.0-rc1 with 3.0.0-alphaX or 2.x directly, using the same benchmark project.
+//
+// [Config(typeof(BullOakVersionsConfig))]
+
 [MemoryDiagnoser]
 public class ReadEventStreamBenchmark : BenchmarkParameters
 {
@@ -46,7 +54,10 @@ public class ReadEventStreamBenchmark : BenchmarkParameters
     {
         var streamId = EventsGenerator.GetStreamId(EventsCount, EventSize);
 
-        using var readSession = await repository.BeginSessionFor(streamId, throwIfNotExists: true);
+        using var readSession = await repository.BeginSessionFor(
+            streamId,
+            throwIfNotExists: true,
+            optimizeForShortStreams: OptimizeForShortStreams);
 
         var state = readSession.GetCurrentState();
         if (state.Elements?.Length != EventSize)
