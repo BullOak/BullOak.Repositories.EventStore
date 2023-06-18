@@ -8,6 +8,7 @@ using EventStore.Client;
 
 namespace Benchmark;
 
+[Config(typeof(BullOakVersionsConfig))]
 [MemoryDiagnoser]
 public class ReadEventStreamBenchmark : BenchmarkParameters
 {
@@ -39,8 +40,8 @@ public class ReadEventStreamBenchmark : BenchmarkParameters
     // Run WriteEventStreamBenchmark to create event streams.
     [Benchmark]
     [WarmupCount(1)]
-    [MinIterationCount(20)]
-    [MaxIterationCount(50)]
+    [MinIterationCount(50)]
+    [MaxIterationCount(100)]
     public async Task LoadStream()
     {
         var streamId = EventsGenerator.GetStreamId(EventsCount, EventSize);
@@ -75,6 +76,6 @@ public class ReadEventStreamBenchmark : BenchmarkParameters
         //
         // Explicit delay seems to be a more reliable workaround.
 
-        Thread.Sleep(TimeSpan.FromSeconds(1));
+        Thread.Sleep(TimeSpan.FromMilliseconds(500));
     }
 }
