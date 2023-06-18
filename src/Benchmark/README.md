@@ -101,10 +101,12 @@ docker volume prune -f
 ![3.0.0-rc1 results](./BenchmarkReports/Benchmark-3.0.0-rc1.png)
 
 * [Full report](./BenchmarkReports/Benchmark-3.0.0-rc1-Full.html)
-* [Short report](./BenchmarkReports/Benchmark-3.0.0-rc1-Full.html) with most
+* [Short report](./BenchmarkReports/Benchmark-3.0.0-rc1-Short.html) with most
   permutations excluded, it is easier to read but still provides a good overview
 
-Major differenced compared to previous versions:
+### Previous versions
+
+Major differences in `3.0.0-rc1` compared to previous versions:
 
 * `3.0.0-rc1` allows to explicitly optimise for desired mode of operation
   by using `optimizeForShortStreams` parameter
@@ -128,8 +130,8 @@ memory allocations numbers are very close, time spent is slightly better in
 #### Short event streams, `optimizeForShortStreams=false`
 
 In this category `3.0.0-rc1` performance is better than `3.0.0-alpha21`:
-e.g. for stream length 20 time spent reduced from 2.0ms to around 1.2ms;  memory allocations
-reduces from 270KB to 210KB.
+e.g. for stream length 20 time spent reduced from 2.0ms to around 1.2ms;
+memory allocations reduces from 270KB to 210KB.
 
 #### Long event streams, `optimizeForShortStreams=true`
 
@@ -158,6 +160,6 @@ with results for previous versions manually.
 ![3.0.0-alpha24 results](./BenchmarkReports/Benchmark-3.0.0-alpha24.png)
 
 * [Full report for previous versions](./BenchmarkReports/Benchmark-3.0.0-alpha24-Full.html)
-* [Short report for previous versions](./BenchmarkReports/Benchmark-3.0.0-alpha24-Full.html)
+* [Short report for previous versions](./BenchmarkReports/Benchmark-3.0.0-alpha24-Short.html)
   with most permutations excluded, it is easier to read but still provides
   a good overview
