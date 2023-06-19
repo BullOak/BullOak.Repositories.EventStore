@@ -10,6 +10,7 @@ namespace BullOak.Repositories.EventStore
 {
     using Exceptions;
     using OneOf;
+    public enum OptimizeFor { ShortStreams, LongStreams };
 
     public class EventStoreRepository<TId, TState> : IStartOprimizeableSessions<TId, TState>, IEventStoreStreamDeleter<TId>
     {
@@ -21,7 +22,6 @@ namespace BullOak.Repositories.EventStore
         private readonly IStoreEventsToStream eventWriter;
 
         private static readonly AlwaysPassValidator<TState> defaultValidator = new();
-        private static readonly Func<IAmAStoredEvent, bool> alwaysPassPredicate = _ => true;
 
         private readonly string streamNamePrefix;
         public string StreamNamePrefix => streamNamePrefix;
@@ -58,39 +58,47 @@ namespace BullOak.Repositories.EventStore
         }
         public Task<IManageSessionOf<TState>> BeginSessionFor(TId id, bool throwIfNotExists,
             DateTime? appliesAt)
-            => BeginSessionFor(id, throwIfNotExists, appliesAt, true);
+            => BeginSessionFor(id, throwIfNotExists, appliesAt, OptimizeFor.ShortStreams);
 
         public async Task<IManageSessionOf<TState>> BeginSessionFor(TId id, bool throwIfNotExists = false,
-            DateTime? appliesAt = null, bool optimizeForShortStreams = true)
+            DateTime? appliesAt = null, OptimizeFor optimization = OptimizeFor.ShortStreams)
         {
             var streamName = id.ToString();
-            OneOf<StreamReadToMemoryResults, StreamReadResults> readResults;
-
-            if (optimizeForShortStreams)
-                readResults = OneOf<StreamReadToMemoryResults, StreamReadResults>.FromT0(await eventReader.ReadToMemoryFrom(streamName, appliesAt.HasValue
+            Func<StoredEvent, bool> readPredicate = appliesAt.HasValue
                     ? e => GetBeforeDateEventPredicate(e, appliesAt.Value)
-                    : alwaysPassPredicate));
-            else
-                readResults = OneOf<StreamReadToMemoryResults, StreamReadResults>.FromT1(await eventReader.ReadFrom(streamName, appliesAt.HasValue
-                    ? e => GetBeforeDateEventPredicate(e, appliesAt.Value)
-                    : alwaysPassPredicate));
+                    : AlwaysPassPredicate;
 
-            var streamExists = readResults.Match(x => x.StreamExists, x => x.StreamExists);
+            var readResults = await eventReader.ReadFrom(streamName, readPredicate);
+            var streamExists = readResults.StreamExists;
 
             if (throwIfNotExists && !streamExists)
                 throw new StreamNotFoundException(streamName);
 
             var session = new EventStoreSession<TState>(stateValidator, configs, streamExists, eventWriter, streamName, dateTimeProvider);
 
-            await readResults.Match(x =>
+            switch(optimization)
             {
-                session.LoadFromReadResult(x); return Task.CompletedTask;
-            }, x => session.LoadFromReadResult(x));
+                case OptimizeFor.ShortStreams:
+                    {
+                        session.LoadFromEvents(await readResults.Events.Select(ToBOStoredEvent).ToArrayAsync());
+
+                        break;
+                    }
+                case OptimizeFor.LongStreams:
+                    {
+                        await session.LoadFromEvents(readResults.Events.Select(ToBOStoredEvent));
+
+                        break;
+                    }
+            }
 
             return session;
         }
 
-        private bool GetBeforeDateEventPredicate(IAmAStoredEvent @event, DateTime appliesAt)
+        private static Appliers.StoredEvent ToBOStoredEvent(StoredEvent se)
+            => new Appliers.StoredEvent(se.EventType, se.DeserializedEvent, se.PositionInStream);
+
+        private bool GetBeforeDateEventPredicate(StoredEvent @event, DateTime appliesAt)
         {
             if(@event.Metadata?.TimeStamp == null)
                 return true;
@@ -104,6 +112,8 @@ namespace BullOak.Repositories.EventStore
 
             return readResult.StreamExists; // The reader returns that the stream doesn't exist if it's entirely empty.
         }
+
+        private static bool AlwaysPassPredicate(StoredEvent e) => true;
 
         /// <summary>
         /// This is provided to implement the <see cref="IStartSessions{TEntitySelector,TState}"/> interface,

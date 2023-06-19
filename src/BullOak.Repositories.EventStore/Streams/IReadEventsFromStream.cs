@@ -10,12 +10,12 @@ namespace BullOak.Repositories.EventStore.Streams
     public interface IReadEventsFromStream
     {
         Task<StreamReadResults> ReadFrom(string streamId,
-            Func<IAmAStoredEvent, bool> predicate = null,
+            Func<StoredEvent, bool> predicate = null,
             StreamReadDirection direction = StreamReadDirection.Forwards,
             CancellationToken cancellationToken = default);
 
         Task<StreamReadToMemoryResults> ReadToMemoryFrom(string streamId,
-            Func<IAmAStoredEvent, bool> predicate = null,
+            Func<StoredEvent, bool> predicate = null,
             StreamReadDirection direction = StreamReadDirection.Forwards,
             CancellationToken cancellationToken = default);
     }

@@ -24,7 +24,7 @@
             this.deadline = deadline ?? TimeSpan.FromSeconds(30);
         }
 
-        public async Task<StreamReadResults> ReadFrom(string streamId, Func<IAmAStoredEvent, bool> predicate = null, StreamReadDirection direction = StreamReadDirection.Forwards, CancellationToken cancellationToken = default)
+        public async Task<StreamReadResults> ReadFrom(string streamId, Func<StoredEvent, bool> predicate = null, StreamReadDirection direction = StreamReadDirection.Forwards, CancellationToken cancellationToken = default)
         {
             if (predicate == null)
                 direction = StreamReadDirection.Forwards;
@@ -40,34 +40,37 @@
             if (!await StreamExists(readResult))
                 return new StreamReadResults(EmptyReadResult, false);
 
-            predicate ??= _ => true;
+            predicate ??= AlwaysPassPredicate;
 
             IAsyncEnumerable<StoredEvent> storedEvents;
             if (direction == StreamReadDirection.Backwards)
-            {
-                storedEvents = readResult
-                    // Trust me, resharper is wrong in this one. Event can be null
-                    // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-                    .Where(e => e.Event != null)
-                    .Select(e => e.Event.ToStoredEvent(stateFactory))
-                    .TakeWhile(e => e.DeserializedEvent is not EntitySoftDeleted)
-                    .Where(e => predicate(e));
-            }
+                storedEvents = ProcessReadStream(readResult, predicate, x => x.DeserializedEvent is not EntitySoftDeleted, stateFactory);
             else
-            {
-                storedEvents = readResult
-                    // Trust me, resharper is wrong in this one. Event can be null
-                    // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-                    .Where(e => e.Event != null)
-                    .Select(e => e.Event.ToStoredEvent(stateFactory))
-                    .Where(e => predicate(e));
-            }
+                storedEvents = ProcessReadStream(readResult, predicate, AlwaysFailPredicate, stateFactory);
 
             //TODO: Change int conversions. This sucks
             return new StreamReadResults(storedEvents, true);
         }
 
-        public async Task<StreamReadToMemoryResults> ReadToMemoryFrom(string streamId, Func<IAmAStoredEvent, bool> predicate = null, StreamReadDirection direction = StreamReadDirection.Forwards, CancellationToken cancellationToken = default)
+        private static bool AlwaysPassPredicate(StoredEvent se) => true;
+        private static bool AlwaysFailPredicate(StoredEvent se) => false;
+
+        private static async IAsyncEnumerable<StoredEvent> ProcessReadStream(ReadStreamResult readResult, Func<StoredEvent, bool> filter, Func<StoredEvent, bool> stopPredicate, ICreateStateInstances stateFactory)
+        {
+            await foreach (var e in readResult)
+            {
+                if (e.Event != null)
+                {
+                    var @event = e.Event.ToStoredEvent(stateFactory);
+                    if (stopPredicate(@event))
+                        break;
+                    if (filter(@event))
+                        yield return @event;
+                }
+            }
+        }
+
+        public async Task<StreamReadToMemoryResults> ReadToMemoryFrom(string streamId, Func<StoredEvent, bool> predicate = null, StreamReadDirection direction = StreamReadDirection.Forwards, CancellationToken cancellationToken = default)
         {
             var results = await ReadFrom(streamId, predicate, direction, cancellationToken);
 

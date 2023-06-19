@@ -9,9 +9,9 @@ namespace BullOak.Repositories.EventStore
     public interface IReadQueryModels<in TId, TState>
     {
         Task<ReadModel<TState>> ReadFrom(TId id);
-        Task<TState> ReadFrom(TId id, Func<IAmAStoredEvent, bool> predicate);
+        Task<TState> ReadFrom(TId id, Func<StoredEvent, bool> predicate);
 
         Task<IEnumerable<ReadModel<TState>>> ReadAllEntitiesFromCategory(string categoryName,
-            Func<IAmAStoredEvent, bool> predicate = null);
+            Func<StoredEvent, bool> predicate = null);
     }
 }

@@ -33,7 +33,7 @@ namespace BullOak.Repositories.EventStore
             return new ReadModel<TState>(rehydrateResult.State, rehydrateResult.LastEventIndex ?? -1) ;
         }
 
-        public async Task<TState> ReadFrom(TId id, Func<IAmAStoredEvent, bool> loadEventPredicate)
+        public async Task<TState> ReadFrom(TId id, Func<StoredEvent, bool> loadEventPredicate)
         {
             var streamData = await reader.ReadFrom(id.ToString(), predicate: loadEventPredicate);
 
@@ -42,7 +42,7 @@ namespace BullOak.Repositories.EventStore
         }
 
         public async Task<IEnumerable<ReadModel<TState>>> ReadAllEntitiesFromCategory(string categoryName,
-            Func<IAmAStoredEvent, bool> loadEventPredicate = null)
+            Func<StoredEvent, bool> loadEventPredicate = null)
         {
             var streamsData = await reader.ReadFrom($"$ce-{categoryName}", predicate: loadEventPredicate, StreamReadDirection.Forwards);
             var states = new Dictionary<string, TState>();

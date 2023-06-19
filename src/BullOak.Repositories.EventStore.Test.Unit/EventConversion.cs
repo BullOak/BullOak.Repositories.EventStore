@@ -204,7 +204,7 @@ namespace BullOak.Repositories.EventStore.Test.Unit
             byte[] metadataBytes = MetadataSerializer.Serialize(new EventMetadata_V2(fqn, new Dictionary<string, string>()));
             var eventBytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(@event));
 
-            StoredEvent storedEvent = null;
+            StoredEvent? storedEvent = null;
             var exception = Record.Exception(() => storedEvent = EventConversion.ToStoredEvent("streamId", 5, eventBytes, metadataBytes,
                 fqn,
                 InstanceCreatorStub.Instance));
