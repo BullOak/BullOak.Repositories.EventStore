@@ -8,6 +8,15 @@ using EventStore.Client;
 
 namespace Benchmark;
 
+// Multi-version comparison test disabled until next 3.x version(s) will appear,
+// we will then be able to compare e.g. 3.0.0-rc1 with 3.0.0 final etc.
+//
+// Introduction of the new parameter `optimizeForShortStreams` in `BeginSessionFor`
+// made it impossible (or, at least very much non-trivial) to compare
+// 3.0.0-rc1 with 3.0.0-alphaX or 2.x directly, using the same benchmark project.
+//
+// [Config(typeof(BullOakVersionsConfig))]
+
 [MemoryDiagnoser]
 public class ReadEventStreamBenchmark : BenchmarkParameters
 {
@@ -39,13 +48,16 @@ public class ReadEventStreamBenchmark : BenchmarkParameters
     // Run WriteEventStreamBenchmark to create event streams.
     [Benchmark]
     [WarmupCount(1)]
-    [MinIterationCount(20)]
-    [MaxIterationCount(50)]
+    [MinIterationCount(50)]
+    [MaxIterationCount(100)]
     public async Task LoadStream()
     {
         var streamId = EventsGenerator.GetStreamId(EventsCount, EventSize);
 
-        using var readSession = await repository.BeginSessionFor(streamId, throwIfNotExists: true);
+        using var readSession = await repository.BeginSessionFor(
+            streamId,
+            throwIfNotExists: true,
+            optimizeForShortStreams: OptimizeForShortStreams);
 
         var state = readSession.GetCurrentState();
         if (state.Elements?.Length != EventSize)
@@ -75,6 +87,6 @@ public class ReadEventStreamBenchmark : BenchmarkParameters
         //
         // Explicit delay seems to be a more reliable workaround.
 
-        Thread.Sleep(TimeSpan.FromSeconds(1));
+        Thread.Sleep(TimeSpan.FromMilliseconds(500));
     }
 }
