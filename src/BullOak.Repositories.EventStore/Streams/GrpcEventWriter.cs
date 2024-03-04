@@ -1,16 +1,23 @@
 namespace BullOak.Repositories.EventStore.Streams;
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Exceptions;
+using BullOak.Repositories.Exceptions;
 using global::EventStore.Client;
 using EventData = global::EventStore.Client.EventData;
+using Polly;
+using Polly.Retry;
 
 public class GrpcEventWriter : IStoreEventsToStream
 {
     private readonly EventStoreClient client;
+
+    // TODO: Get this via .ctor dependency injection
+    private readonly AsyncRetryPolicy retryPolicy =
+        GrpcWriteRetryPolicy.GetRetryPolicy(GrpcWriteRetrySettings.DefaultRetrySettings);
 
     public GrpcEventWriter(EventStoreClient client)
     {
@@ -55,28 +62,32 @@ public class GrpcEventWriter : IStoreEventsToStream
         CancellationToken cancellationToken
     )
     {
-        IWriteResult writeResult;
+        var result = await retryPolicy.ExecuteAndCaptureAsync(async () =>
+            revision == -1 ?
+                await client.AppendToStreamAsync(
+                        streamId,
+                        StreamState.NoStream,
+                        eventsToAdd.Select(eventObject => eventObject.CreateV20EventData(dateTimeProvider)),
+                        options => options.ThrowOnAppendFailure = false,
+                        cancellationToken: cancellationToken)
+                    .ConfigureAwait(false)
+            :
+                await client.AppendToStreamAsync(
+                        streamId,
+                        StreamRevision.FromInt64(revision),
+                        eventsToAdd.Select(eventObject => eventObject.CreateV20EventData(dateTimeProvider)),
+                        options => options.ThrowOnAppendFailure = false,
+                        cancellationToken: cancellationToken)
+                    .ConfigureAwait(false)
+        );
 
-        if (revision == -1)
+        if (result.Outcome != OutcomeType.Successful)
         {
-            writeResult = await client.AppendToStreamAsync(
-                    streamId,
-                    StreamState.NoStream,
-                    eventsToAdd.Select(eventObject => eventObject.CreateV20EventData(dateTimeProvider)),
-                    options => options.ThrowOnAppendFailure = false,
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
+            // TODO: Use more specific exception
+            throw new InvalidOperationException();
         }
-        else
-        {
-            writeResult = await client.AppendToStreamAsync(
-                    streamId,
-                    StreamRevision.FromInt64(revision),
-                    eventsToAdd.Select(eventObject => eventObject.CreateV20EventData(dateTimeProvider)),
-                    options => options.ThrowOnAppendFailure = false,
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
-        }
+
+        var writeResult = result.Result;
 
         if (writeResult is WrongExpectedVersionResult)
             throw new ConcurrencyException(streamId, null);
