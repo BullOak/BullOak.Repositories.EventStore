@@ -6,22 +6,30 @@ namespace BullOak.Repositories.EventStore.Streams;
 
 public class GrpcWriteRetrySettings
 {
-    public int Limit { get; init; }
-    public TimeSpan IntervalDelta { get; init; }
-    public bool FastFirst { get; init; }
+    public TimeSpan IntervalDelta { get; }
+    public int Limit { get; }
+    public bool FastFirst { get; }
 
-    public HashSet<StatusCode> RetryableStatusCodes { get; init; }
+    public HashSet<StatusCode> RetryableStatusCodes { get; }
 
     public Action<Exception, TimeSpan, Polly.Context> OnRetry { get; init; }
 
-    public static GrpcWriteRetrySettings DefaultRetrySettings = new ()
+    private GrpcWriteRetrySettings(
+        TimeSpan intervalDelta,
+        int limit,
+        bool fastFirst = true,
+        HashSet<StatusCode> retryableStatusCodes = null,
+        Action<Exception, TimeSpan, Polly.Context> onRetry = null)
     {
-        Limit = 5,
-        FastFirst = true,
-        IntervalDelta = TimeSpan.FromMilliseconds(200),
-        RetryableStatusCodes = {  StatusCode.Unavailable, StatusCode.DeadlineExceeded, StatusCode.NotFound },
-        OnRetry = NoOp
-    };
+        IntervalDelta = intervalDelta;
+        Limit = limit;
+        FastFirst = fastFirst;
+        RetryableStatusCodes = retryableStatusCodes ?? new HashSet<StatusCode>();
+        OnRetry = onRetry ?? NoOp;
+    }
+
+    // With default settings we will only retry on NotLeaderException
+    public static GrpcWriteRetrySettings DefaultRetrySettings = new(TimeSpan.FromMilliseconds(200), 5);
 
     private static Action<Exception, TimeSpan, Polly.Context> NoOp => (_, _, _) => { };
 }
